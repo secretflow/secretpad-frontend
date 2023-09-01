@@ -1,0 +1,132 @@
+.drawerTitle {
+  display: flex;
+  align-items: center;
+
+  .title {
+    width: 300px;
+    color: rgb(0 0 0 / 88%);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+  }
+
+  .badge {
+    margin-left: 16px;
+    color: rgb(0 0 0 / 85%);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22px;
+  }
+}
+
+.baseTitle {
+  margin-bottom: 8px;
+  color: rgb(0 0 0 / 88%);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.baseContent {
+  height: 100%;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  background-color: #fafafa;
+}
+
+.disableText {
+  color: rgb(0 0 0 / 45%);
+}
+
+.publicKeyPopover {
+  :global(.ant-popover-inner) {
+    overflow: auto;
+    max-width: 512px;
+  }
+
+  :global(.ant-popover-inner-content) {
+    overflow: auto;
+    max-height: 400px;
+    word-break: break-all;
+  }
+
+  .publicTitle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    span {
+      color: rgb(0 0 0 / 88%);
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 22px;
+    }
+
+    :global(.ant-typography) {
+      margin-bottom: 0;
+    }
+
+    :global(.ant-typography-copy) {
+      color: #1677ff;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 22px;
+    }
+  }
+
+  .publicKey {
+    color: rgb(0 0 0 / 88%);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22px;
+    text-align: justify;
+  }
+}
+
+.tokenPopover {
+  :global(.ant-popover-inner) {
+    width: 287px;
+    height: 106px;
+  }
+
+  :global(.ant-popover-title) {
+    color: rgb(0 0 0 / 88%);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 22px;
+  }
+
+  .contentName {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+
+    .name {
+      overflow: hidden;
+      width: 200px;
+      color: rgb(0 0 0 / 45%);
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 22px;
+      text-align: justify;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .tokenContent {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    :global(.ant-typography) {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.spanClick {
+  color: #1677ff;
+  cursor: pointer;
+}

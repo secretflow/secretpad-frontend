@@ -1,0 +1,83 @@
+.componentConfigDrawer {
+  position: absolute;
+
+  :global {
+    .ant-drawer-content-wrapper {
+      box-shadow: 0 1px 4px 0 rgb(0 0 0 / 15%);
+    }
+
+    .ant-drawer-title {
+      font-size: 14px;
+    }
+
+    .ant-drawer-body {
+      padding: 0 12px;
+    }
+
+    .ant-drawer-header {
+      padding: 10px 12px 20px;
+      border-bottom-color: transparent;
+    }
+  }
+}
+
+.float {
+  right: 320px;
+}
+
+.description {
+  padding: 0;
+  font-size: 12px;
+
+  .label {
+    color: rgb(0 0 0 / 45%);
+  }
+
+  > div {
+    margin-bottom: 16px;
+  }
+}
+
+.configForm {
+  :global {
+    .ant-form-item {
+      margin-bottom: 16px;
+    }
+
+    .ant-form-item-label {
+      padding: 0;
+    }
+
+    .ant-alert {
+      margin-bottom: 16px;
+      color: rgb(0 0 0 / 65%);
+      font-size: 12px;
+    }
+  }
+
+  .footer {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    height: 52px;
+    background-color: white;
+  }
+}
+
+.configItemLabel {
+  color: rgb(0 0 0 / 45%);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.defaultRender {
+  :global {
+    .ant-input-number {
+      width: 100%;
+    }
+  }
+}
+
+.componentConfigDrawer:focus {
+  outline: none;
+}

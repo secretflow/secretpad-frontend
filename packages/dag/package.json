@@ -1,0 +1,68 @@
+{
+  "name": "@secretflow/dag",
+  "version": "0.0.1",
+  "description": "DAG component for Secretflow Web Platform",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/typing/index.d.ts",
+  "private": true,
+  "files": [
+    "dist",
+    "src"
+  ],
+  "keywords": [
+    "secretflow",
+    "DAG",
+    "federated learning",
+    "MPC"
+  ],
+  "scripts": {
+    "setup": "tsup src/index.ts",
+    "build": "tsup src/index.ts",
+    "dev": "tsup src/index.ts --watch",
+    "lint:js": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint:css": "stylelint --allow-empty-input 'src/**/*.{css,less}'",
+    "lint:format": "prettier --check *.md *.json 'src/**/*.{js,jsx,ts,tsx,css,less,md,json}'",
+    "lint:typing": "tsc --noEmit",
+    "test": "jest --coverage"
+  },
+  "dependencies": {
+    "@secretflow/utils": "workspace:^",
+    "@ant-design/icons": "^5.0.1",
+    "@antv/g2": "^4.2.9",
+    "@antv/layout": "^0.3.23",
+    "@antv/x6": "^2.9.7",
+    "@antv/x6-plugin-dnd": "^2.0.5",
+    "@antv/x6-plugin-keyboard": "2.2.1",
+    "@antv/x6-plugin-selection": "^2.1.7",
+    "@antv/x6-react-components": "^2.0.8",
+    "@antv/x6-react-shape": "^2.1.2",
+    "classnames": "^2.3.2",
+    "lodash": "^4.17.21",
+    "react-csv": "^2.2.2",
+    "react-syntax-highlighter": "^15.4.3"
+  },
+  "devDependencies": {
+    "@secretflow/config-tsconfig": "workspace:^",
+    "@secretflow/config-tsup": "workspace:^",
+    "@secretflow/testing": "workspace:^",
+    "@types/lodash": "^4.14.191",
+    "@types/react": "^18.0.28",
+    "antd": "^5.0.0"
+  },
+  "peerDependencies": {
+    "antd": "^5.0.0",
+    "react": "^18.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/secretflow/platform-web/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/secretflow/platform-web.git",
+    "directory": "packages/ide"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

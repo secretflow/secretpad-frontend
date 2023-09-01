@@ -1,0 +1,282 @@
+:global {
+  .project-list-tour {
+    width: 331px;
+    height: 146px;
+  }
+
+  .project-list-tour-content {
+    height: 100%;
+  }
+
+  .project-list-tour-inner {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+  }
+
+  .project-list-tour-description {
+    flex: 1;
+    color: rgb(255 255 255 / 88%);
+    font-size: 14px;
+    font-weight: 400;
+  }
+}
+
+.projectList {
+  position: relative;
+  height: 100%;
+  padding: 14px 20px;
+
+  .projectListHeader {
+    display: flex;
+    height: 39px;
+    align-items: center;
+    justify-content: space-between;
+
+    .headerText {
+      font-size: 16px;
+      font-weight: 500;
+    }
+  }
+
+  .spin {
+    position: absolute;
+    top: 150px !important;
+  }
+
+  .content {
+    display: grid;
+    height: calc(100% - 70px);
+    align-items: flex-start;
+    justify-content: space-around;
+    padding-top: 12px;
+    grid-row-gap: 24px;
+    grid-template-columns: repeat(auto-fill, 371px);
+    grid-template-rows: repeat(auto-fill, 172px);
+    overflow-y: auto;
+
+    .computeMode {
+      background: #fff;
+    }
+
+    & > i {
+      // width: 22%;
+      min-width: 371px;
+      box-sizing: border-box;
+      padding: 0 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .listBox {
+      min-width: 371px;
+      min-height: 172px;
+      box-sizing: border-box;
+      padding: 12px 16px 0;
+      border: 1px solid rgb(0 0 0 / 6%);
+      border-radius: 8px;
+      background: #fff;
+
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        :global(.ant-typography) {
+          overflow: hidden;
+          width: 238px;
+          margin: 0;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        :global(.anticon-edit):hover {
+          color: rgb(22 119 255 / 100%);
+          cursor: pointer;
+        }
+      }
+
+      .rows {
+        display: flex;
+        align-items: center;
+        margin-top: 8px;
+        color: rgb(0 0 0 / 60%);
+        font-size: 12px;
+
+        .nodeName {
+          width: 100px;
+        }
+
+        :global {
+          .ant-space {
+            font-size: 12px;
+          }
+        }
+
+        .line {
+          width: 1px;
+          height: 12px;
+          margin: 0 8px;
+          background: rgb(0 10 26 / 16%);
+        }
+      }
+
+      .projects {
+        display: flex;
+        padding: 16px 20px 12px 16px;
+        border-top: 1px solid rgb(0 0 0 / 4%);
+        // border-bottom: 1px solid rgb(0 0 0 / 4%);
+
+        .titleName {
+          color: rgb(0 0 0 / 65%);
+          font-size: 12px;
+          font-weight: 400;
+          line-height: 20px;
+        }
+
+        .count {
+          margin-top: 8px;
+          color: rgb(0 0 0 / 88%);
+          font-size: 18px;
+          font-weight: 500;
+          line-height: 20px;
+        }
+
+        .count:hover {
+          color: rgb(22 119 255 / 100%);
+          cursor: pointer;
+        }
+
+        .task {
+          flex: 1;
+
+          .titleName {
+            color: rgb(0 0 0 / 65%);
+          }
+        }
+      }
+
+      .time {
+        overflow: hidden;
+        height: 0;
+        color: rgb(0 0 0 / 45%);
+        font-size: 12px;
+        font-weight: 400;
+        letter-spacing: 0;
+        line-height: 20px;
+      }
+
+      .bootom {
+        display: flex;
+        overflow: hidden;
+        width: 100%;
+        height: 0;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        transition: height 0.2s;
+
+        :global(.ant-btn) {
+          width: 118px;
+          border-radius: 4px;
+        }
+
+        :global(.ant-btn):nth-child(1) {
+          margin-right: 17px;
+        }
+
+        :global(.ant-btn):nth-child(2) {
+          border: 0;
+          border-radius: 6px;
+          background-color: #f2f3f5;
+          color: rgb(0 0 0 / 65%);
+        }
+      }
+    }
+
+    .editButton {
+      display: none;
+    }
+
+    .listBox:hover {
+      z-index: 99;
+      border: 1px solid #0068fa;
+      box-shadow: 0 1px 1px 0 rgb(0 0 0 / 8%), 0 1px 8px 0 rgb(0 0 0 / 4%),
+        0 2px 12px 0 rgb(0 0 0 / 10%);
+
+      .editButton {
+        display: block;
+        color: #0068fa;
+      }
+
+      .time {
+        height: 20px;
+        padding-bottom: 4px;
+      }
+
+      .bootom {
+        height: 32px;
+      }
+    }
+  }
+}
+
+.popover {
+  :global(.ant-popover-title) {
+    color: rgb(0 0 0 / 88%);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 22px;
+  }
+
+  .joinNode {
+    color: rgb(0 0 0 / 85%);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 22px;
+  }
+
+  .pipeLine {
+    padding: 3px;
+    border-top: 1px solid #eee;
+  }
+}
+
+.jobItemID {
+  box-sizing: border-box;
+  padding: 5px 0 5px 15px;
+  color: #aaa;
+  font-size: 12px;
+}
+
+.ellipsisName {
+  overflow: hidden;
+  max-width: 220px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  :global(.ant-typography) {
+    color: rgb(0 0 0 / 85%);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 22px;
+  }
+}
+
+.jobsList {
+  overflow: auto;
+  max-height: 200px;
+}
+
+.ellipsisDesc {
+  width: 339px;
+  padding: 8px 0 12px;
+  margin-bottom: 0 !important;
+  color: rgb(0 0 0 / 45%);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 18px;
+}

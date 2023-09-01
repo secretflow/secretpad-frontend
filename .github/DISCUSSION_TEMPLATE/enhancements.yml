@@ -1,0 +1,24 @@
+title: "[Enhancement]"
+labels: ["kind: enhancement"]
+body:
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Topic 主题
+      description: |
+        Which area is this feature requested related to?
+        这个功能请求与哪个主题相关？
+      options:
+        - "Features: IDE 功能"
+        - "Features: DAG 功能"
+        - "Building 构建工具"
+        - "CI/CD 持续集成"
+        - "Documentation 文档"
+        - "Examples 示例"
+        - "Other 其它"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description 描述

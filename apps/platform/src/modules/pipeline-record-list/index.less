@@ -1,0 +1,159 @@
+.recordDrawer {
+  position: absolute;
+
+  :global {
+    .ant-drawer-content-wrapper {
+      box-shadow: 0 1px 4px 0 rgb(0 0 0 / 15%);
+    }
+
+    .ant-drawer-body {
+      padding: 0;
+    }
+
+    .ant-drawer-title {
+      font-size: 14px;
+    }
+
+    .ant-drawer-header {
+      padding: 8px 12px 20px;
+      border-bottom-color: transparent;
+    }
+  }
+
+  .headerContainer {
+    display: flex;
+    align-items: center;
+
+    .headerText {
+      flex: 1;
+    }
+
+    .headerBtn {
+      flex: 1;
+    }
+  }
+
+  .exitButton {
+    color: rgb(0 0 0 / 65%);
+    font-size: 12px;
+  }
+}
+
+.recordList {
+  :global(.ant-list-item) {
+    padding: 8px 12px;
+
+    &:hover {
+      background-color: rgb(0 0 0 / 4%);
+
+      .toolIcon {
+        display: inline-block;
+      }
+    }
+
+    .toolIcon {
+      display: none;
+    }
+
+    :global {
+      .ant-list-item-meta {
+        align-items: baseline;
+        margin-block-end: 5px;
+
+        .ant-list-item-meta-title {
+          margin-block-end: 5px;
+        }
+
+        .ant-list-item-meta-avatar {
+          margin-inline-end: 5px;
+        }
+      }
+    }
+  }
+
+  .itemText {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  :global(.ant-typography) {
+    &.itemId {
+      margin-bottom: 3px;
+      margin-left: 8px;
+      color: rgb(0 0 0 / 25%);
+    }
+  }
+}
+
+.itemTitle {
+  display: flex;
+  align-items: baseline;
+
+  .itemText {
+    flex: 1;
+    font-size: 12px;
+  }
+
+  .toolIcon {
+    color: rgb(51 51 51 / 100%);
+    font-size: 12px;
+  }
+}
+
+.itemText {
+  // margin-bottom: 10px;
+  font-size: 12px;
+
+  .toolIcon {
+    padding-left: 3px;
+    color: rgb(0 0 0 / 25%);
+  }
+}
+
+.success {
+  color: rgb(35 182 95 / 100%);
+}
+
+.fail {
+  color: rgb(252 117 116 / 100%);
+}
+
+.resultOrProgress {
+  padding-left: 10px;
+
+  .recordResult {
+    display: flex;
+    color: rgb(0 0 0 / 45%);
+    font-size: 12px;
+
+    > div {
+      flex: 1;
+    }
+
+    .numResult {
+      color: black;
+      font-size: 14px;
+    }
+
+    .num {
+      font-weight: 700;
+    }
+  }
+}
+
+.selected {
+  :global(.ant-card-body) {
+    border: 1px solid rgb(0 104 250 / 100%);
+    background-color: rgb(74 135 255 / 12%);
+  }
+}
+
+.statusIcon {
+  padding-inline-end: 8px;
+  padding-inline-start: 8px;
+}
+
+// HACK FIX cannot find reason for focus
+.recordDrawer:focus {
+  outline: none;
+}

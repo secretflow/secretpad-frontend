@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1440px" height="900px" viewBox="0 0 1440 900" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>数据管理备份</title>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="1440" height="901"></rect>
+        <radialGradient cx="97.3423847%" cy="10.3745192%" fx="97.3423847%" fy="10.3745192%" r="89.6254808%" gradientTransform="translate(0.9734, 0.1037), scale(0.5474, 1), rotate(90), scale(1, 2.9816), translate(-0.9734, -0.1037)" id="radialGradient-3">
+            <stop stop-color="#F0F5FF" offset="0%"></stop>
+            <stop stop-color="#F7FAFF" offset="22.5926825%"></stop>
+            <stop stop-color="#EEF5FC" offset="100%"></stop>
+        </radialGradient>
+        <radialGradient cx="67.0113679%" cy="4.11237213%" fx="67.0113679%" fy="4.11237213%" r="157.478769%" gradientTransform="translate(0.6701, 0.0411), scale(0.5474, 1), rotate(141.1183), scale(1, 0.9394), translate(-0.6701, -0.0411)" id="radialGradient-4">
+            <stop stop-color="#94DAFF" offset="0%"></stop>
+            <stop stop-color="#F9FDFF" offset="74.4236233%"></stop>
+            <stop stop-color="#FFFFFF" offset="100%"></stop>
+        </radialGradient>
+        <rect id="path-5" x="0" y="0" width="1644" height="900"></rect>
+        <linearGradient x1="67.6302164%" y1="60.4445891%" x2="92.1314069%" y2="57.7908858%" id="linearGradient-7">
+            <stop stop-color="#C8C8C8" stop-opacity="0" offset="0%"></stop>
+            <stop stop-color="#FFFBF2" offset="100%"></stop>
+        </linearGradient>
+        <ellipse id="path-8" cx="987.893283" cy="700.083186" rx="893.930222" ry="445.655488"></ellipse>
+        <filter x="-1.1%" y="-2.1%" width="102.1%" height="104.3%" filterUnits="objectBoundingBox" id="filter-9">
+            <feMorphology radius="9" operator="erode" in="SourceAlpha" result="shadowSpreadInner1"></feMorphology>
+            <feGaussianBlur stdDeviation="10.5" in="shadowSpreadInner1" result="shadowBlurInner1"></feGaussianBlur>
+            <feOffset dx="0" dy="-8" in="shadowBlurInner1" result="shadowOffsetInner1"></feOffset>
+            <feComposite in="shadowOffsetInner1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadowInnerInner1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0.962195122   0 0 0 0 0.972848398   0 0 0 0 1  0 0 0 0.174306163 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="数据管理备份" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect fill="#F0F4FA" x="0" y="0" width="1440" height="900"></rect>
+        <g id="位图" transform="translate(0, -1)">
+            <mask id="mask-2" fill="white">
+                <use xlink:href="#path-1"></use>
+            </mask>
+            <g id="蒙版"></g>
+            <g id="大面积装饰备份" mask="url(#mask-2)">
+                <g transform="translate(-205, 1)" id="编组-50">
+                    <mask id="mask-6" fill="white">
+                        <use xlink:href="#path-5"></use>
+                    </mask>
+                    <g id="蒙版" opacity="0.699999988">
+                        <use fill="url(#radialGradient-3)" xlink:href="#path-5"></use>
+                        <use fill-opacity="0.65" fill="url(#radialGradient-4)" xlink:href="#path-5"></use>
+                    </g>
+                    <g mask="url(#mask-6)" id="编组-10" opacity="0.800325">
+                        <g transform="translate(703.2796, -398.0746)">
+                            <g id="椭圆形" transform="translate(987.8933, 700.0832) scale(-1, 1) rotate(18) translate(-987.8933, -700.0832)">
+                                <use fill="black" fill-opacity="1" filter="url(#filter-9)" xlink:href="#path-8"></use>
+                                <ellipse stroke="url(#linearGradient-7)" stroke-width="1" stroke-linejoin="square" cx="987.893283" cy="700.083186" rx="893.430222" ry="445.155488"></ellipse>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

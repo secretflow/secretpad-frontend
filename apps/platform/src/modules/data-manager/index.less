@@ -1,0 +1,44 @@
+.main {
+  display: flex;
+  overflow: auto;
+  width: 100%;
+  box-sizing: border-box;
+  flex-direction: column;
+  padding: 20px;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.toolbar {
+  display: flex;
+}
+
+.content {
+  padding: 16px 0 0;
+}
+
+.authProjectListPopover {
+  overflow: auto;
+  max-height: 200px;
+  padding: 5px 10px;
+  border-radius: 2px;
+  background: #f5f5f5;
+}
+
+.authProjectListPopoverItem {
+  overflow: hidden;
+  max-width: 200px;
+  padding: 2px 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:global {
+  .dataauth-tour {
+    width: 353px;
+  }
+
+  .dataauth-tour .ant-tour-inner .ant-tour-footer .ant-tour-buttons {
+    margin-inline-start: 0%;
+  }
+}

@@ -1,0 +1,85 @@
+.wrap {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  width: 100%;
+  height: 56px;
+  align-items: center;
+  padding-left: 16px;
+  border-bottom: 1px solid #eaebed;
+
+  .back {
+    display: flex;
+    width: 24px;
+    height: 24px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #eee;
+    }
+  }
+
+  .title {
+    color: #1d2129;
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  .slot {
+    margin-left: 16px;
+  }
+}
+
+.content {
+  display: flex;
+  width: 100%;
+  height: calc(100% - 56px);
+  box-sizing: border-box;
+
+  .center {
+    position: relative;
+    width: 100%;
+    height: 100%;
+
+    .header {
+      display: flex;
+      width: 100%;
+      height: 42px;
+      box-sizing: border-box;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background-color: #f6f8fa;
+
+      .right {
+        display: flex;
+        height: 100%;
+        align-items: center;
+        padding-left: 320px;
+      }
+
+      .left {
+        color: rgb(0 0 0 / 85%);
+        font-size: 14px;
+      }
+    }
+
+    .graph {
+      width: calc(100% - 320px + 42px);
+      height: calc(100% - 42px);
+    }
+
+    .toolbutton {
+      position: absolute;
+      right: 20px;
+      bottom: 36px;
+    }
+  }
+}

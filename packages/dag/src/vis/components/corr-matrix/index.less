@@ -1,0 +1,121 @@
+.coefficient {
+  :global {
+    .ant-btn-link:hover {
+      color: rgb(0 10 26/68%);
+    }
+
+    .anticon-check {
+      color: rgb(82 196 26);
+    }
+  }
+
+  .chartBlock {
+    .features {
+      margin-bottom: 16px;
+
+      .title {
+        display: inline-block;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+
+      .tagWrapper {
+        position: relative;
+        display: flex;
+        // max-height: 108px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-start;
+        overflow-y: hidden;
+      }
+
+      .hasMaxHeight {
+        max-height: 108px;
+      }
+
+      :global {
+        .anticon-down,
+        .anticon-up {
+          margin-left: 4px;
+          font-size: 12px;
+        }
+      }
+
+      .showAll {
+        position: relative;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-start;
+        // font-family: PingFangSC;
+      }
+
+      .openTag {
+        position: absolute;
+        top: 72px;
+        display: block;
+        width: 48px;
+        margin-right: 8px;
+        margin-bottom: 16px;
+        background-color: #fff;
+        color: rgb(0 10 26 / 47%);
+        text-align: center;
+      }
+
+      .closeTag {
+        position: relative;
+        display: block;
+        width: 48px;
+        margin-right: 8px;
+        margin-bottom: 16px;
+        background-color: #fff;
+        color: rgb(0 10 26 / 47%);
+        text-align: center;
+      }
+
+      .tag {
+        position: relative;
+        display: block;
+        overflow: hidden;
+        width: 48px;
+        border: none;
+        margin-right: 8px;
+        margin-bottom: 16px;
+        color: rgb(0 10 26 / 26%);
+        cursor: pointer;
+        text-align: center;
+        text-overflow: ellipsis;
+        user-select: none;
+        white-space: nowrap;
+      }
+
+      .tag.selected {
+        background-color: #e6f7ff;
+        color: #1890ff;
+
+        &::after {
+          position: absolute;
+          top: 0;
+          right: 0;
+          display: inline-block;
+          width: 0;
+          height: 0;
+          border-width: 3px;
+          border-style: solid;
+          border-color: #1890ff #1890ff transparent transparent;
+          content: '';
+        }
+      }
+    }
+  }
+}
+
+.customBtn {
+  border: none;
+  animation: none;
+  color: rgb(0 10 26/68%);
+
+  .customBtn:active {
+    animation: none;
+  }
+}

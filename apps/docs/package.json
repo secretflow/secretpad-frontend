@@ -1,0 +1,16 @@
+{
+  "name": "secretpad-doc",
+  "version": "0.0.1",
+  "description": "A static site based on dumi",
+  "scripts": {
+    "start": "pnpm run dev",
+    "dev": "PORT=8001 dumi dev",
+    "build": "dumi build",
+    "prepare": "dumi setup"
+  },
+  "authors": [],
+  "license": "MIT",
+  "devDependencies": {
+    "dumi": "^2.2.0"
+  }
+}

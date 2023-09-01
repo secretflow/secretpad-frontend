@@ -1,0 +1,87 @@
+:global {
+  .data-tree {
+    width: 331px;
+    height: 146px;
+  }
+
+  .data-tree-content {
+    height: 100%;
+  }
+
+  .data-tree-inner {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+  }
+
+  .data-tree-description {
+    flex: 1;
+    color: rgb(255 255 255 / 88%);
+    font-size: 14px;
+    font-weight: 400;
+  }
+}
+
+.alert {
+  padding: 5px 10px;
+
+  :global {
+    .ant-alert {
+      padding: 5px 10px;
+      border: 1px solid #a2bff9;
+      border-radius: 4px;
+      background-color: rgb(22 100 255 / 10%);
+      color: #555;
+      font-size: 10px;
+    }
+  }
+}
+
+.treeRoot {
+  overflow: auto;
+  height: 100%;
+  overflow-y: overlay;
+}
+
+.tree {
+  overflow: auto;
+  padding: 3px 10px;
+  background-color: #f7f8fa;
+  font-size: 12px;
+
+  :global {
+    .ant-tree-indent {
+      display: none;
+    }
+
+    .ant-tree-node-selected {
+      background-color: unset !important;
+    }
+
+    .ant-tree-treenode-selected::before {
+      background: transparent !important;
+    }
+
+    .ant-tree-switcher-icon {
+      color: rgb(135 136 137 / 100%);
+    }
+  }
+}
+
+.treeRootNode {
+  display: flex;
+  width: 190px;
+  align-items: center;
+
+  &:hover {
+    .treeRootNodeActions {
+      display: block;
+    }
+  }
+}
+
+.treeRootNodeActions {
+  display: none;
+  width: 50px;
+  color: #0068fa;
+}

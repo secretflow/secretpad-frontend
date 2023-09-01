@@ -1,0 +1,180 @@
+.uploadContent {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+
+  :global(.ant-btn-default) {
+    height: auto;
+    padding: 0 8px;
+    margin-right: 8px;
+    color: rgb(0 10 26 / 68%);
+  }
+
+  :global {
+    .ant-upload-drag {
+      background: none;
+    }
+  }
+
+  .uploadHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .title {
+    color: rgb(0 0 0 / 85%);
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+.uploadContenBySource {
+  :global {
+    .ant-upload-drag {
+      background: none;
+    }
+  }
+}
+
+.uploadDraggerWrapper {
+  display: flex;
+  width: 100%;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  .uploadDragger {
+    width: 80%;
+    height: 300px;
+  }
+
+  .tip1 {
+    color: rgb(0 0 0 / 85%);
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  .tip2 {
+    color: rgb(0 0 0 / 45%);
+    font-size: 14px;
+    font-weight: 400;
+  }
+}
+
+.csvConfig {
+  flex: 1;
+
+  .csvConfigBaseInfo {
+    border-radius: 6px;
+    background-color: #f4f4f4;
+  }
+
+  .csvName {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :global {
+    .ant-descriptions-view {
+      padding: 8px 16px;
+      // background-color: #fafafa;
+    }
+
+    .ant-descriptions .ant-descriptions-row > th {
+      padding: 0;
+      padding-bottom: 0;
+    }
+
+    .ant-descriptions-item {
+      padding: 8px 0 !important;
+    }
+
+    .ant-descriptions-item-content {
+      color: rgb(0 0 0 / 88%);
+    }
+
+    .ant-form-item {
+      margin-bottom: 5px;
+    }
+  }
+}
+
+.csvContentConfig {
+  padding-top: 20px;
+}
+
+.uploadFileList {
+  margin-top: 13px;
+  font-size: 14px;
+
+  :global {
+    .ant-progress-bg {
+      height: 2px;
+    }
+  }
+
+  .fileInfo {
+    display: flex;
+  }
+
+  .fileName {
+    flex: 1;
+    margin-left: 5px;
+  }
+
+  .fileActions {
+    color: rgb(0 0 0 / 45%);
+  }
+
+  .actionsItem {
+    cursor: pointer;
+  }
+
+  .progress {
+    padding-left: 20px;
+  }
+
+  .info {
+    padding-left: 20px;
+    color: rgb(0 0 0 / 45%);
+  }
+
+  .infoError {
+    color: rgb(255 77 79 / 100%);
+  }
+}
+
+.tableColsTitle {
+  display: flex;
+  margin-top: 17px;
+}
+
+.deleteIcon {
+  color: rgb(0 0 0 / 45%);
+}
+
+.descriptionHeader {
+  :global(.ant-descriptions) {
+    padding: 8px 3px;
+  }
+}
+
+.manualColInfo {
+  :global {
+    .ant-form-item {
+      margin-bottom: 8px;
+    }
+
+    .ant-space {
+      border-bottom: 1px solid rgb(0 10 26 / 7%);
+    }
+  }
+
+  .dataSourceContainer {
+    padding-top: 8px;
+  }
+}

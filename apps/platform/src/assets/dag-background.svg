@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512px" height="275px" viewBox="0 0 512 275" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组 3</title>
+    <g id="——-设计方案0515（定稿）" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="创建自定义训练流" transform="translate(-552.500000, -296.000000)">
+            <g id="编组-3" transform="translate(552.500000, 296.000000)">
+                <text id="拖拽左侧「组件库」里的组件到此处，建立联" opacity="0.85" font-family="PingFangSC-Regular, PingFang SC" font-size="16" font-weight="normal" line-spacing="22" fill="#000000">
+                    <tspan x="0" y="270">拖拽左侧「组件库」里的组件到此处，建立联系关系，就可以构建训练流</tspan>
+                </text>
+                <g id="编组" transform="translate(48.000000, 0.000000)">
+                    <g id="连线-normal" transform="translate(213.045195, 39.954835)" fill-rule="nonzero" stroke="#B4BDCF">
+                        <path d="M113,1.42108547e-14 C113,1.33865765 113,2.00798647 113,2.00798647 C112.891775,21.5219739 0,22.4780261 0,42.0662982 C0,42.0662982 0,42.7108655 0,44" id="路径-2备份-3" transform="translate(56.500000, 22.000000) scale(-1, -1) rotate(-180.000000) translate(-56.500000, -22.000000) "></path>
+                    </g>
+                    <g id="连线-normal备份" transform="translate(156.545195, 61.954835) scale(-1, 1) translate(-156.545195, -61.954835) translate(100.045195, 39.954835)" fill-rule="nonzero" stroke="#B4BDCF">
+                        <path d="M113,1.42108547e-14 C113,1.33865765 113,2.00798647 113,2.00798647 C112.891775,21.5219739 0,22.4780261 0,42.0662982 C0,42.0662982 0,42.7108655 0,44" id="路径-2备份-3" transform="translate(56.500000, 22.000000) scale(-1, -1) rotate(-180.000000) translate(-56.500000, -22.000000) "></path>
+                    </g>
+                    <g id="连线-normal备份-2" transform="translate(90.045195, 121.954835)" fill-rule="nonzero" stroke="#B4BDCF">
+                        <path d="M123,0 C123,2.12968262 123,3.19452393 123,3.19452393 C122.882198,34.2395039 0,35.7604961 0,66.9236563 C0,66.9236563 0,67.9491042 0,70" id="路径-2备份-3" transform="translate(61.500000, 35.000000) scale(-1, -1) rotate(-180.000000) translate(-61.500000, -35.000000) "></path>
+                    </g>
+                    <g id="连线-normal备份-3" transform="translate(269.545195, 156.954835) scale(-1, 1) translate(-269.545195, -156.954835) translate(213.045195, 121.954835)" fill-rule="nonzero" stroke="#B4BDCF">
+                        <path d="M113,0 C113,2.12968262 113,3.19452393 113,3.19452393 C112.891775,34.2395039 0,35.7604961 0,66.9236563 C0,66.9236563 0,67.9491042 0,70" id="路径-2备份-3" transform="translate(56.500000, 35.000000) scale(-1, -1) rotate(-180.000000) translate(-56.500000, -35.000000) "></path>
+                    </g>
+                    <g id="组件-normal备份-13" transform="translate(236.000000, 0.000000)">
+                        <g id="zujian-bian-normal" fill="#FFFFFF" stroke="#C2C8D5">
+                            <path d="M176,0.5 C176.966498,0.5 177.841498,0.891750844 178.474874,1.52512627 C179.108249,2.15850169 179.5,3.03350169 179.5,4 L179.5,32 C179.5,32.9664983 179.108249,33.8414983 178.474874,34.4748737 C177.841498,35.1082492 176.966498,35.5 176,35.5 L4,35.5 C3.03350169,35.5 2.15850169,35.1082492 1.52512627,34.4748737 C0.891750844,33.8414983 0.5,32.9664983 0.5,32 L0.5,4 C0.5,3.03350169 0.891750844,2.15850169 1.52512627,1.52512627 C2.15850169,0.891750844 3.03350169,0.5 4,0.5 Z" id="Rectangle"></path>
+                        </g>
+                        <text id="样本表" font-family="PingFangSC-Regular, PingFang SC" font-size="12" font-weight="normal" line-spacing="20" fill="#000000" fill-opacity="0.25">
+                            <tspan x="72" y="21">样本表</tspan>
+                        </text>
+                        <g id="jiedian-normal备份" transform="translate(86.173913, 32.000000)" fill="#FFFFFF" stroke="#9FAABE">
+                            <ellipse id="椭圆形备份-21" cx="4.08695652" cy="4" rx="3.58695652" ry="3.5"></ellipse>
+                        </g>
+                    </g>
+                    <g id="组件-normal备份-14" transform="translate(10.000000, 0.000000)">
+                        <g id="zujian-bian-normal" fill="#FFFFFF" stroke="#C2C8D5">
+                            <path d="M176,0.5 C176.966498,0.5 177.841498,0.891750844 178.474874,1.52512627 C179.108249,2.15850169 179.5,3.03350169 179.5,4 L179.5,32 C179.5,32.9664983 179.108249,33.8414983 178.474874,34.4748737 C177.841498,35.1082492 176.966498,35.5 176,35.5 L4,35.5 C3.03350169,35.5 2.15850169,35.1082492 1.52512627,34.4748737 C0.891750844,33.8414983 0.5,32.9664983 0.5,32 L0.5,4 C0.5,3.03350169 0.891750844,2.15850169 1.52512627,1.52512627 C2.15850169,0.891750844 3.03350169,0.5 4,0.5 Z" id="Rectangle"></path>
+                        </g>
+                        <text id="样本表" font-family="PingFangSC-Regular, PingFang SC" font-size="12" font-weight="normal" line-spacing="20" fill="#000000" fill-opacity="0.25">
+                            <tspan x="72" y="21">样本表</tspan>
+                        </text>
+                        <g id="jiedian-normal备份" transform="translate(86.173913, 32.000000)" fill="#FFFFFF" stroke="#9FAABE">
+                            <ellipse id="椭圆形备份-21" cx="4.08695652" cy="4" rx="3.58695652" ry="3.5"></ellipse>
+                        </g>
+                    </g>
+                    <g id="组件名称" transform="translate(123.000000, 84.000000)">
+                        <g id="编组-3" transform="translate(0.000000, 2.000000)">
+                            <g id="zujian-bian-normal" fill="#FFFFFF" stroke="#C2C8D5">
+                                <path d="M176,0.5 C176.966498,0.5 177.841498,0.891750844 178.474874,1.52512627 C179.108249,2.15850169 179.5,3.03350169 179.5,4 L179.5,32 C179.5,32.9664983 179.108249,33.8414983 178.474874,34.4748737 C177.841498,35.1082492 176.966498,35.5 176,35.5 L4,35.5 C3.03350169,35.5 2.15850169,35.1082492 1.52512627,34.4748737 C0.891750844,33.8414983 0.5,32.9664983 0.5,32 L0.5,4 C0.5,3.03350169 0.891750844,2.15850169 1.52512627,1.52512627 C2.15850169,0.891750844 3.03350169,0.5 4,0.5 Z" id="Rectangle"></path>
+                            </g>
+                            <text id="组件名称" font-family="PingFangSC-Regular, PingFang SC" font-size="12" font-weight="normal" line-spacing="20" fill="#000000" fill-opacity="0.25">
+                                <tspan x="62" y="21">隐私求交</tspan>
+                            </text>
+                            <g id="jiedian-normal备份" transform="translate(86.173913, 32.000000)" fill="#FFFFFF" stroke="#9FAABE">
+                                <ellipse id="椭圆形备份-21" cx="4.08695652" cy="4" rx="3.58695652" ry="3.5"></ellipse>
+                            </g>
+                        </g>
+                        <g id="jiedian-normal备份-2" transform="translate(86.173913, 0.000000)" fill="#FFFFFF" stroke="#9FAABE">
+                            <ellipse id="椭圆形备份-21" cx="4.08695652" cy="4" rx="3.58695652" ry="3.5"></ellipse>
+                        </g>
+                    </g>
+                    <g id="组件名称备份-2" transform="translate(0.000000, 192.000000)">
+                        <g id="编组-3" transform="translate(0.000000, 2.000000)">
+                            <g id="zujian-bian-normal" fill="#FFFFFF" stroke="#C2C8D5">
+                                <path d="M176,0.5 C176.966498,0.5 177.841498,0.891750844 178.474874,1.52512627 C179.108249,2.15850169 179.5,3.03350169 179.5,4 L179.5,32 C179.5,32.9664983 179.108249,33.8414983 178.474874,34.4748737 C177.841498,35.1082492 176.966498,35.5 176,35.5 L4,35.5 C3.03350169,35.5 2.15850169,35.1082492 1.52512627,34.4748737 C0.891750844,33.8414983 0.5,32.9664983 0.5,32 L0.5,4 C0.5,3.03350169 0.891750844,2.15850169 1.52512627,1.52512627 C2.15850169,0.891750844 3.03350169,0.5 4,0.5 Z" id="Rectangle"></path>
+                            </g>
+                            <text id="组件名称" font-family="PingFangSC-Regular, PingFang SC" font-size="12" font-weight="normal" line-spacing="20" fill="#000000" fill-opacity="0.25">
+                                <tspan x="62" y="21">组件名称</tspan>
+                            </text>
+                            <g id="jiedian-normal备份" transform="translate(86.173913, 32.000000)" fill="#FFFFFF" stroke="#9FAABE">
+                                <ellipse id="椭圆形备份-21" cx="4.08695652" cy="4" rx="3.58695652" ry="3.5"></ellipse>
+                            </g>
+                        </g>
+                        <g id="jiedian-normal备份-2" transform="translate(86.173913, 0.000000)" fill="#FFFFFF" stroke="#9FAABE">
+                            <ellipse id="椭圆形备份-21" cx="4.08695652" cy="4" rx="3.58695652" ry="3.5"></ellipse>
+                        </g>
+                    </g>
+                    <g id="组件名称备份-3" transform="translate(236.000000, 192.000000)">
+                        <g id="编组-3" transform="translate(0.000000, 2.000000)">
+                            <g id="zujian-bian-normal" fill="#FFFFFF" stroke="#C2C8D5">
+                                <path d="M176,0.5 C176.966498,0.5 177.841498,0.891750844 178.474874,1.52512627 C179.108249,2.15850169 179.5,3.03350169 179.5,4 L179.5,32 C179.5,32.9664983 179.108249,33.8414983 178.474874,34.4748737 C177.841498,35.1082492 176.966498,35.5 176,35.5 L4,35.5 C3.03350169,35.5 2.15850169,35.1082492 1.52512627,34.4748737 C0.891750844,33.8414983 0.5,32.9664983 0.5,32 L0.5,4 C0.5,3.03350169 0.891750844,2.15850169 1.52512627,1.52512627 C2.15850169,0.891750844 3.03350169,0.5 4,0.5 Z" id="Rectangle"></path>
+                            </g>
+                            <text id="组件名称" font-family="PingFangSC-Regular, PingFang SC" font-size="12" font-weight="normal" line-spacing="20" fill="#000000" fill-opacity="0.25">
+                                <tspan x="62" y="21">组件名称</tspan>
+                            </text>
+                            <g id="jiedian-normal备份" transform="translate(86.173913, 32.000000)" fill="#FFFFFF" stroke="#9FAABE">
+                                <ellipse id="椭圆形备份-21" cx="4.08695652" cy="4" rx="3.58695652" ry="3.5"></ellipse>
+                            </g>
+                        </g>
+                        <g id="jiedian-normal备份-2" transform="translate(86.173913, 0.000000)" fill="#FFFFFF" stroke="#9FAABE">
+                            <ellipse id="椭圆形备份-21" cx="4.08695652" cy="4" rx="3.58695652" ry="3.5"></ellipse>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

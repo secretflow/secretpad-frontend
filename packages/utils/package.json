@@ -1,0 +1,26 @@
+{
+  "name": "@secretflow/utils",
+  "version": "0.0.1",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/typing/index.d.ts",
+  "sideEffects": false,
+  "devDependencies": {
+    "@secretflow/config-tsconfig": "workspace:^",
+    "@secretflow/config-tsup": "workspace:^",
+    "@secretflow/testing": "workspace:^"
+  },
+  "scripts": {
+    "setup": "tsup src/index.ts",
+    "build": "tsup src/index.ts",
+    "dev": "tsup src/index.ts --watch",
+    "lint:js": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint:css": "stylelint --allow-empty-input 'src/**/*.{css,less}'",
+    "lint:format": "prettier --check *.md *.json 'src/**/*.{js,jsx,ts,tsx,css,less,md,json}'",
+    "lint:typing": "tsc --noEmit",
+    "test": "jest --coverage"
+  }
+}

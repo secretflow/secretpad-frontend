@@ -1,0 +1,112 @@
+.tableWrapper {
+  :global {
+    .ant-tabs-nav {
+      margin: 0 0 8px;
+    }
+
+    .ant-tabs-nav::before {
+      border: none !important;
+    }
+  }
+}
+
+.content {
+  position: relative;
+  padding-bottom: 54px;
+
+  .description {
+    color: rgb(0 0 0 / 45%);
+  }
+
+  :global {
+    .ant-alert {
+      margin-bottom: 8px;
+    }
+
+    .ant-form-item {
+      margin-bottom: 16px;
+    }
+
+    .ant-btn-link {
+      padding: 0;
+      margin-right: 20px;
+    }
+
+    .ant-tag {
+      border-radius: 4px;
+    }
+
+    .ant-tag-default {
+      color: rgb(0 10 26 / 47%);
+    }
+
+    .anticon-question-circle {
+      margin-left: 4px;
+      color: rgb(0 10 26 / 47%);
+    }
+
+    .ant-select {
+      width: 100%;
+    }
+
+    .ant-alert-message {
+      color: rgb(0 0 0 / 65%);
+    }
+
+    .ant-descriptions-view {
+      padding: 16px;
+      margin-bottom: 16px;
+      background-color: #fafafa;
+    }
+
+    .ant-descriptions-item {
+      padding: 0;
+    }
+
+    .ant-form-item,
+    .ant-input,
+    .ant-select {
+      color: rgb(0 0 0 / 65%);
+    }
+  }
+
+  .typeTip {
+    color: rgb(0 0 0/ 25%);
+  }
+
+  .uploadContent {
+    margin-top: 32px;
+
+    :global(.ant-btn-default) {
+      height: auto;
+      padding: 0 8px;
+      margin-right: 8px;
+      color: rgb(0 10 26 / 68%);
+    }
+
+    .uploadHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .title {
+      color: rgb(0 0 0 / 85%);
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+
+  .footer {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    width: 560px;
+    justify-content: end;
+    padding: 10px 16px;
+    border-top: solid 1px #f0f0f0;
+    background-color: #fff;
+  }
+}

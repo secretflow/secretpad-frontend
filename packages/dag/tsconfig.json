@@ -1,0 +1,12 @@
+{
+  "extends": "@secretflow/config-tsconfig/mana.json",
+  "compilerOptions": {
+    "declarationDir": "./dist/typing",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["./src/**/*"]
+}

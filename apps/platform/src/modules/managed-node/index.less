@@ -1,0 +1,160 @@
+:global {
+  ::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    border-radius: 10px;
+    background: #eee;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: #ccc;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    border-radius: 10px;
+    background: #bbb;
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    border-radius: 10px;
+    background: #bbb;
+  }
+}
+
+.nodeContent {
+  height: 100%;
+  padding: 20px;
+
+  .title {
+    margin-bottom: 16px;
+    font-size: 16px;
+  }
+
+  .content {
+    height: calc(100% - 80px);
+    overflow-y: auto;
+
+    .nodeInfoWrapper {
+      height: 160px;
+      box-sizing: border-box;
+      padding: 10px 3px;
+    }
+
+    .nodeInfo {
+      height: 126px;
+      box-sizing: content-box;
+      padding: 12px;
+      border-radius: 8px;
+      background-color: #f7f8fa;
+      cursor: pointer;
+
+      .nodeInfoTop {
+        height: 56px;
+        border-bottom: 1px solid rgb(0 0 0 / 4%);
+
+        .nodeInfoTopText {
+          display: flex;
+          height: 20px;
+          align-items: center;
+          justify-content: space-between;
+
+          .text {
+            overflow: hidden;
+            width: 180px;
+            margin-left: 4px;
+            color: rgb(0 0 0 / 85%);
+            font-size: 14px;
+            font-weight: 400;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .nodeStatusIcon {
+            display: flex;
+            width: 20px;
+            height: 20px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background-color: #d8fbe7;
+          }
+
+          button {
+            border: 0;
+            color: rgb(0 104 250 / 100%);
+            font-size: 12px;
+          }
+        }
+
+        .id {
+          margin-top: 7px;
+          margin-left: 24px;
+          color: rgb(0 0 0 / 45%);
+          font-size: 12px;
+        }
+      }
+
+      .nodeInfoBootom {
+        // display: flex;
+        height: calc(100% - 85px);
+        // justify-content: space-around;
+        padding: 16px 0;
+
+        .nodeInfoBootomItem {
+          .ItemName {
+            margin-bottom: 4px;
+            color: rgb(0 0 0 / 60%);
+            font-size: 12px;
+
+            :global(.anticon) {
+              margin-right: 4px;
+            }
+          }
+
+          .ItemNumber {
+            margin-left: 12px;
+            color: rgb(0 0 0 / 88%);
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 500;
+          }
+
+          .ItemNumber:hover {
+            color: rgb(0 104 250 / 100%);
+          }
+        }
+      }
+    }
+
+    .nodeInfo:hover {
+      border: 1px solid #0068fa;
+      margin-top: -1px;
+      margin-left: -1px;
+    }
+  }
+}
+
+.nodePopoverList {
+  border-radius: 0;
+  border-top: 1px solid rgb(5 5 5 / 6%);
+  border-right: none !important;
+  border-bottom: 1px solid rgb(5 5 5 / 6%);
+  border-left: none !important;
+
+  :global(.ant-list-item) {
+    padding: 4px 8px !important;
+  }
+
+  .nodeStatusIcon {
+    display: flex;
+    width: 20px;
+    height: 20px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background-color: #d8fbe7;
+  }
+}

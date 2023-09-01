@@ -1,0 +1,66 @@
+.quickConfigDrawer {
+  position: absolute;
+
+  :global {
+    .ant-drawer-content-wrapper {
+      box-shadow: 0 1px 4px 0 rgb(0 0 0 / 15%);
+    }
+
+    .ant-drawer-title {
+      font-size: 14px;
+    }
+
+    .ant-drawer-body {
+      padding: 0 12px;
+    }
+
+    .ant-drawer-header {
+      padding: 10px 12px 20px;
+      border-bottom-color: transparent;
+    }
+
+    .ant-form-item {
+      margin-bottom: 16px;
+    }
+
+    .ant-alert-message {
+      color: rgb(0 0 0 / 45%);
+      font-size: 12px;
+    }
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  .footer {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    height: 52px;
+    background-color: white;
+  }
+}
+
+.selectionItem {
+  display: flex;
+
+  .selectionItemIcon {
+    display: flex;
+    width: 24px;
+    align-items: center;
+    justify-content: center;
+    padding-top: 10px;
+    color: rgb(0 0 0 / 45%);
+  }
+
+  .selectionItemInput {
+    flex: 1;
+  }
+}
+
+.configItemLabel {
+  color: rgb(0 0 0 / 45%);
+  font-size: 12px;
+  font-weight: 400;
+}

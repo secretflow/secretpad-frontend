@@ -1,0 +1,105 @@
+.bootomContent {
+  height: 100%;
+  overflow-y: auto;
+
+  .title {
+    margin: 0;
+    margin-top: 20px;
+    font-size: 16px;
+    text-align: center;
+  }
+
+  .container {
+    width: 100%;
+    height: 70%;
+
+    .graph {
+      width: 100% !important;
+      height: 100% !important;
+    }
+  }
+
+  .bootomBtn {
+    margin-bottom: 24px;
+    text-align: center;
+  }
+}
+
+.guide-node {
+  display: flex;
+  width: 124px;
+  height: 54px;
+  box-sizing: border-box;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 1px 2px -1px rgb(0 0 0 / 12%), 0 3px 6px 0 rgb(0 0 0 / 8%),
+    0 5px 12px 4px rgb(0 0 0 / 4%);
+  cursor: pointer;
+
+  .img {
+    display: inline-block;
+    width: 30px;
+    height: 28px;
+    background-repeat: no-repeat;
+    background-size: 35px 35px;
+  }
+
+  .text {
+    margin-left: 4px;
+    color: rgb(0 0 0 / 75%);
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .img1,
+  .img2 {
+    background-image: url('@/assets/datatable.svg');
+  }
+
+  .img3,
+  .img4 {
+    background-image: url('@/assets/guide-node.svg');
+  }
+
+  .img5 {
+    background-image: url('@/assets/project.svg');
+  }
+
+  .img6 {
+    background-image: url('@/assets/pipeline.svg');
+  }
+
+  .img7 {
+    background-image: url('@/assets/result.svg');
+  }
+
+  &:hover {
+    box-shadow: 0 16px 24px -1px rgb(0 0 0 / 12%), 0 3px 6px 0 rgb(0 0 0 / 8%),
+      0 5px 12px 4px rgb(0 0 0 / 4%);
+
+    .img1,
+    .img2 {
+      background-image: url('@/assets/datatable-highlight.svg');
+    }
+
+    .img3,
+    .img4 {
+      background-image: url('@/assets/guide-node-highlight.svg');
+    }
+
+    .img5 {
+      background-image: url('@/assets/project-highlight.svg');
+    }
+
+    .img6 {
+      background-image: url('@/assets/pipeline-highlight.svg');
+    }
+
+    .img7 {
+      background-image: url('@/assets/result-highlight.svg');
+    }
+  }
+}

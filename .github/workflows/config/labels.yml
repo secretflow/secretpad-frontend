@@ -1,0 +1,56 @@
+# This file defines our GitHub Labels
+#
+# FOR MAINTAINERS:
+# To make changes to labels, update this file and submit a pull request. Changes will
+# effect thru the update-labels action as soon as they are merged to main.
+#
+# IMPORTANT:
+# To rename a label, add the old name to the `aliases` field. This ensures currently
+# labeled issues and PRs are updated accordingly, otherwise the label will be DELETED
+# from affected issues/PRs.
+
+# generic tags
+- name: good first issue
+  color: 7057ff
+  
+- name: wontfix
+  color: d3d3d3
+
+# classification
+- name: 'bug'
+  color: ee0701
+  aliases: [bug]
+  description: Something isn't working | 缺陷
+
+- name: 'breaking-change'
+  color: d2d3d9
+  aliases:
+    - PR(chore)
+
+- name: 'enhancement'
+  color: d3d3d3
+  aliases:
+    - PR(chore)
+  description: Exciting New Features
+
+- name: 'ci'
+  color: d4c5f9
+  aliases:
+    - ci
+  description: changes to CI/CD tooling and automated workflows
+
+- name: 'other'
+  color: f12cbb
+  aliases:
+    - ci
+  description: changes to CI/CD tooling and automated workflows
+
+# statuses
+- name: 'triage-待处理'
+  color: fef2c0
+  description:
+    New issues get this label. Remove it after triage | 新问题的标记，初步处理后去掉
+
+- name: 'reproduction-需要复现'
+  color: fef2c8
+  description: Reproducible code required | 需要最小复现示例

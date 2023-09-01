@@ -1,0 +1,76 @@
+.cooperativeNodeList {
+  overflow: auto;
+  height: calc(100vh - 90px);
+  padding: 14px 20px 0;
+
+  .nodeListHeader {
+    display: flex;
+    height: 39px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .popoverContent {
+    color: rgb(0 0 0 / 65%);
+    font-size: 12px;
+    font-weight: 400;
+  }
+
+  .content {
+    padding: 20px 0 0;
+
+    .idText {
+      color: rgb(0 0 0 / 45%);
+      font-size: 12px;
+    }
+  }
+
+  .action {
+    :global {
+      .ant-btn {
+        padding: 4px 0;
+      }
+    }
+  }
+}
+
+.addCooperativeNodeDrawer {
+  .subTitle {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .formGroup {
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 8px;
+    margin-bottom: 24px;
+    background-color: rgb(0 0 0 / 2%);
+
+    :global(.ant-input-disabled) {
+      background-color: rgb(0 0 0 / 2%);
+    }
+  }
+}
+
+.cooperativeNodeDetailDrawer {
+  .baseTitle {
+    margin-bottom: 8px;
+    color: rgb(0 0 0 / 88%);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  :global {
+    .ant-descriptions .ant-descriptions-item-container {
+      align-items: center;
+    }
+  }
+
+  .baseContent {
+    padding: 16px;
+    border-radius: 8px;
+    margin: 16px 0;
+    background-color: #fafafa;
+  }
+}

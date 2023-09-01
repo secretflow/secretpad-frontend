@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="12px" height="66px" viewBox="0 0 12 66" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Group 12备份</title>
+    <defs>
+        <polygon id="path-1" points="2.18181818 6 7.09090909 10.9090909 6 12 0 6 6 0 7.09090909 1.09090909"></polygon>
+    </defs>
+    <g id="——-设计方案0515（定稿）" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="进入训练流（已有模板）" transform="translate(-240.000000, -445.000000)">
+            <g id="Group-12备份" transform="translate(240.000000, 445.000000)">
+                <path d="M0,0 L10.5899968,8.82499735 C11.4671409,9.55595076 12,10.8378304 12,12.2169906 L12,53.7830094 C12,55.1621696 11.4671409,56.4440492 10.5899968,57.1750026 L0,66" id="形状" fill="#F7F8FA" fill-rule="nonzero"></path>
+                <g id="Icon/Arrow-double-left" transform="translate(1.000000, 27.000000)">
+                    <mask id="mask-2" fill="white">
+                        <use xlink:href="#path-1"></use>
+                    </mask>
+                    <use id="Combined-Shape" fill="#C1C1C1" fill-rule="nonzero" xlink:href="#path-1"></use>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

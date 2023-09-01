@@ -1,0 +1,75 @@
+.dagComponentStatsInfo {
+  position: relative;
+  padding: 16px;
+
+  .head {
+    height: 48px;
+    border-bottom: 1px solid #d9d9d9;
+    margin: -16px;
+    margin-bottom: 16px;
+    line-height: 48px;
+
+    .close {
+      padding: 16px;
+      border-right: 1px solid #d9dad9;
+      margin-right: 16px;
+      font-size: 15px;
+    }
+  }
+
+  .dagComponentStatsBlock {
+    background-color: #fff;
+    overflow-y: auto;
+
+    &.hide {
+      display: none;
+    }
+
+    .header {
+      position: relative;
+      height: 48px;
+      margin-bottom: 16px;
+
+      .right {
+        position: absolute;
+        top: 10px;
+        right: 0;
+
+        .last {
+          margin-left: 16px;
+        }
+      }
+
+      .icon {
+        font-size: 16px;
+      }
+    }
+  }
+
+  .chartTable {
+    .quantile,
+    .name,
+    .areaChart,
+    .valid {
+      text-align: center;
+    }
+
+    .valid {
+      padding-top: 4px;
+      padding-bottom: 4px;
+    }
+
+    .areaChart {
+      padding-right: 4px;
+      padding-left: 4px;
+    }
+  }
+
+  .name {
+    overflow: hidden;
+    max-width: 160px;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

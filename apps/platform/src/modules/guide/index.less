@@ -1,0 +1,53 @@
+:global {
+  ::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    border-radius: 10px;
+    background: #eee;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: #ccc;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    border-radius: 10px;
+    background: #bbb;
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    border-radius: 10px;
+    background: #bbb;
+  }
+}
+
+.main {
+  width: 100%;
+  height: 100%;
+}
+
+.mainHeader {
+  position: relative;
+  width: 100%;
+  height: 70%;
+  min-height: 500px;
+  margin-bottom: 20px;
+}
+
+.mainContent {
+  overflow: hidden;
+  width: 100%;
+  height: calc(30% - 24px);
+  min-height: 348px;
+  border-radius: 8px;
+  background-color: #fff;
+}
+
+.bg {
+  position: absolute;
+  right: 70px;
+  bottom: -4px;
+}

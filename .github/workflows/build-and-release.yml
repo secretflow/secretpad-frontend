@@ -1,0 +1,64 @@
+name: "Build"
+
+on:
+  push:
+    tags:        
+      - '*' 
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Use pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ^7.29
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install deps
+        run: pnpm bootstrap
+
+      - name: Run build
+        run: pnpm build
+
+      - name: 创建tar包
+        id: create_tar
+        shell: bash
+        run: |
+            tar -cvf ./packages/dag/${{ github.ref }}.tar ./packages/dag/dist
+      
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: true
+          generate_release_notes: true
+          files: ./packages/dag/${{ github.ref }}.tar

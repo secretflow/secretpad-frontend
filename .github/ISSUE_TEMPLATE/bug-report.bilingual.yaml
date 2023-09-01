@@ -1,0 +1,31 @@
+name: Bug report 缺陷报告
+description: Report a reproducible bug or regression 报告一个异常情况
+title: '[Bug]: '
+labels: ['kind: bug', 'needs: triage 待处理']
+
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description 描述
+      description: Brief description of the problem, modules/options/features involved, etc. 简短的描述：涉及的模块/配置/功能 ...
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce 复现步骤
+      placeholder: |
+        1. ...
+        2. ...
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior 期望效果
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current behavior 实际效果
+  - type: textarea
+    id: other-information
+    attributes:
+      label: Other information 其它信息
+      description: Screenshots, stacktraces, etc 截图、堆栈信息等

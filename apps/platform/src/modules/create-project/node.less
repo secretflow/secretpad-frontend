@@ -1,0 +1,86 @@
+.nodePopover {
+  :global(.ant-popover-inner) {
+    width: 520px;
+    height: 494px;
+    padding: 12px 16px;
+    background-color: #fff;
+    box-shadow: 0 3px 6px -4px rgb(0 0 0 / 12%), 0 6px 16px 0 rgb(0 0 0 / 8%),
+      0 9px 28px 8px rgb(0 0 0 / 5%);
+  }
+
+  .title {
+    margin-right: 10px;
+  }
+
+  :global(.ant-typography) {
+    position: absolute;
+    bottom: 15px;
+  }
+
+  :global(.ant-popover-inner-content) {
+    height: 100%;
+  }
+
+  :global(.ant-table-wrapper) {
+    height: 100%;
+  }
+
+  :global(.ant-spin-nested-loading) {
+    height: 100%;
+  }
+
+  :global(.ant-spin-container) {
+    height: 100%;
+  }
+
+  :global(.ant-table) {
+    position: relative;
+    overflow: auto;
+    height: calc(100% - 77px);
+  }
+}
+
+.nodeData {
+  width: 295px;
+  height: 102px;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: rgb(0 0 0 / 2%);
+  overflow-y: auto;
+
+  .statusIcon {
+    display: flex;
+    width: 20px;
+    height: 20px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    margin-right: 4px;
+    background-color: #d8fbe7;
+  }
+
+  p {
+    display: flex;
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .list {
+    margin-top: 12px;
+    margin-left: 18px;
+
+    .nodeList {
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .nodeList:hover {
+      color: rgb(0 104 250 / 100%);
+    }
+  }
+
+  .authTip {
+    color: #aaa;
+    font-size: 12px;
+  }
+}
