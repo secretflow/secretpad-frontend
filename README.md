@@ -1,6 +1,6 @@
 English (US) | [简体中文](README.zh-Hans.md)
 
-# SecretFlow Platform
+# SecretFlow Frontend
 
 ## Development
 
