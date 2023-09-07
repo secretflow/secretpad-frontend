@@ -171,9 +171,24 @@ export const ManagedNodeListComponent = () => {
             }
           />
         </Space>
-        <Button type="primary" onClick={showCreateNode}>
-          注册节点
-        </Button>
+        <div>
+          <Button type="primary" onClick={showCreateNode}>
+            注册新节点
+          </Button>
+          <Button
+            type="link"
+            onClick={() => {
+              const url =
+                'https://www.secretflow.org.cn/docs/quickstart/fn9h9yqoievouz2a';
+              const a = document.createElement('a');
+              a.href = url;
+              a.target = '_blank';
+              a.click();
+            }}
+          >
+            操作手册
+          </Button>
+        </div>
       </div>
 
       <div className={styles.content}>
@@ -192,7 +207,10 @@ export const ManagedNodeListComponent = () => {
               viewInstance.pageNumber = page;
               viewInstance.pageSize = pageSize;
             },
+            size: 'default',
+            showSizeChanger: true,
           }}
+          size="small"
           rowKey={(record) => record.nodeId as string}
         />
       </div>
@@ -205,6 +223,7 @@ export const ManagedNodeListComponent = () => {
         visible={viewInstance.showDetailDrawer}
         data={viewInstance.drawerId}
         close={() => (viewInstance.showDetailDrawer = false)}
+        callBack={() => viewInstance.getNodeList()}
       />
       {contextHolder}
     </div>

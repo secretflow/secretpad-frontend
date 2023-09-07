@@ -236,8 +236,10 @@ export const DataManagerComponent: React.FC = () => {
               viewInstance.pageSize = pageSize;
               viewInstance.getTableList();
             },
+            size: 'default',
           }}
           rowKey={(record) => record.datatableId as string}
+          size="small"
         />
       </div>
       {viewInstance.displayTableList.length > 0 && (

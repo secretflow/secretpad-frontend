@@ -126,6 +126,7 @@ export const CooperativeNodeDetailDrawer = ({
                 onClick={async () => {
                   await service.refreshNode(data.routeId || '');
                   service.getCooperativeNodeDetail(data.routeId || '');
+                  onOk();
                 }}
               >
                 刷新

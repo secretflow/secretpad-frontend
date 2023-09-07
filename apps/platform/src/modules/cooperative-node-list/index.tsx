@@ -149,9 +149,9 @@ export const CooperativeNodeListComponent = () => {
       title: '通讯状态',
       dataIndex: 'status',
       key: 'status',
-      width: '17%',
+      width: '18%',
       render: (nodeStatus: NodeState, record) => (
-        <Space>
+        <>
           <Badge
             status={NodeStateText[nodeStatus || NodeState.UNKNOWN].icon}
             text={NodeStateText[nodeStatus || NodeState.UNKNOWN].text}
@@ -166,7 +166,7 @@ export const CooperativeNodeListComponent = () => {
           >
             刷新
           </Button>
-        </Space>
+        </>
       ),
     },
     {
@@ -287,7 +287,10 @@ export const CooperativeNodeListComponent = () => {
               viewInstance.pageNumber = page;
               viewInstance.pageSize = pageSize;
             },
+            size: 'default',
+            showSizeChanger: true,
           }}
+          size="small"
           rowKey={(record) => record.routeId as string}
         />
       </div>

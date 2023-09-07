@@ -12,6 +12,7 @@ import { PipelineTemplateType } from '../pipeline/pipeline-protocol';
 
 import { AddNodeTag } from './add-node-tag';
 import { CreateProjectService } from './create-project.service';
+import { EmbeddedNodePreview } from './embedded-node.view';
 import styles from './index.less';
 import { TemplateSwitch } from './template-switch';
 
@@ -32,6 +33,7 @@ export const CreateProjectModal = ({ visible, data, close }: ICreateProjectModal
   const templateId = Form.useWatch('templateId', form);
   const projectName = Form.useWatch('projectName', form);
   const computeMode = Form.useWatch('computeMode', form);
+  const nodes = Form.useWatch('nodes', form);
 
   React.useEffect(() => {
     service.getNodeList();
@@ -73,7 +75,8 @@ export const CreateProjectModal = ({ visible, data, close }: ICreateProjectModal
             type="primary"
             onClick={handleOk}
             className={classnames({
-              [styles.buttonDisable]: !templateId || !projectName || !computeMode,
+              [styles.buttonDisable]:
+                !templateId || !projectName || !computeMode || nodes.length < 2,
             })}
             loading={viewInstance.createLoading}
           >
@@ -169,9 +172,13 @@ export const CreateProjectModal = ({ visible, data, close }: ICreateProjectModal
           name="nodes"
           initialValue={data.showBlank ? [] : ['alice', 'bob']}
           required
-          tooltip="最多可选十个"
+          tooltip="最多可选十个，至少要两个节点才能创建一个项目"
         >
-          <AddNodeTag nodeList={service.nodeList || []} />
+          {data.showBlank ? (
+            <AddNodeTag nodeList={service.nodeList || []} />
+          ) : (
+            <EmbeddedNodePreview />
+          )}
         </Form.Item>
       </Form>
     </Drawer>

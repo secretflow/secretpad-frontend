@@ -38,7 +38,7 @@ export const RecordLayout = () => {
           <ArrowLeftOutlined />
         </span>
         <Divider type="vertical" />
-        <span className={styles.title}>进入训练流</span>
+        <span className={styles.title}>进入项目</span>
         <span className={styles.slot}></span>
       </div>
       <div className={styles.content}>

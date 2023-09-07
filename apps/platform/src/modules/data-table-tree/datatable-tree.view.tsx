@@ -1,7 +1,7 @@
 import { DatabaseOutlined, PlusOutlined, ProfileOutlined } from '@ant-design/icons';
 import { Alert, Space, Tree, Tooltip, Empty, Tour, Typography } from 'antd';
 import { parse } from 'query-string';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 
 import { DatatablePreview } from '@/components/datatable-preview';
 import { getDatatable } from '@/services/secretpad/DatatableController';
@@ -15,6 +15,34 @@ const { Text } = Typography;
 export const DatatableTreeComponent = () => {
   const viewInstance = useModel(DatatableTreeView);
   const ref1 = useRef(null);
+
+  const useUpdateEffect = (
+    effect: () => void,
+    dependencies: React.DependencyList | undefined,
+  ) => {
+    const isFirstRender = useRef(true);
+
+    useEffect(() => {
+      if (isFirstRender.current) {
+        isFirstRender.current = false;
+      } else {
+        effect();
+      }
+    }, dependencies);
+  };
+
+  useUpdateEffect(() => {
+    const { search } = window.location;
+    const { projectId } = parse(search);
+
+    const str = localStorage.getItem(projectId as string);
+
+    if (str && JSON.parse(str) === projectId) {
+      viewInstance.showTour = false;
+    } else {
+      localStorage.setItem(projectId as string, JSON.stringify(projectId));
+    }
+  }, [viewInstance.showTour]);
 
   const titleRender = (item: API.NodeVO, node: any) => {
     const isTable = node.isTable;
@@ -41,7 +69,7 @@ export const DatatableTreeComponent = () => {
         <span style={{ flex: 1, width: 150 }}>
           <Space>
             <DatabaseOutlined />
-            <Text style={{ width: 150 }} ellipsis={{ tooltip: node.title }}>
+            <Text style={{ width: 120 }} ellipsis={{ tooltip: node.title }}>
               {node.title}
             </Text>
           </Space>
@@ -53,9 +81,11 @@ export const DatatableTreeComponent = () => {
                 onClick={() => viewInstance.gotoNodeCenter(item.nodeId as string)}
               />
             </Tooltip>
-            <PlusOutlined
-              onClick={() => viewInstance.gotoNodeCenter(item.nodeId as string)}
-            />
+            <Tooltip title="添加数据">
+              <PlusOutlined
+                onClick={() => viewInstance.gotoNodeCenter(item.nodeId as string)}
+              />
+            </Tooltip>
           </Space>
         </span>
       </div>
@@ -94,9 +124,12 @@ export const DatatableTreeComponent = () => {
           components.push(
             <div style={{ padding: '5px 0' }} {...extendProps}>
               <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
                 description={
                   <div>
-                    <div>暂无数据授权</div>
+                    <div style={{ fontSize: '12px', color: 'rgba(0, 0, 0, 0.4)' }}>
+                      暂无数据授权
+                    </div>
                     <a
                       href={`/node?nodeId=${item.nodeId}&tab=data-management`}
                       target="_blank"
@@ -111,7 +144,6 @@ export const DatatableTreeComponent = () => {
                   </div>
                 }
               />
-              ,
             </div>,
           );
         }

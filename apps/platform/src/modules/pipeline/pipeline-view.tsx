@@ -73,6 +73,10 @@ export const PipelineViewComponent = () => {
   const viewInstance = useModel(PipelineView);
 
   useEffect(() => {
+    viewInstance.setCurrentPipeline(dagId);
+  }, [dagId]);
+
+  useEffect(() => {
     const update = async () => {
       await viewInstance.refresh();
       const currentPipeline = viewInstance.pipelineService.pipelines.find(

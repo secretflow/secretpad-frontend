@@ -124,7 +124,7 @@ export const UploadTable: React.FC = () => {
                 </div>
               </Descriptions.Item>
               <Descriptions.Item label="所属数据源">默认数据源</Descriptions.Item>
-              <Descriptions.Item label="数据源类型">节点内置数据</Descriptions.Item>
+              <Descriptions.Item label="数据源类型">节点本地数据</Descriptions.Item>
             </Descriptions>
           </div>
           <div className={styles.csvContentConfig}>

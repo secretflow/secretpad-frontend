@@ -9,10 +9,7 @@ import {
   Input,
   Table,
   Divider,
-  Popover,
   Spin,
-  Progress,
-  Tooltip,
 } from 'antd';
 import type { InputRef } from 'antd';
 import { toNumber } from 'lodash';
@@ -79,7 +76,7 @@ export const MyNodeComponent: React.FC = () => {
       title: 'HostName',
       dataIndex: 'name',
       key: 'name',
-      width: '18%',
+      width: '22%',
       ellipsis: true,
       render: (name: string) => <Typography.Text ellipsis>{name}</Typography.Text>,
     },
@@ -87,7 +84,7 @@ export const MyNodeComponent: React.FC = () => {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      width: '16%',
+      width: '18%',
       ellipsis: true,
       render: (status: NodeState) => {
         return (
@@ -102,14 +99,14 @@ export const MyNodeComponent: React.FC = () => {
       title: '实例系统版本',
       dataIndex: 'version',
       key: 'version',
-      width: '16%',
+      width: '20%',
       ellipsis: true,
     },
     {
       title: '创建时间',
       dataIndex: 'lastTransitionTime',
       key: 'lastTransitionTime',
-      width: '16%',
+      width: '20%',
       ellipsis: true,
       render: (lastTransitionTime: string) => (
         <Typography.Text
@@ -125,7 +122,7 @@ export const MyNodeComponent: React.FC = () => {
       title: '最后心跳时间',
       dataIndex: 'lastHeartbeatTime',
       key: 'lastHeartbeatTime',
-      width: '16%',
+      width: '20%',
       ellipsis: true,
       render: (lastHeartbeatTime: string) => (
         <Typography.Text
@@ -137,71 +134,71 @@ export const MyNodeComponent: React.FC = () => {
         </Typography.Text>
       ),
     },
-    {
-      title: '操作',
-      dataIndex: 'options',
-      key: 'options',
-      render: (_text: string, record: { resources: ResourceType[] }) => {
-        const resources = record.resources;
-        if (resources.length === 0) {
-          return (
-            <Tooltip title="当前节点暂无资源使用情况">
-              <span>资源使用情况</span>
-            </Tooltip>
-          );
-        }
-        return (
-          <Popover
-            placement="left"
-            title="资源使用情况"
-            content={
-              <>
-                <div>
-                  <Progress
-                    type="dashboard"
-                    size={80}
-                    gapDegree={1}
-                    strokeColor="rgb(82, 196, 26)"
-                    percent={getPercent(resources, 'cpu')}
-                    style={{ marginRight: 8 }}
-                    format={(percent) => `${percent?.toFixed(0)} %`}
-                    status={'normal'}
-                  />
-                  <Progress
-                    type="dashboard"
-                    size={80}
-                    gapDegree={1}
-                    strokeColor="rgb(82, 196, 26)"
-                    percent={getPercent(resources, 'memory')}
-                    style={{ marginRight: 8 }}
-                    format={(percent) => `${percent?.toFixed(0)} %`}
-                    status={'normal'}
-                  />
-                  <Progress
-                    type="dashboard"
-                    size={80}
-                    gapDegree={1}
-                    strokeColor="rgb(82, 196, 26)"
-                    percent={getPercent(resources, 'storage')}
-                    format={(percent) => `${percent?.toFixed(0)} %`}
-                    style={{ marginRight: 8 }}
-                    status={'normal'}
-                  />
-                </div>
-                <div className={styles.memorySize}>
-                  <div>CPU</div>
-                  <div>内存</div>
-                  <div>磁盘</div>
-                </div>
-              </>
-            }
-            trigger="click"
-          >
-            <span className={styles.spanClick}>资源使用情况</span>
-          </Popover>
-        );
-      },
-    },
+    // {
+    //   title: '操作',
+    //   dataIndex: 'options',
+    //   key: 'options',
+    //   render: (_text: string, record: { resources: ResourceType[] }) => {
+    //     const resources = record.resources;
+    //     if (resources.length === 0) {
+    //       return (
+    //         <Tooltip title="当前节点暂无资源使用情况">
+    //           <span>资源使用情况</span>
+    //         </Tooltip>
+    //       );
+    //     }
+    //     return (
+    //       <Popover
+    //         placement="left"
+    //         title="资源使用情况"
+    //         content={
+    //           <>
+    //             <div>
+    //               <Progress
+    //                 type="dashboard"
+    //                 size={80}
+    //                 gapDegree={1}
+    //                 strokeColor="rgb(82, 196, 26)"
+    //                 percent={getPercent(resources, 'cpu')}
+    //                 style={{ marginRight: 8 }}
+    //                 format={(percent) => `${percent?.toFixed(0)} %`}
+    //                 status={'normal'}
+    //               />
+    //               <Progress
+    //                 type="dashboard"
+    //                 size={80}
+    //                 gapDegree={1}
+    //                 strokeColor="rgb(82, 196, 26)"
+    //                 percent={getPercent(resources, 'memory')}
+    //                 style={{ marginRight: 8 }}
+    //                 format={(percent) => `${percent?.toFixed(0)} %`}
+    //                 status={'normal'}
+    //               />
+    //               <Progress
+    //                 type="dashboard"
+    //                 size={80}
+    //                 gapDegree={1}
+    //                 strokeColor="rgb(82, 196, 26)"
+    //                 percent={getPercent(resources, 'storage')}
+    //                 format={(percent) => `${percent?.toFixed(0)} %`}
+    //                 style={{ marginRight: 8 }}
+    //                 status={'normal'}
+    //               />
+    //             </div>
+    //             <div className={styles.memorySize}>
+    //               <div>CPU</div>
+    //               <div>内存</div>
+    //               <div>磁盘</div>
+    //             </div>
+    //           </>
+    //         }
+    //         trigger="click"
+    //       >
+    //         <span className={styles.spanClick}>资源使用情况</span>
+    //       </Popover>
+    //     );
+    //   },
+    // },
   ];
 
   return (

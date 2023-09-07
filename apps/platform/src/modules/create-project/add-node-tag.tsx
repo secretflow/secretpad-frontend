@@ -2,8 +2,9 @@ import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { Checkbox, Popover, Tag, Space, Input } from 'antd';
 import type { CheckboxValueType } from 'antd/es/checkbox/Group';
 import classNames from 'classnames';
+import { difference } from 'lodash';
 import type { ChangeEvent } from 'react';
-import React from 'react';
+import React, { useState } from 'react';
 
 import styles from './add-node-tag.less';
 
@@ -15,6 +16,7 @@ export const AddNodeTag: React.FC<{
   onChange?: (type: CheckboxValueType[]) => void;
 }> = (props) => {
   const { nodeList, value, onChange } = props;
+  const [searchValue, setSearchValue] = useState('');
 
   const [tags, setTags] = React.useState<CheckboxValueType[]>(value || []);
   const [nodes, setNodes] = React.useState<API.NodeVO[]>(nodeList);
@@ -26,16 +28,28 @@ export const AddNodeTag: React.FC<{
   };
 
   const handleCheckChange = (checkList: CheckboxValueType[]) => {
-    setTags(checkList);
-    onChange && onChange(checkList);
+    if (searchValue) {
+      const searchList = nodeList
+        .filter((node) => node.nodeName && node.nodeName.indexOf(searchValue) >= 0)
+        .map((item) => item.nodeId);
+      const difList = difference(tags, searchList) as CheckboxValueType[];
+      const newList = [...difList, ...checkList];
+      setTags(newList);
+      onChange && onChange(newList);
+    } else {
+      setTags(checkList);
+      onChange && onChange(checkList);
+    }
   };
 
   const handleSearchNode = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.value) {
       setNodes(nodeList);
+      setSearchValue('');
     } else {
+      setSearchValue(e.target.value);
       setNodes(
-        nodes.filter(
+        nodeList.filter(
           (node) => node.nodeName && node.nodeName.indexOf(e.target.value) >= 0,
         ),
       );

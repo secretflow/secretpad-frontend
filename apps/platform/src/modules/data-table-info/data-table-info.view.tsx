@@ -74,7 +74,7 @@ export const DataTableInfoDrawer: React.FC<IProps<PropsData>> = (props) => {
           {/* {tableInfo.datasourceId} */}
           默认数据源
         </Descriptions.Item>
-        <Descriptions.Item label="数据源类型">节点内置数据</Descriptions.Item>
+        <Descriptions.Item label="数据源类型">节点本地数据</Descriptions.Item>
         <Descriptions.Item span={2} label="数据地址">
           {tableInfo.relativeUri}
         </Descriptions.Item>

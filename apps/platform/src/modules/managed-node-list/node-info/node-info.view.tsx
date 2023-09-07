@@ -46,9 +46,15 @@ interface ICreateProjectModal {
   visible: boolean;
   close: () => void;
   data?: string;
+  callBack?: () => void;
 }
 
-export const NodeInfoDrawer = ({ visible, data, close }: ICreateProjectModal) => {
+export const NodeInfoDrawer = ({
+  visible,
+  data,
+  close,
+  callBack,
+}: ICreateProjectModal) => {
   const [messageApi, contextHolder] = message.useMessage();
   const viewInstance = useModel(NodeInfoModel);
 
@@ -97,7 +103,10 @@ export const NodeInfoDrawer = ({ visible, data, close }: ICreateProjectModal) =>
             <Button
               type="link"
               icon={<ReloadOutlined />}
-              onClick={() => refreshStatus(messageApi)}
+              onClick={() => {
+                refreshStatus(messageApi);
+                callBack && callBack();
+              }}
             >
               刷新
             </Button>

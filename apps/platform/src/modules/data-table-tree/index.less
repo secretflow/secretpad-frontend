@@ -58,12 +58,28 @@
       background-color: unset !important;
     }
 
+    .ant-tree-treenode {
+      border-radius: 6px;
+    }
+
+    .ant-tree-treenode:hover {
+      background-color: rgb(0 0 0 / 4%);
+    }
+
     .ant-tree-treenode-selected::before {
       background: transparent !important;
     }
 
     .ant-tree-switcher-icon {
       color: rgb(135 136 137 / 100%);
+    }
+
+    .ant-tree-node-content-wrapper {
+      padding: 0;
+    }
+
+    .ant-tree-node-content-wrapper:hover {
+      background-color: transparent;
     }
   }
 }
@@ -76,6 +92,7 @@
   &:hover {
     .treeRootNodeActions {
       display: block;
+      margin-left: 15px;
     }
   }
 }

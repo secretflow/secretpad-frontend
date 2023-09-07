@@ -1,12 +1,13 @@
 import { createRegistry } from '@secretflow/utils';
+
 import { getModel } from '@/util/valtio-helper';
 
+import type { PipelineTemplateContribution } from './pipeline-protocol';
 import { TemplateBlank } from './pipeline-template-blank';
 import { TemplatePSI } from './pipeline-template-psi';
 import { TemplateGuidePSI } from './pipeline-template-psi-guide';
 import { TemplateRisk } from './pipeline-template-risk';
 import { TemplateGuideRisk } from './pipeline-template-risk-guide';
-import { PipelineTemplateContribution } from './pipeline-protocol';
 
 const PipelineTemplatesRegistry = createRegistry<PipelineTemplateContribution>();
 

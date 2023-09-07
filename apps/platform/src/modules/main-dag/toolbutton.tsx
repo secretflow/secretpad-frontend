@@ -1,5 +1,4 @@
 import {
-  BorderOuterOutlined,
   CloseOutlined,
   OneToOneOutlined,
   SearchOutlined,
@@ -11,6 +10,7 @@ import type { MenuProps } from 'antd';
 import { Button, Select, Tooltip, Dropdown } from 'antd';
 import React from 'react';
 
+import { ReactComponent as ZoomFitIcon } from '@/assets/zoom-fit.icon.svg';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import mainDag from './dag';
@@ -34,7 +34,7 @@ const TOOLS = [
   },
   {
     type: ActionType.zoomToFit,
-    icon: <BorderOuterOutlined style={{ color: '#545456' }} />,
+    icon: <ZoomFitIcon style={{ color: '#545456' }} />,
     render: 'button',
   },
   {

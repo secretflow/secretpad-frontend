@@ -67,6 +67,7 @@
   .runAll {
     height: 28px;
     border-radius: 4px;
+    margin-right: 8px;
     background-color: #0068fa;
     color: white;
 
@@ -84,9 +85,14 @@
   }
 
   button {
+    padding: 4px 7px;
     color: rgb(0 0 0 / 65%);
     font-size: 12px;
     font-weight: 400;
+
+    :global(.ant-btn-icon) {
+      margin-inline-end: 4px !important;
+    }
 
     &.active {
       color: #1664ff;

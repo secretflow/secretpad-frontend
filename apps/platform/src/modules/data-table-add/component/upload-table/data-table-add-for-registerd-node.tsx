@@ -131,7 +131,7 @@ export const AddDataTableForRegisteredNode = () => {
                 <Select options={dataSourceOptions} size={'small'} />
               </Form.Item>
             </Descriptions.Item>
-            <Descriptions.Item label="数据源类型">节点内置数据</Descriptions.Item>
+            <Descriptions.Item label="数据源类型">节点本地数据</Descriptions.Item>
           </Descriptions>
         </div>
         <Form.Item

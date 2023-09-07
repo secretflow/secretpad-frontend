@@ -60,7 +60,7 @@ export const AddCooperativeNodeDrawer = ({
       } else {
         onOk();
         handleClose();
-        messageApi.success(<>添加成功！</>);
+        messageApi.success(<>添加成功！请手动刷新通讯状态确保连接可用</>);
       }
     });
   };
