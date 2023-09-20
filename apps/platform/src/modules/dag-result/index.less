@@ -30,6 +30,7 @@
 }
 
 .report {
+  font-size: 12px;
   padding: 11px 12px 4px 11px;
   margin-bottom: 16px;
   background-color: rgb(0 0 0 / 2%);
@@ -37,6 +38,13 @@
   :global(.ant-typography) {
     display: flex;
     margin-bottom: 0;
+  }
+
+  :global{
+    .ant-table-thead,
+    .ant-table-tbody{
+      font-size: 12px;
+    }
   }
 
   .item {
@@ -79,6 +87,15 @@
   :global {
     .ant-tabs-nav::before {
       border-bottom: none !important;
+    }
+  }
+}
+
+.result{
+  :global{
+    .ant-table-thead,
+    .ant-table-tbody{
+      font-size: 12px;
     }
   }
 }

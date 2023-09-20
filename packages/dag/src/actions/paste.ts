@@ -36,7 +36,10 @@ export class PasteAction extends DAGContext implements ActionProtocol {
     data.nodes.forEach((node, index) => {
       const nextNodeId = `${dagId}-node-${maxNodeIndex + index + 1}`;
       fixNodeIds[node.id!] = nextNodeId;
-      node.data.status = NodeStatus.default;
+      node.data.status =
+        node.data.status === NodeStatus.unfinished
+          ? NodeStatus.unfinished
+          : NodeStatus.default;
       const { x, y } = node.position!;
       node.position = { x: x + 32, y: y + 32 };
     });
@@ -62,7 +65,10 @@ export class PasteAction extends DAGContext implements ActionProtocol {
         label: node.data.label,
         x: node.position!.x,
         y: node.position!.y,
-        status: node.data.status,
+        status:
+          node.data.status === NodeStatus.unfinished
+            ? NodeStatus.default
+            : node.data.status,
         nodeDef: node.data.nodeDef,
       })),
     );

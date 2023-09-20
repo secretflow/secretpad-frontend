@@ -1,5 +1,6 @@
 # sceretpad-doc
-The development document for sceretpad-fe
+
+A static site base on [dumi](https://d.umijs.org).
 
 ## Development
 
@@ -13,3 +14,7 @@ $ pnpm start
 # build docs
 $ pnpm run build
 ```
+
+## LICENSE
+
+MIT

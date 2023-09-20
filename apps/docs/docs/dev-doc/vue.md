@@ -60,6 +60,7 @@ class Model {
   onViewUnMount() {
     return;
   }
+}
 ```
 
 可以看到，在 DemoModel 实例化的时候，通过 valtio 的 proxy 就自动拥有了响应式的能力。
@@ -83,6 +84,7 @@ class Model {
   onViewUnMount() {
     return;
   }
+}
 ```
 
 把`import {proxy} from 'valtio;` 修改为 `import { reactive } from 'vue';`，然后所有的非 UI 代码就能复用了。

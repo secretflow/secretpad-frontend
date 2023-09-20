@@ -19,7 +19,6 @@ import '@antv/x6-react-components/es/menu/style/index.css';
 import classnames from 'classnames';
 import React from 'react';
 
-import { DAGGlobalContainer } from '..';
 import { ActionType, HotKeys } from '../actions';
 import { NodeStatus } from '../types';
 import type { GraphNode } from '../types';
@@ -27,7 +26,8 @@ import type { GraphNode } from '../types';
 import { Description } from './descriptions';
 import './index.less';
 import { ComponentIcons } from './node-icon';
-import type { DAGProtocol } from '../protocol';
+import { DAGGlobalContainer } from '..';
+import { DAGProtocol } from '../protocol';
 
 const { Item: MenuItem, Divider } = Menu;
 export const ShowMenuContext = React.createContext(true);

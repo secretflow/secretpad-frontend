@@ -5,10 +5,10 @@ import {
   FileTextOutlined,
 } from '@ant-design/icons';
 import { Badge, Tooltip, Typography } from 'antd';
+import { DAGProtocol } from '../protocol';
 
 import { ActionType } from '../actions';
 import { EllipsisMiddles } from '../component/ellipsis-middle';
-import type { DAGProtocol } from '../protocol';
 import { NodeStatus } from '../types';
 
 import './index.less';

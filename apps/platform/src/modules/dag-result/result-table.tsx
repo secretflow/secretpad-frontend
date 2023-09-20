@@ -170,7 +170,7 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
     });
   };
   return (
-    <>
+    <div className={styles.result}>
       <div className={styles.report}>
         <div className={styles.item}>
           <span className={styles.name}>{id}</span>
@@ -213,7 +213,7 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
         <div>表字段</div>
         <Button
           type="link"
-          style={{ color: 'rgba(0,10,26,0.68)' }}
+          style={{ color: 'rgba(0,10,26,0.68)', fontSize: '12px' }}
           size="small"
           onClick={downloadData}
         >
@@ -227,6 +227,6 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
         ref={csvRef}
       />
       <Table dataSource={dataSource} columns={columns} size="small" />
-    </>
+    </div>
   );
 };

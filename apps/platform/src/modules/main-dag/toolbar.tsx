@@ -13,7 +13,8 @@ import type { Cell } from '@secretflow/dag';
 import { ActionType } from '@secretflow/dag';
 import { Button, Divider, Popover, Tooltip, message } from 'antd';
 import classnames from 'classnames';
-import React from 'react';
+import { parse } from 'query-string';
+import React, { useEffect } from 'react';
 
 import { ReactComponent as RunAllIcon } from '@/assets/run-all.icon.svg';
 import runAllImg from '@/assets/run-all.png';
@@ -103,6 +104,14 @@ const FORMAT_TOOLBAR = [
 
 export const ToolbarComponent: React.FC = () => {
   const viewInstance = useModel(ToolbarView);
+
+  // 这段代码是在切换dag的时候，判断需不需要保留上个dag的“复制“ 信息，需要则注释掉，不需要则打开
+  // const { dagId } = parse(window.location.search);
+
+  // useEffect(() => {
+  //   // localStorage.removeItem('DAG_COPY_CONTENT');
+  //   // viewInstance.copied = false;
+  // }, [dagId]);
 
   return (
     <div className={`${styles.toolbar} toolbar-for-guide-tour`}>
@@ -208,7 +217,6 @@ export class ToolbarView extends Model {
 
   constructor() {
     super();
-
     this.graphService.onNodeRunningEvent((isRunning: boolean) => {
       if (isRunning !== this.isStopButtonActive) {
         this.isStopButtonActive = isRunning;
@@ -338,6 +346,10 @@ export class ToolbarView extends Model {
   onSelectionChanged(cells: Cell[]) {
     const nodes = cells.filter((cell) => cell.isNode());
     this.selectedNodeIds = nodes.map((node) => node.id);
+  }
+
+  onCopyActionChange(isCopied: boolean) {
+    this.copied = isCopied;
   }
 }
 

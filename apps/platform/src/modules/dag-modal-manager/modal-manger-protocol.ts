@@ -1,8 +1,8 @@
-import type { Emitter } from '@secretflow/utils';
-
 import { componentConfigDrawer } from '@/modules/component-config/config-modal';
 import { resultDrawer } from '@/modules/dag-result/result-modal';
 import { RecordListDrawerItem } from '@/modules/pipeline-record-list/record-list-drawer-view';
+
+import type { Emitter } from '@secretflow/utils';
 
 export interface ModalItem<T> {
   id: string;
