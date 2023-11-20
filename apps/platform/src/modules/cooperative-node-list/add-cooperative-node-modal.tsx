@@ -2,7 +2,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import { Button, Drawer, Form, Input, message, Radio, Select, Space } from 'antd';
 import { parse } from 'query-string';
 import { useEffect } from 'react';
-import { useLocation } from 'umi';
+import { useLocation, history } from 'umi';
 
 import { useModel } from '@/util/valtio-helper';
 
@@ -48,20 +48,51 @@ export const AddCooperativeNodeDrawer = ({
 
   const handleOk = () => {
     form.validateFields().then(async (value) => {
-      const { status } = await service.addCooperativeNode({
-        srcNodeId: nodeId as string,
-        dstNodeId: value.cooperativeNode.computeNodeId,
-        dstNetAddress: value.cooperativeNode.nodeAddress,
-        routeType: 'FullDuplex', //default
-        srcNetAddress: value.selfNode.nodeAddress,
+      const { status } = await service.addApprovalAudit({
+        nodeID: nodeId as string,
+        voteType: 'NODE_ROUTE',
+        voteConfig: {
+          srcNodeId: nodeId as string,
+          desNodeId: value.cooperativeNode.computeNodeId,
+          srcNodeAddr: value.selfNode.nodeAddress,
+          desNodeAddr: value.cooperativeNode.nodeAddress,
+          isSingle: false,
+          // isSingle: value.cooperativeNode.routeType === 'FullDuplex' ? false : true,
+        },
       });
       if (status && status.code !== 0) {
         message.error(status.msg);
       } else {
         onOk();
         handleClose();
-        messageApi.success(<>添加成功！请手动刷新通讯状态确保连接可用</>);
+        messageApi.success(
+          <>
+            添加成功！请到
+            <a
+              onClick={() => {
+                history.push(`/message?nodeId=${nodeId}`);
+              }}
+            >
+              消息中心
+            </a>
+            查看合作进度
+          </>,
+        );
       }
+      // const { status } = await service.addCooperativeNode({
+      //   srcNodeId: nodeId as string,
+      //   dstNodeId: value.cooperativeNode.computeNodeId,
+      //   dstNetAddress: value.cooperativeNode.nodeAddress,
+      //   routeType: 'FullDuplex', //default
+      //   srcNetAddress: value.selfNode.nodeAddress,
+      // });
+      // if (status && status.code !== 0) {
+      //   message.error(status.msg);
+      // } else {
+      //   onOk();
+      //   handleClose();
+      //   messageApi.success(<>添加成功！请手动刷新通讯状态确保连接可用</>);
+      // }
     });
   };
 
@@ -69,6 +100,12 @@ export const AddCooperativeNodeDrawer = ({
     form.resetFields();
     onClose();
   };
+
+  const computeNodeName = Form.useWatch(['cooperativeNode', 'computeNodeName'], form);
+
+  const nodeAddress = Form.useWatch(['cooperativeNode', 'nodeAddress'], form);
+
+  const selfNode = Form.useWatch(['selfNode', 'nodeAddress'], form);
 
   return (
     <>
@@ -92,7 +129,11 @@ export const AddCooperativeNodeDrawer = ({
         footer={
           <Space style={{ float: 'right' }}>
             <Button onClick={handleClose}>取消</Button>
-            <Button type="primary" onClick={handleOk}>
+            <Button
+              disabled={!computeNodeName || !nodeAddress || !selfNode}
+              type="primary"
+              onClick={handleOk}
+            >
               确定
             </Button>
           </Space>
@@ -138,8 +179,22 @@ export const AddCooperativeNodeDrawer = ({
                 },
               ]}
             >
-              <Input placeholder="172.19.111.82"></Input>
+              <Input placeholder="127.0.0.1"></Input>
             </Form.Item>
+            {/* <Form.Item
+              label="访问方式"
+              name={['cooperativeNode', 'routeType']}
+              initialValue={'FullDuplex'}
+            >
+              <Radio.Group>
+                <Radio value={'FullDuplex'}>
+                  <Space>双向（合作双方节点互访问）</Space>
+                </Radio>
+                <Radio value={'Single'}>
+                  <Space>单向（发起节点访问合作节点）</Space>
+                </Radio>
+              </Radio.Group>
+            </Form.Item> */}
           </div>
           <div className={styles.subTitle}>本方节点</div>
           <div className={styles.formGroup}>

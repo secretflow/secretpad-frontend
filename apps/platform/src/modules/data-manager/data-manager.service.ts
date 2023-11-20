@@ -19,3 +19,9 @@ export class DataManagerService extends Model {
     return result.data;
   }
 }
+
+export enum UploadStatus {
+  RUNNING = 'RUNNING', // 数据正在加密
+  SUCCESS = 'SUCCESS', // 数据已成功加密上传
+  FAILED = 'FAILED', // 数据上传失败
+}

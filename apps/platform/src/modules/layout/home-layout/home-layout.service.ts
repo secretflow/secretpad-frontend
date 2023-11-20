@@ -10,11 +10,17 @@ export class HomeLayoutService extends Model {
 
   showBackButton = false;
 
+  messageCount? = 0;
+
   public setSubTitle(title: string | ReactNode) {
     this.subTitle = title;
   }
 
   public setBgClassName(name: string) {
     this.bgClassName = name;
+  }
+
+  public setMessageCount(count: number) {
+    this.messageCount = count;
   }
 }

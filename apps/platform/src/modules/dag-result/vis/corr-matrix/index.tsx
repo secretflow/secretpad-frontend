@@ -4,9 +4,12 @@ import {
   CheckOutlined,
   CopyOutlined,
   DownloadOutlined,
+  FullscreenOutlined,
+  FullscreenExitOutlined,
 } from '@ant-design/icons';
+import { useFullscreen } from 'ahooks';
 import type { TabsProps } from 'antd';
-import { Button, Tabs } from 'antd';
+import { Button, Space, Tabs } from 'antd';
 import classnames from 'classnames';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -15,12 +18,15 @@ import { execCopy, parseData } from '../utils';
 
 import { AxisChart } from './axis-chart';
 import FeatureTable from './feature-table';
-import './index.less';
+import styles from './index.less';
 import type { DataField, ResultDataField } from './interface';
 import { CoefficientChartTypeEnum } from './interface';
 import { MatrixChart } from './matrix-chart';
 
-export const CorrMatrix: React.FC<CorrMatrixProps> = ({ data }) => {
+export const CorrMatrix: React.FC<CorrMatrixProps> = ({
+  data,
+  showFullscreen = false,
+}) => {
   const csvRef = useRef<{
     link: HTMLLinkElement;
   }>(null);
@@ -28,6 +34,9 @@ export const CorrMatrix: React.FC<CorrMatrixProps> = ({ data }) => {
   const [activeKey, setActiveKey] = useState<string>(CoefficientChartTypeEnum.table);
   const [hasCopy, setHasCopy] = useState<boolean>(false);
   const [tagWrapper, setTagWrapper] = useState('tagWrapper');
+  const fullScreenRef = React.useRef(null);
+  const [isFullscreen, { enterFullscreen, exitFullscreen }] =
+    useFullscreen(fullScreenRef);
 
   const downloadTable = () => {
     if (csvRef && csvRef.current) {
@@ -42,22 +51,22 @@ export const CorrMatrix: React.FC<CorrMatrixProps> = ({ data }) => {
   };
 
   const renderTabBarExtraContent = () => (
-    <div>
+    <div style={{ paddingBottom: 6 }}>
       {activeKey === 'table' && (
         <Button
           type="link"
           onClick={downloadTable}
-          className="customBtn"
+          className={styles.customBtn}
           size="small"
           icon={<DownloadOutlined />}
         >
-          下载表格
+          导出数据
         </Button>
       )}
       <Button
         type="link"
         onClick={copyFields}
-        className="customBtn"
+        className={styles.customBtn}
         size="small"
         icon={hasCopy ? <CheckOutlined /> : <CopyOutlined />}
       >
@@ -191,63 +200,102 @@ export const CorrMatrix: React.FC<CorrMatrixProps> = ({ data }) => {
 
   const renderChart = () => {
     return (
-      <div className="chartBlock">
-        <div className="features">
-          <h5 className="title">全部特征：</h5>
-          <div
-            onClick={toggleSelect}
-            className={classnames('tagWrapper', {
-              ['hasMaxHeight']: tagWrapper === 'tagWrapper',
-            })}
-          >
-            <div id="alltag" style={{ display: 'flex', flexWrap: 'wrap' }}>
-              {['全部'].concat(fields).map((key: string) => (
-                <span
-                  title={key}
-                  key={key}
-                  className={classnames({
-                    ['tag']: true,
-                    ['selected']: isSelected(key),
-                  })}
+      <div className={styles.chartBlock}>
+        {isFullscreen && (
+          <div className={styles.fullScreenHeader}>
+            <div className={styles.title}>相关系数矩阵</div>
+            <Space className={styles.exit} onClick={exitFullscreen}>
+              <FullscreenExitOutlined />
+              <span>退出全屏</span>
+            </Space>
+          </div>
+        )}
+        <div
+          className={classnames({
+            [styles.fullScreenContentWrap]: isFullscreen,
+          })}
+        >
+          <div className={styles.features}>
+            <div className={styles.titleHeader}>
+              <div className={styles.title}>全部特征：</div>
+              {!isFullscreen && showFullscreen && (
+                <Space
+                  onClick={enterFullscreen}
+                  style={{ color: 'rgba(0,10,26,0.68)', cursor: 'pointer' }}
                 >
-                  {key}
-                </span>
-              ))}
-              {tagWrapper === 'tagWrapper' && allTagHeight > 108 && (
-                <span
-                  className="openTag"
-                  style={{
-                    left: (Math.floor(divElemWidth / 56) - 1) * 56,
-                  }}
-                  onClick={() => setTagWrapper('showAll')}
-                >
-                  展开
-                  <DownOutlined />
-                </span>
-              )}
-              {tagWrapper === 'showAll' && (
-                <span className="closeTag" onClick={() => setTagWrapper('tagWrapper')}>
-                  收起
-                  <UpOutlined />
-                </span>
+                  <FullscreenOutlined />
+                  <span>全屏</span>
+                </Space>
               )}
             </div>
+            <div
+              onClick={toggleSelect}
+              className={classnames(styles.tagWrapper, {
+                [styles.hasMaxHeight]: tagWrapper === 'tagWrapper',
+              })}
+            >
+              <div id="alltag" style={{ display: 'flex', flexWrap: 'wrap' }}>
+                {['全部'].concat(fields).map((key: string) => (
+                  <span
+                    title={key}
+                    key={key}
+                    className={classnames({
+                      [styles.tag]: true,
+                      [styles.selected]: isSelected(key),
+                    })}
+                  >
+                    {key}
+                  </span>
+                ))}
+                {tagWrapper === 'tagWrapper' && allTagHeight > 108 && (
+                  <span
+                    className={styles.openTag}
+                    style={{
+                      left: (Math.floor(divElemWidth / 56) - 1) * 56,
+                    }}
+                    onClick={() => setTagWrapper('showAll')}
+                  >
+                    展开
+                    <DownOutlined />
+                  </span>
+                )}
+                {tagWrapper === 'showAll' && (
+                  <span
+                    className={styles.closeTag}
+                    onClick={() => setTagWrapper('tagWrapper')}
+                  >
+                    收起
+                    <UpOutlined />
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
+          <Tabs
+            destroyInactiveTabPane
+            activeKey={activeKey}
+            onChange={setActiveKey}
+            tabBarExtraContent={renderTabBarExtraContent()}
+            items={tabItems}
+          />
         </div>
-        <Tabs
-          destroyInactiveTabPane
-          activeKey={activeKey}
-          onChange={setActiveKey}
-          tabBarExtraContent={renderTabBarExtraContent()}
-          items={tabItems}
-        />
       </div>
     );
   };
 
-  return <div className="coefficient">{renderChart()}</div>;
+  return (
+    <div
+      className={classnames(styles.coefficient, {
+        [styles.fullScreenContentPage]: isFullscreen,
+      })}
+      ref={fullScreenRef}
+    >
+      {renderChart()}
+    </div>
+  );
 };
 
 export interface CorrMatrixProps {
   data: ResultData;
+  showFullscreen?: boolean;
 }

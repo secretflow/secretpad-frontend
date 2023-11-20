@@ -1,5 +1,10 @@
-import { CloseOutlined } from '@ant-design/icons';
-import { Drawer } from 'antd';
+import {
+  CloseOutlined,
+  FullscreenExitOutlined,
+  FullscreenOutlined,
+} from '@ant-design/icons';
+import { useFullscreen } from 'ahooks';
+import { Divider, Drawer, Space } from 'antd';
 import classNames from 'classnames';
 import React from 'react';
 
@@ -19,13 +24,14 @@ const RESULT_WIDTH = 600;
 
 export const ResultDrawer = () => {
   const modalManager = useModel(DefaultModalManager);
-
+  const fullScreenRef = React.useRef(null);
+  const [isFullscreen, { enterFullscreen, exitFullscreen }] =
+    useFullscreen(fullScreenRef);
   const { visible, data, close } = modalManager.modals[resultDrawer.id];
 
   const { data: report, codeName, outputId } = data || {};
 
   const [resultData, setResultData] = React.useState<any>(report);
-
   const handleClose = () => {
     modalManager.closeModal(resultDrawer.id);
   };
@@ -33,10 +39,23 @@ export const ResultDrawer = () => {
   React.useEffect(() => {
     setResultData(report);
   }, [report]);
-
   return (
     <Drawer
-      title="执行结果"
+      title={
+        <div className={styles.resultModalTitle}>
+          <span>执行结果</span>
+          {!isFullscreen && resultData?.type === 'report' && (
+            <Space
+              className={(styles.actionIcon, styles.resultExitFullScreen)}
+              onClick={enterFullscreen}
+            >
+              <FullscreenOutlined />
+              <span>全屏</span>
+              <Divider type="vertical" />
+            </Space>
+          )}
+        </div>
+      }
       placement="right"
       width={RESULT_WIDTH}
       closable={false}
@@ -53,25 +72,58 @@ export const ResultDrawer = () => {
       mask={false}
       extra={<CloseOutlined style={{ fontSize: 12 }} onClick={handleClose} />}
     >
-      {resultData?.type === 'rule' && (
-        <ResultRuleComponent
-          data={resultData as OutputType<'rule'>}
-          id={outputId}
-          codeName={codeName}
-        />
-      )}
+      <div
+        ref={fullScreenRef}
+        className={classNames({ [styles.fullScreenContentPage]: isFullscreen })}
+      >
+        {isFullscreen && (
+          <div className={styles.fullScreenHeader}>
+            <div className={styles.title}>执行结果</div>
+            <Space
+              className={(styles.actionIcon, styles.exit)}
+              onClick={exitFullscreen}
+            >
+              <FullscreenExitOutlined />
+              <span>退出全屏</span>
+              <Divider type="vertical" />
+              <span
+                className={styles.close}
+                onClick={() => {
+                  exitFullscreen();
+                  handleClose();
+                }}
+              >
+                X
+              </span>
+            </Space>
+          </div>
+        )}
+        <div className={classNames({ [styles.fullScreenContentWrap]: isFullscreen })}>
+          {resultData?.type === 'rule' && (
+            <ResultRuleComponent
+              data={resultData as OutputType<'rule'>}
+              id={outputId}
+              codeName={codeName}
+            />
+          )}
 
-      {resultData?.type === 'table' && (
-        <ResultTableComponent data={resultData} id={outputId} codeName={codeName} />
-      )}
+          {resultData?.type === 'table' && (
+            <ResultTableComponent data={resultData} id={outputId} codeName={codeName} />
+          )}
 
-      {resultData?.type === 'model' && (
-        <ResultModelComponent data={resultData} id={outputId} codeName={codeName} />
-      )}
+          {resultData?.type === 'model' && (
+            <ResultModelComponent data={resultData} id={outputId} codeName={codeName} />
+          )}
 
-      {resultData?.type === 'report' && (
-        <ResultReportComponent data={resultData} id={outputId} codeName={codeName} />
-      )}
+          {resultData?.type === 'report' && (
+            <ResultReportComponent
+              data={resultData}
+              id={outputId}
+              codeName={codeName}
+            />
+          )}
+        </div>
+      </div>
     </Drawer>
   );
 };

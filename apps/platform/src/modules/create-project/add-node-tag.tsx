@@ -1,10 +1,13 @@
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
-import { Checkbox, Popover, Tag, Space, Input } from 'antd';
+import { Checkbox, Popover, Tag, Space, Input, message } from 'antd';
 import type { CheckboxValueType } from 'antd/es/checkbox/Group';
 import classNames from 'classnames';
 import { difference } from 'lodash';
 import type { ChangeEvent } from 'react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { LoginService } from '@/modules/login/login.service';
+
+import { useModel } from '@/util/valtio-helper';
 
 import styles from './add-node-tag.less';
 
@@ -17,11 +20,34 @@ export const AddNodeTag: React.FC<{
 }> = (props) => {
   const { nodeList, value, onChange } = props;
   const [searchValue, setSearchValue] = useState('');
+  const loginService = useModel(LoginService);
+
+  useEffect(() => {
+    if (
+      loginService.userInfo?.platformType === 'CENTER' &&
+      loginService.userInfo?.ownerType === 'EDGE'
+    ) {
+      if (loginService.userInfo.ownerId) {
+        setTags([...tags, loginService.userInfo.ownerId]);
+      }
+    }
+  }, []);
 
   const [tags, setTags] = React.useState<CheckboxValueType[]>(value || []);
+
   const [nodes, setNodes] = React.useState<API.NodeVO[]>(nodeList);
 
   const handleClose = (removedTag: CheckboxValueType) => {
+    if (
+      loginService.userInfo?.platformType === 'CENTER' &&
+      loginService.userInfo?.ownerType === 'EDGE' &&
+      loginService.userInfo.ownerId
+    ) {
+      if (loginService.userInfo.ownerId === removedTag) {
+        message.warning('当前节点不可取消');
+        return;
+      }
+    }
     const newTags = tags.filter((tag) => tag !== removedTag);
     setTags(newTags);
     onChange && onChange(newTags);
@@ -83,7 +109,7 @@ export const AddNodeTag: React.FC<{
               onClose={() => handleClose(tag)}
             >
               {type === 'embedded' && (
-                <Tag bordered={false} color="cyan">
+                <Tag className={styles.embeddedTag} color="cyan">
                   内置
                 </Tag>
               )}
@@ -113,11 +139,21 @@ export const AddNodeTag: React.FC<{
             >
               {nodes.map((item) => {
                 const disabled = tags.length >= 10 && !tags.includes(item.nodeId || '');
+                let isEdgeNode = false;
+                if (
+                  loginService.userInfo?.platformType === 'CENTER' &&
+                  loginService.userInfo?.ownerType === 'EDGE' &&
+                  loginService.userInfo.ownerId
+                ) {
+                  if (item.nodeId === loginService.userInfo.ownerId) {
+                    isEdgeNode = true;
+                  }
+                }
                 return (
                   <div key={item.nodeId} className={styles.checkItem}>
-                    <Checkbox value={item.nodeId} disabled={disabled}>
+                    <Checkbox value={item.nodeId} disabled={disabled || isEdgeNode}>
                       {item.type === 'embedded' && (
-                        <Tag bordered={false} color="cyan">
+                        <Tag className={styles.embeddedTag} color="cyan">
                           内置
                         </Tag>
                       )}

@@ -3,6 +3,8 @@ import { Button, Table } from 'antd';
 import { useRef } from 'react';
 import { CSVLink } from 'react-csv';
 
+import styles from './index.less';
+
 export const DescriptionTable = (props: IProps) => {
   const { data = [], tableName = '' } = props;
 
@@ -32,12 +34,12 @@ export const DescriptionTable = (props: IProps) => {
 
   return (
     <div>
-      <div className="exportBtn">
+      <div className={styles.exportBtn}>
         <Button
           type="link"
-          style={{ marginBottom: 8, color: 'rgba(0,10,26,0.68)', right: 0 }}
           size="small"
           onClick={downloadData}
+          style={{ right: 0, marginBottom: 8 }}
         >
           <DownloadOutlined />
           导出数据

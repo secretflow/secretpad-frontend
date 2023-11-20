@@ -1,8 +1,8 @@
 import templateImg from '@/assets/template-risk-control.jpg';
 import { Model } from '@/util/valtio-helper';
 
-import type { PipelineTemplateContribution } from './pipeline-protocol';
-import { PipelineTemplateType } from './pipeline-protocol';
+import type { PipelineTemplateContribution } from '../pipeline-protocol';
+import { PipelineTemplateType } from '../pipeline-protocol';
 
 export class TemplateRisk extends Model implements PipelineTemplateContribution {
   type: PipelineTemplateType = PipelineTemplateType.RISK;
@@ -19,6 +19,7 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
       receiverKey,
       senderKey,
       featureSelects,
+      labelSelects,
       receiver,
     } = quickConfigs || {};
     return {
@@ -213,6 +214,12 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
             domain: `ml.train`,
             name: `ss_sgd_train`,
             version: `0.0.1`,
+            ...(labelSelects
+              ? {
+                  attrPaths: ['input/train_dataset/label'],
+                  attrs: [{ ...labelSelects, is_na: false }],
+                }
+              : {}),
           },
           inputs: [`${graphId}-node-7-output-0`],
           codeName: `ml.train/ss_sgd_train`,
@@ -369,8 +376,14 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           nodeDef: {
             ...(featureSelects
               ? {
-                  attrPaths: ['input/input_data/feature_selects'],
-                  attrs: [{ ...featureSelects, is_na: false }],
+                  attrPaths: [
+                    'input/input_data/feature_selects',
+                    'input/input_data/label',
+                  ],
+                  attrs: [
+                    { ...featureSelects, is_na: false },
+                    { ...labelSelects, is_na: false },
+                  ],
                 }
               : {}),
             domain: `feature`,
@@ -389,11 +402,11 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           outputs: [`${graphId}-node-7-output-0`],
           nodeDef: {
             domain: `feature`,
-            name: `vert_woe_substitution`,
+            name: `vert_bin_substitution`,
             version: `0.0.1`,
           },
           inputs: [`${graphId}-node-5-output-0`, `${graphId}-node-6-output-0`],
-          codeName: `feature/vert_woe_substitution`,
+          codeName: `feature/vert_bin_substitution`,
           x: -320,
           y: 110,
           label: `WOE转换`,
@@ -404,11 +417,11 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           outputs: [`${graphId}-node-8-output-0`],
           nodeDef: {
             domain: `feature`,
-            name: `vert_woe_substitution`,
+            name: `vert_bin_substitution`,
             version: `0.0.1`,
           },
           inputs: [`${graphId}-node-5-output-1`, `${graphId}-node-6-output-0`],
-          codeName: `feature/vert_woe_substitution`,
+          codeName: `feature/vert_bin_substitution`,
           x: -10,
           y: 100,
           label: `WOE转换`,

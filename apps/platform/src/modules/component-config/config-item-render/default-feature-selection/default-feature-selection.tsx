@@ -78,16 +78,33 @@ export const DefaultMultiTableFeatureSelection: React.FC<RenderProp<string>> = (
         {
           validator: async (_, value) => {
             // it's required
-            if (node.is_optional !== true && node.col_min_cnt_inclusive !== 0) {
+            if (
+              node.is_optional !== true &&
+              node.col_min_cnt_inclusive &&
+              node.col_min_cnt_inclusive !== 0
+            ) {
               if (
                 value?.filter((val: string | undefined | null) => {
                   if (val === null || val === undefined) {
                     return false;
                   }
                   return true;
-                }).length <= 0
+                }).length < node.col_min_cnt_inclusive
               ) {
-                throw new Error('请选择特征');
+                throw new Error(`请至少选择${node.col_min_cnt_inclusive}个特征`);
+              }
+            }
+
+            if (node.col_max_cnt_inclusive && node.col_max_cnt_inclusive !== 0) {
+              if (
+                value?.filter((val: string | undefined | null) => {
+                  if (val === null || val === undefined) {
+                    return false;
+                  }
+                  return true;
+                }).length > node.col_max_cnt_inclusive
+              ) {
+                throw new Error(`至多选择${node.col_max_cnt_inclusive}个特征`);
               }
             }
           },
@@ -100,6 +117,10 @@ export const DefaultMultiTableFeatureSelection: React.FC<RenderProp<string>> = (
         tableKeys={tables}
         size={'small'}
         disabled={disabled}
+        rules={{
+          min: node.col_min_cnt_inclusive || 0,
+          max: node.col_max_cnt_inclusive,
+        }}
       />
     </Form.Item>
   );

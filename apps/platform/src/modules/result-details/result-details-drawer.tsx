@@ -1,4 +1,18 @@
-import { Typography, Descriptions, Table, Drawer, Button, Tabs, Tooltip } from 'antd';
+import { FullscreenExitOutlined, FullscreenOutlined } from '@ant-design/icons';
+import { useFullscreen } from 'ahooks';
+import {
+  Typography,
+  Descriptions,
+  Table,
+  Drawer,
+  Button,
+  Tabs,
+  Tooltip,
+  Space,
+  Badge,
+  Progress,
+} from 'antd';
+import classNames from 'classnames';
 import React, { useEffect } from 'react';
 
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
@@ -9,6 +23,7 @@ import { NodeService } from '@/modules/node';
 import type { TableType } from '@/modules/result-manager/result-manager.protocol';
 import {
   ResultManagerService,
+  ResultTableState,
   TableTypeMap,
 } from '@/modules/result-manager/result-manager.service';
 import { getNodeResultDetail } from '@/services/secretpad/NodeController';
@@ -26,7 +41,9 @@ export const ResultDetailsDrawer: React.FC = () => {
   const modalManager = useModel(DefaultModalManager);
   const nodeService = getModel(NodeService);
   const modal = modalManager.modals[resultDetailsDrawer.id];
-
+  const fullScreenRef = React.useRef(null);
+  const [isFullscreen, { enterFullscreen, exitFullscreen }] =
+    useFullscreen(fullScreenRef);
   const { data, visible, close } = modal || {};
 
   const { Paragraph, Link } = Typography;
@@ -38,8 +55,8 @@ export const ResultDetailsDrawer: React.FC = () => {
   } = viewInstance.resultDetail;
 
   useEffect(() => {
-    viewInstance.getResultDetail(data?.id);
-  }, [data?.id]);
+    visible && viewInstance.getResultDetail(data?.id);
+  }, [data?.id, visible]);
 
   const tableColumns = [
     {
@@ -59,31 +76,62 @@ export const ResultDetailsDrawer: React.FC = () => {
     },
   ];
 
+  const getBadge = () => {
+    if (nodeResultsVO.computeMode === 'MPC') {
+      return null;
+    } else if (nodeResultsVO.pullFromTeeStatus === ResultTableState.SUCCESS) {
+      return <Badge status="success" text="获取成功" />;
+    } else if (nodeResultsVO.pullFromTeeStatus === ResultTableState.RUNNING) {
+      return <Badge status="processing" text="获取中" />;
+    } else if (nodeResultsVO.pullFromTeeStatus === ResultTableState.FAILED) {
+      return <Badge status="error" text="获取失败" />;
+    }
+  };
+
   return (
     <Drawer
-      title={`「${nodeResultsVO.productName}」详情`}
+      title={
+        <div className={style.resultDrawerTitle}>
+          <Space size="large">
+            <div>{`「${nodeResultsVO.productName}」详情`}</div>
+            <div style={{ width: 120 }}>{getBadge()}</div>
+          </Space>
+          <div className={style.close} onClick={close}>
+            X
+          </div>
+        </div>
+      }
       width={700}
       open={visible}
       onClose={close}
-      closable={true}
+      closable={false}
       footer={
-        nodeResultsVO?.datatableType !== 'report' ? (
+        nodeResultsVO?.datatableType !== 'report' &&
+        viewInstance.nodeService?.currentNode?.nodeId !== 'tee' ? (
           <div className={style.actions}>
-            <Tooltip
-              title={
-                nodeService.currentNode?.type !== 'embedded'
-                  ? `请到 ${datasource} 路径查看结果`
-                  : ''
-              }
-            >
+            {(nodeResultsVO?.pullFromTeeStatus === ResultTableState.SUCCESS ||
+              nodeResultsVO?.pullFromTeeStatus === '') && (
+              // <Tooltip
+              //   title={
+              //     nodeService.currentNode?.type !== 'embedded'
+              //       ? `请到 ${datasource} 路径查看结果`
+              //       : ''
+              //   }
+              // >
               <Button
                 type="primary"
-                disabled={nodeService.currentNode?.type !== 'embedded'}
+                // disabled={nodeService.currentNode?.type !== 'embedded'}
                 onClick={() => viewInstance.download()}
               >
                 下载结果
               </Button>
-            </Tooltip>
+              // </Tooltip>
+            )}
+            {nodeResultsVO.pullFromTeeStatus === ResultTableState.FAILED && (
+              <Button type="primary" onClick={() => viewInstance.download()}>
+                重新获取
+              </Button>
+            )}
           </div>
         ) : (
           false
@@ -98,12 +146,8 @@ export const ResultDetailsDrawer: React.FC = () => {
               {TableTypeMap[nodeResultsVO.datatableType as TableType]}
             </Descriptions.Item>
             <Descriptions.Item label="来源项目">
-              <Link
-                target="_blank"
-                href={`/dag?projectId=${nodeResultsVO.sourceProjectId}&dagId=${graphDetailVO.graphId}`}
-              >
-                {nodeResultsVO.sourceProjectName}
-              </Link>
+              {/* 项目地址 `/dag?projectId=${nodeResultsVO.sourceProjectId}&dagId=${graphDetailVO.graphId}` */}
+              {nodeResultsVO.sourceProjectName}
             </Descriptions.Item>
             <Descriptions.Item label="所属训练流">
               {nodeResultsVO.trainFlow}
@@ -121,10 +165,12 @@ export const ResultDetailsDrawer: React.FC = () => {
             </Descriptions.Item>
           </Descriptions>
         </div>
-        <div className={style.dagBox}>
+        <div className={style.dagBoxContent}>
           <PreviewGraphComponents
             graph={viewInstance.resultDetail.graphDetailVO as API.GraphDetailVO}
             id={data?.id}
+            // TODO: fetch the project mode
+            projectMode={data?.projectMode || 'MPC'}
           />
         </div>
 
@@ -140,12 +186,7 @@ export const ResultDetailsDrawer: React.FC = () => {
                   if (!codeName) return <div>暂无结果</div>;
                   return (
                     <>
-                      <p
-                        className={style.tableTitle}
-                        style={{ fontWeight: 600, margin: '8px 0' }}
-                      >
-                        报告
-                      </p>
+                      <div className={style.tableTitle}>报告</div>
                       <Tabs
                         className={style.tabsTable}
                         defaultActiveKey="1"
@@ -156,7 +197,7 @@ export const ResultDetailsDrawer: React.FC = () => {
                               key: index,
                               children: (
                                 <div key={index}>
-                                  {getVisComponents(codeName, item, data?.id)}
+                                  {getVisComponents(codeName, item, data?.id, true)}
                                 </div>
                               ),
                             };
@@ -167,19 +208,53 @@ export const ResultDetailsDrawer: React.FC = () => {
                   );
                 case 'table':
                   return (
-                    <>
-                      <p
-                        className={style.tableTitle}
-                        style={{ fontWeight: 600, margin: '8px 0' }}
+                    <div
+                      ref={fullScreenRef}
+                      className={classNames({
+                        [style.fullScreenContentPage]: isFullscreen,
+                      })}
+                    >
+                      <div
+                        className={classNames({
+                          [style.tableTitleContent]: isFullscreen,
+                          [style.tableTitleHeader]: !isFullscreen,
+                        })}
                       >
-                        表字段
-                      </p>
+                        <span
+                          className={classNames(style.tableTitle, {
+                            [style.title]: isFullscreen,
+                          })}
+                        >
+                          表字段
+                        </span>
+                        {!isFullscreen && (
+                          <Space
+                            onClick={enterFullscreen}
+                            style={{ color: 'rgba(0,10,26,0.68)', cursor: 'pointer' }}
+                          >
+                            <FullscreenOutlined />
+                            <span>全屏</span>
+                          </Space>
+                        )}
+                        {isFullscreen && (
+                          <Space
+                            onClick={exitFullscreen}
+                            style={{ color: 'rgba(0,10,26,0.68)', cursor: 'pointer' }}
+                          >
+                            <FullscreenExitOutlined />
+                            <span>退出全屏</span>
+                          </Space>
+                        )}
+                      </div>
                       <Table
+                        className={classNames({
+                          [style.fullScreenContentWrap]: isFullscreen,
+                        })}
                         dataSource={viewInstance.resultDetail.tableColumnVOList || []}
                         columns={tableColumns}
                         rowKey={(record) => record.colName as string}
                       />
-                    </>
+                    </div>
                   );
               }
             })()}

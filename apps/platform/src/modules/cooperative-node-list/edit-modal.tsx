@@ -24,7 +24,7 @@ export const EditCooperativeNodeModal = ({
   useEffect(() => {
     if (open) {
       form.setFieldsValue({
-        address: data?.srcNode?.netAddress || '',
+        address: data?.dstNode?.netAddress || '',
       });
     }
   }, [data, open]);
@@ -33,8 +33,8 @@ export const EditCooperativeNodeModal = ({
     form.validateFields().then(async (value) => {
       const { status } = await service.editCooperativeNode({
         routerId: data.routeId,
-        srcNetAddress: value.address,
-        dstNetAddress: data.dstNetAddress,
+        dstNetAddress: value.address,
+        srcNetAddress: data.srcNetAddress,
         routeType: data.routeType,
       });
       if (status && status.code !== 0) {

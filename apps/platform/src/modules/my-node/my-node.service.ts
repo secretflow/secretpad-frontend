@@ -1,6 +1,8 @@
 import { message } from 'antd';
+import sha256 from 'crypto-js/sha256';
 
 import { get, update } from '@/services/secretpad/NodeController';
+import { resetPwd } from '@/services/secretpad/RemoteUserController';
 import { Model } from '@/util/valtio-helper';
 
 export class MyNodeService extends Model {
@@ -40,5 +42,18 @@ export class MyNodeService extends Model {
     });
     this.getNodeInfo(nodeId);
     message.success('通讯地址更改成功');
+  };
+
+  resetEdgeNodePwd = async (nodeId: string, name: string, pwd: string) => {
+    const res = await resetPwd({
+      nodeId,
+      name,
+      newPasswordHash: sha256(pwd).toString(),
+    });
+    if (res.status?.code == 0) {
+      message.success('密码设置成功');
+    } else {
+      message.error(res.status?.msg);
+    }
   };
 }

@@ -1,7 +1,9 @@
-import { Input, Form, Modal, message } from 'antd';
+import { Input, Form, Modal, message, Radio } from 'antd';
 
 import { createNode } from '@/services/secretpad/NodeController';
 import { Model, useModel } from '@/util/valtio-helper';
+
+import style from './create-node.less';
 
 interface ICreateNodetModal {
   visible: boolean;
@@ -17,7 +19,10 @@ export const CreateNodeModal = ({ visible, close, onOk }: ICreateNodetModal) => 
   const handleOk = () => {
     form.validateFields().then(async (value) => {
       viewInstance.createLoading = true;
-      const { status } = await createNode(value);
+      const { status } = await createNode({
+        name: value.name,
+        mode: 1,
+      });
       if (status && status.code !== 0) {
         messageApi.error(status.msg);
         return;
@@ -38,6 +43,7 @@ export const CreateNodeModal = ({ visible, close, onOk }: ICreateNodetModal) => 
         open={visible}
         onCancel={close}
         onOk={handleOk}
+        wrapClassName={style.node}
       >
         <Form form={form} preserve={false} layout="vertical" requiredMark={false}>
           <Form.Item
@@ -57,6 +63,17 @@ export const CreateNodeModal = ({ visible, close, onOk }: ICreateNodetModal) => 
               allowClear
             />
           </Form.Item>
+          {/* <Form.Item label="节点能力" required name="mode" initialValue={1}>
+            <Radio.Group>
+              <Radio value={0}>
+                Tee
+              </Radio>
+              <Radio value={1}>MPC</Radio>
+              <Radio value={2}>
+                TeeAndMpc
+              </Radio>
+            </Radio.Group>
+          </Form.Item> */}
         </Form>
       </Modal>
     </>

@@ -16,7 +16,7 @@ export async function login(
   body?: API.LoginRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.SecretPadResponse_String_>('/api/login', {
+  return request<API.SecretPadResponse_UserContextDTO_>('/api/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

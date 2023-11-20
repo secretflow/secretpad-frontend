@@ -1,8 +1,8 @@
 .projectWrapper {
   :global {
     .ant-select {
-      width: 180px;
-      height: 28px;
+      width: 228px;
+      height: 30px;
       border-radius: 8px !important;
       color: rgba(0 0 0/ 65%);
     }
@@ -58,7 +58,18 @@
     .ant-select-selection--single {
       box-shadow: none;
     }
+
+    .ant-select-selection-item {
+      display: flex;
+    }
   }
+}
+
+.fontBold {
+  overflow: hidden;
+  width: 135px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .projectDropdown {
@@ -72,6 +83,10 @@
 
     .ant-select-item-option-content {
       font-weight: 500;
+
+      .ant-tag {
+        font-weight: 400;
+      }
     }
 
     .ant-select-item-option {

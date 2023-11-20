@@ -1,13 +1,24 @@
 .drawerTitle {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+
+  .drawerTitleName {
+    display: flex;
+    align-items: center;
+  }
 
   .title {
-    width: 300px;
+    display: flex;
+    align-items: center;
     color: rgb(0 0 0 / 88%);
     font-size: 16px;
     font-weight: 500;
     line-height: 24px;
+
+    .left {
+      width: 20px;
+    }
   }
 
   .badge {
@@ -30,7 +41,7 @@
   height: 100%;
   padding: 16px;
   border-radius: 8px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   background-color: #fafafa;
 }
 
@@ -129,4 +140,26 @@
 .spanClick {
   color: #1677ff;
   cursor: pointer;
+}
+
+.nodeDrawer {
+  :global {
+    .ant-drawer-header {
+      height: 57px;
+    }
+
+    .ant-descriptions-row:last-child {
+      .ant-descriptions-item {
+        padding-bottom: 0 !important;
+      }
+    }
+  }
+
+  .title {
+    :global {
+      .ant-typography-ellipsis {
+        font-size: 16px;
+      }
+    }
+  }
 }

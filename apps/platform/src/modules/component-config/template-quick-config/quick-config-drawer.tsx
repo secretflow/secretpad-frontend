@@ -14,6 +14,7 @@ import { DefaultComponentConfigService } from '../component-config-service';
 import styles from './index.less';
 import { QuickConfigPSI } from './quick-config-psi';
 import { QuickConfigRisk } from './quick-config-risk';
+import { QuickConfigTee } from './quick-config-risk-tee';
 
 const CONFIG_WIDTH = 300;
 
@@ -73,6 +74,8 @@ export const QuickConfigModal = () => {
         >
           {type === PipelineTemplateType.RISK && <QuickConfigRisk />}
           {type === PipelineTemplateType.PSI && <QuickConfigPSI />}
+          {type === PipelineTemplateType.PSI_TEE && <QuickConfigPSI />}
+          {type === PipelineTemplateType.TEE && <QuickConfigTee />}
 
           <div className={styles.footer}>
             <Space>

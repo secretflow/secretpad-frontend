@@ -1,6 +1,7 @@
 import { parse } from 'query-string';
 
 import { NodeService } from '@/modules/node';
+import { create as createAudit } from '@/services/secretpad/ApprovalController';
 import { get as getSelfNodeInfo } from '@/services/secretpad/NodeController';
 import {
   deleteUsingPOST,
@@ -11,6 +12,7 @@ import {
   get,
 } from '@/services/secretpad/NodeRouteController';
 import { Model, getModel } from '@/util/valtio-helper';
+import { message } from 'antd';
 
 export class CooperativeNodeService extends Model {
   nodeService = getModel(NodeService);
@@ -62,9 +64,18 @@ export class CooperativeNodeService extends Model {
     return await create(info);
   };
 
+  addApprovalAudit = async (params: API.CreateApprovalRequest) => {
+    return await createAudit(params);
+  };
+
   refreshNode = async (routerId: string) => {
     if (!routerId) return;
-    await refresh({ routerId });
+    try {
+      await refresh({ routerId });
+      message.success('状态刷新成功');
+    } catch (error) {
+      message.error('状态刷新失败');
+    }
   };
 
   getComputeNodeList = async () => {

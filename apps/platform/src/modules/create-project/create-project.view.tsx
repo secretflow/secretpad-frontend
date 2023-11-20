@@ -4,6 +4,7 @@ import type { InputRef } from 'antd';
 import classnames from 'classnames';
 import React from 'react';
 
+import { LoginService } from '@/modules/login/login.service';
 import { Model, getModel, useModel } from '@/util/valtio-helper';
 
 import { GuideTourKeys, GuideTourService } from '../guide-tour/guide-tour-service';
@@ -15,6 +16,7 @@ import { CreateProjectService } from './create-project.service';
 import { EmbeddedNodePreview } from './embedded-node.view';
 import styles from './index.less';
 import { TemplateSwitch } from './template-switch';
+import { PadModeWrapper, getPadMode } from '@/components/PadModeWrapper';
 
 interface ICreateProjectModal {
   visible: boolean;
@@ -26,6 +28,8 @@ export const CreateProjectModal = ({ visible, data, close }: ICreateProjectModal
   const [form] = Form.useForm();
   const { message } = App.useApp();
   const service = useModel(CreateProjectService);
+  const loginService = useModel(LoginService);
+
   const viewInstance = useModel(CreateProjectModalView);
 
   const inputRef = React.useRef<InputRef>(null);
@@ -36,20 +40,35 @@ export const CreateProjectModal = ({ visible, data, close }: ICreateProjectModal
   const nodes = Form.useWatch('nodes', form);
 
   React.useEffect(() => {
-    service.getNodeList();
-  }, []);
+    if (
+      loginService.userInfo?.platformType === 'CENTER' &&
+      loginService.userInfo?.ownerType === 'EDGE'
+    ) {
+      if (loginService.userInfo.ownerId) {
+        // edge 账号登陆获取 node list
+        service.getEdgeNodeList(loginService.userInfo.ownerId);
+      }
+    } else {
+      // admin 账号登陆获取 node list
+      service.getNodeList();
+    }
+  }, [loginService.userInfo]);
 
   const handleOk = () => {
     form.validateFields().then(async (value) => {
       viewInstance.createLoading = true;
-      await service.createProject(value, data.showBlank);
-      data.showBlank &&
-        value.templateId !== PipelineTemplateType.BLANK &&
-        message.success({
-          content: <QuickConfigEntry type={value.templateId} />,
-          duration: 15,
-          key: 'quick-config',
-        });
+      try {
+        await service.createProject(value, data.showBlank);
+        data.showBlank &&
+          value.templateId !== PipelineTemplateType.BLANK &&
+          message.success({
+            content: <QuickConfigEntry type={value.templateId} />,
+            duration: 15,
+            key: 'quick-config',
+          });
+      } catch (e) {
+        message.error(e.message);
+      }
       viewInstance.createLoading = false;
       close();
     });
@@ -132,25 +151,29 @@ export const CreateProjectModal = ({ visible, data, close }: ICreateProjectModal
           required
           className={styles.formLabelItem}
           name="computeMode"
-          initialValue={'pipeline'}
+          initialValue={getPadMode() === 'TEE' ? 'TEE' : 'MPC'}
         >
           <Radio.Group>
-            <Radio value={'pipeline'}>
-              <Space>
-                管道模式
-                <Tooltip title="MPC、FL等多方模式">
-                  <QuestionCircleOutlined />
-                </Tooltip>
-              </Space>
-            </Radio>
-            {/* <Radio value={'hub'}>
-              <Space>
-                枢纽模式
-                <Tooltip title="TEE等集中式方案">
-                  <QuestionCircleOutlined />
-                </Tooltip>
-              </Space>
-            </Radio> */}
+            <PadModeWrapper type={['MPC', 'ALL-IN-ONE']}>
+              <Radio value={'MPC'}>
+                <Space>
+                  管道模式
+                  <Tooltip title="MPC、FL等多方模式">
+                    <QuestionCircleOutlined style={{ marginRight: '48px' }} />
+                  </Tooltip>
+                </Space>
+              </Radio>
+            </PadModeWrapper>
+            <PadModeWrapper type={['TEE', 'ALL-IN-ONE']}>
+              <Radio value={'TEE'}>
+                <Space>
+                  枢纽模式
+                  <Tooltip title="TEE等集中式方案">
+                    <QuestionCircleOutlined />
+                  </Tooltip>
+                </Space>
+              </Radio>
+            </PadModeWrapper>
           </Radio.Group>
         </Form.Item>
         <Form.Item
@@ -164,6 +187,7 @@ export const CreateProjectModal = ({ visible, data, close }: ICreateProjectModal
             viewInstance={viewInstance}
             templateList={service.pipelineTemplates}
             showBlank={data.showBlank}
+            computeMode={computeMode}
           />
         </Form.Item>
         <Form.Item
@@ -174,8 +198,16 @@ export const CreateProjectModal = ({ visible, data, close }: ICreateProjectModal
           required
           tooltip="最多可选十个，至少要两个节点才能创建一个项目"
         >
+          {/* // 暂时不展示tee节点 */}
           {data.showBlank ? (
-            <AddNodeTag nodeList={service.nodeList || []} />
+            <AddNodeTag
+              nodeList={
+                loginService.userInfo?.platformType === 'CENTER' &&
+                loginService.userInfo?.ownerType === 'EDGE'
+                  ? service.edgeNodeList.filter((item) => item.nodeId !== 'tee') || []
+                  : service.nodeList.filter((item) => item.nodeId !== 'tee') || []
+              }
+            />
           ) : (
             <EmbeddedNodePreview />
           )}

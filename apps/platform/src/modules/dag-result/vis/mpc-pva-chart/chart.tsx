@@ -9,10 +9,10 @@ export interface PVAChartProps {
 
 export const Chart: React.FunctionComponent<PVAChartProps> = ({ data }) => {
   const chartRef = useRef(null);
-
   useEffect(() => {
     let chart: G2Chart;
     const chartRefDom = chartRef.current;
+    // const ticks = ['a', 'b', 'c']
 
     if (chartRefDom === null) return;
     if (data.length) {
@@ -25,9 +25,10 @@ export const Chart: React.FunctionComponent<PVAChartProps> = ({ data }) => {
 
       chart.scale({
         label: {
-          maxTickCount: 20,
+          maxTickCount: 10,
           nice: true,
-          tickCount: 20,
+          tickCount: 10,
+          // ticks, TODO: 手动计算ticks
         },
         value: {
           tickInterval: 0.1,

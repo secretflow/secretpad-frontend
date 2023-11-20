@@ -4,7 +4,7 @@ import type { FormInstance } from 'antd';
 import { Typography } from 'antd';
 import { Alert, Checkbox, message } from 'antd';
 import { Descriptions, Form, Input, Select, Space, Upload } from 'antd';
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { CSVLink } from 'react-csv';
 
 import { NodeService } from '@/modules/node';
@@ -15,6 +15,10 @@ import styles from './index.less';
 import UploadTableFileList from './upload-list';
 import type { FileInfo } from './upload-list';
 import { analysisCsv, fetchProgress, parseDataTableColumns } from './util';
+
+interface IProps {
+  setDisabled: (val: boolean) => void;
+}
 
 const { Dragger } = Upload;
 const { Link } = Typography;
@@ -39,8 +43,17 @@ const downloadData = [
   { 特征名称: 'x10', 特征类型: 'float', 特征描述: '' },
 ];
 
-export const UploadTable: React.FC = () => {
+export const UploadTable: React.FC<IProps> = ({ setDisabled }) => {
   const [form] = Form.useForm();
+  const values = Form.useWatch([], form);
+
+  useEffect(() => {
+    if (values?.tbl_name && values?.schema?.length !== 0) {
+      setDisabled(false);
+    } else {
+      setDisabled(true);
+    }
+  }, [values]);
 
   const viewInstance = useModel(UploadTableView);
   const nodeService = useModel(NodeService);
@@ -112,15 +125,38 @@ export const UploadTable: React.FC = () => {
         <div className={styles.csvConfig}>
           <div className={styles.csvConfigBaseInfo}>
             <Descriptions title="" column={2}>
-              <Descriptions.Item span={2} label="数据文件">
+              <Descriptions.Item span={2} label="数据文件" className={styles.label}>
                 <div className={styles.csvName}>
                   <PaperClipOutlined />
                   <span style={{ padding: '0 5px' }}>
                     {viewInstance.fileInfo?.name}
                   </span>
-                  <a style={{ padding: '0 5px' }} onClick={viewInstance.reset}>
-                    重新上传
-                  </a>
+                  <Upload
+                    name="file"
+                    accept=".csv"
+                    withCredentials
+                    action="/api/v1alpha1/data/upload"
+                    data={{
+                      'Node-Id': nodeService.currentNode?.nodeId || '',
+                    }}
+                    headers={{
+                      'Node-Id': nodeService.currentNode?.nodeId || '',
+                    }}
+                    showUploadList={false}
+                    beforeUpload={async (file, fileList) => {
+                      viewInstance.fileUploadAborted = false;
+                      return viewInstance.beforeUpload(file, fileList);
+                    }}
+                    onChange={(a) => {
+                      viewInstance.uploadingHandler(a);
+                    }}
+                    maxCount={1}
+                    customRequest={() => {
+                      return;
+                    }}
+                  >
+                    <a style={{ padding: '0 5px' }}>重新上传</a>
+                  </Upload>
                 </div>
               </Descriptions.Item>
               <Descriptions.Item label="所属数据源">默认数据源</Descriptions.Item>
@@ -207,7 +243,11 @@ export const UploadTable: React.FC = () => {
                   />
                 </div>
               )}
-              <Descriptions column={3} style={{ background: '#fafafa' }}>
+              <Descriptions
+                className={styles.tableHeader}
+                column={3}
+                style={{ background: '#fafafa' }}
+              >
                 <Descriptions.Item style={{ width: 190 }}>特征名称</Descriptions.Item>
                 <Descriptions.Item style={{ width: 100 }}>类型</Descriptions.Item>
                 <Descriptions.Item>描述（可选）</Descriptions.Item>
@@ -237,8 +277,10 @@ export const UploadTable: React.FC = () => {
                           size="middle"
                           style={{
                             display,
+                            marginTop: 8,
                             marginBottom: 8,
                             padding: '0 15px',
+                            borderBottom: '1px solid #f0f0f0',
                           }}
                         >
                           <Form.Item
@@ -265,7 +307,7 @@ export const UploadTable: React.FC = () => {
                               },
                             ]}
                           >
-                            <Input placeholder="请输入" />
+                            <Input placeholder="请输入" style={{ fontSize: 12 }} />
                           </Form.Item>
                           <Form.Item
                             {...restField}
@@ -287,7 +329,10 @@ export const UploadTable: React.FC = () => {
                             name={[name, 'featureDescription']}
                             rules={[{ max: 200, message: '描述长度限制200字符' }]}
                           >
-                            <Input placeholder="请输入" style={{ width: 300 }} />
+                            <Input
+                              placeholder="请输入"
+                              style={{ width: 300, fontSize: 12 }}
+                            />
                           </Form.Item>
                         </Space>
                       );
@@ -333,6 +378,10 @@ export class UploadTableView extends Model {
   formInstance?: FormInstance;
 
   nodeService = getModel(NodeService);
+
+  onViewUnMount = () => {
+    this.step = 0;
+  };
 
   initColConfigForm = (schema: any) => {
     this.formInstance?.setFieldValue('schema', schema);
@@ -546,6 +595,7 @@ export class UploadTableView extends Model {
   }
 
   async submit() {
+    this.submitting = true;
     const validateRes = await this.validateForm();
     const values = validateRes;
 
@@ -557,6 +607,8 @@ export class UploadTableView extends Model {
       datatableSchema: values.schema,
       realName: this.fileInfo?.realName,
     });
+
+    this.submitting = false;
     if (res.status?.code === 0) {
       message.success('添加成功');
     } else {
@@ -568,7 +620,7 @@ export class UploadTableView extends Model {
   reset = () => {
     this.fileInfo = undefined;
     this.csvInfo = [];
-    this.step = 0;
+    // this.step = 0;
     this.formInstance?.resetFields();
     this.schemaErrors = [];
   };

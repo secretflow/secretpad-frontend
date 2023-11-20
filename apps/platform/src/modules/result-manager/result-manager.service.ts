@@ -16,6 +16,12 @@ export const TableTypeMap: TableTypeMapper = {
   model: '模型',
 };
 
+export enum ResultTableState {
+  SUCCESS = 'SUCCESS',
+  FAILED = 'FAILED',
+  RUNNING = 'RUNNING',
+}
+
 export class ResultManagerService extends Model {
   download = async (nodeId: string, tableInfo: API.NodeResultsVO) => {
     message.info('开始下载,请稍等...');

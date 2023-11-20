@@ -1,5 +1,5 @@
 import { HddFilled, PlusOutlined } from '@ant-design/icons';
-import { Typography, Divider, Tag, Popover, Space, List, Row } from 'antd';
+import { Typography, Divider, Tag, Popover, Space, List, Row, Tooltip } from 'antd';
 import classnames from 'classnames';
 import React from 'react';
 import { history } from 'umi';
@@ -49,8 +49,10 @@ const getSheetContent = (dataSheet: NodeDatatableVO[]) => {
 };
 
 export const NodeSwitch: React.FC<NodeSwitchType> = (props) => {
-  const { nodes, value, onChange } = props;
-  const embeddedNodes = nodes.filter((node) => node.type === 'embedded');
+  const { nodes = [], value, onChange } = props;
+  const embeddedNodes = nodes.filter(
+    (node) => node.type === 'embedded' && node.nodeId !== 'tee',
+  );
 
   const getAuthenticatedNodes = (nodeRoutes: NodeRouteVO[], nodeId: string) => {
     const authenticatedNodes = new Set<string>();
@@ -84,7 +86,9 @@ export const NodeSwitch: React.FC<NodeSwitchType> = (props) => {
             <div className={styles.nodeTitle}>
               <Space align="center">
                 <div className={styles.nodeStatusIcon}>
-                  <HddFilled style={{ color: '#52C41A' }} />
+                  <HddFilled
+                    style={{ color: '#52C41A', width: '12px', height: '12px' }}
+                  />
                 </div>
                 <div className={styles.nodeTitleText}>{nodeName}</div>
               </Space>
@@ -125,7 +129,7 @@ export const NodeSwitch: React.FC<NodeSwitchType> = (props) => {
                                   onClick={() => {
                                     history.push({
                                       pathname: '/node',
-                                      search: `nodeId=${dataSheetItem?.datatableId}`,
+                                      search: `nodeId=${nodeId}&tab=data-management`,
                                     });
                                   }}
                                 />
@@ -160,12 +164,14 @@ export const EllipsisMiddle: React.FC<{
   className?: string;
 }> = ({ children, className }) => {
   return (
-    <Text
-      style={{ maxWidth: '100%' }}
-      ellipsis={{ tooltip: children }}
-      className={className}
-    >
-      {children}
-    </Text>
+    <Tooltip title={children}>
+      <Text
+        style={{ maxWidth: '100%' }}
+        ellipsis={{ tooltip: children }}
+        className={className}
+      >
+        {children}
+      </Text>
+    </Tooltip>
   );
 };

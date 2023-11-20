@@ -1,6 +1,6 @@
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { RadioChangeEvent, TourProps } from 'antd';
-import { message } from 'antd';
+import { message, Tag } from 'antd';
 import {
   Button,
   Radio,
@@ -15,10 +15,12 @@ import {
   Empty,
 } from 'antd';
 import type { MessageInstance } from 'antd/es/message/interface';
+import { parse } from 'query-string';
 import type { ChangeEvent } from 'react';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import { confirmDelete } from '@/components/comfirm-delete';
+import { EdgeAuthWrapper } from '@/components/edge-wrapper-auth';
 import { DataTableAddContent } from '@/modules/data-table-add/data-table-add.view';
 import { DatatableInfoService } from '@/modules/data-table-info/component/data-table-auth/data-table-auth.service';
 import { DataTableAuth } from '@/modules/data-table-info/data-table-auth-drawer';
@@ -28,13 +30,17 @@ import {
   GuideTourService,
 } from '@/modules/guide-tour/guide-tour-service';
 import { NodeService } from '@/modules/node';
-import { deleteDatatable } from '@/services/secretpad/DatatableController';
+import {
+  deleteDatatable,
+  pushDatatableToTeeNode,
+} from '@/services/secretpad/DatatableController';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { DataTableAddContentBySource } from '../data-table-add/data-table-add-by-source.view';
 
-import { DataManagerService } from './data-manager.service';
+import { DataManagerService, UploadStatus } from './data-manager.service';
 import styles from './index.less';
+import { getPadMode } from '@/components/PadModeWrapper';
 
 const embeddedSheets = ['alice.csv', 'bob.csv'];
 
@@ -59,14 +65,19 @@ export const DataManagerComponent: React.FC = () => {
       title: '表名称',
       dataIndex: 'datatableName',
       key: 'datatableName',
+      ellipsis: true,
+      width: '20%',
       render: (text: string, tableInfo: API.DatatableVO) => (
-        <a onClick={() => viewInstance.openDataInfo(tableInfo)}>{text}</a>
+        <Tooltip title={text}>
+          <a onClick={() => viewInstance.openDataInfo(tableInfo)}>{text}</a>
+        </Tooltip>
       ),
     },
     {
       title: '数据表类型',
       dataIndex: 'type',
       key: 'type',
+      width: '10%',
       // filters: [
       //   { text: '表', value: 'table' },
       //   { text: '模型', value: 'model' },
@@ -118,6 +129,7 @@ export const DataManagerComponent: React.FC = () => {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
+      width: '10%',
       render: (status: string) => {
         if (status == 'Available') {
           return (
@@ -137,8 +149,59 @@ export const DataManagerComponent: React.FC = () => {
       },
     },
     {
+      title: (
+        <div className={styles.uploadTitle}>
+          <div className={styles.uploadText}>加密上传</div>
+          <Tooltip title="加密上传到TEE，若数据表内容修改可重新上传">
+            <InfoCircleOutlined className={styles.uploadIcon} />
+          </Tooltip>
+        </div>
+      ),
+      key: 'pushToTeeStatus',
+      dataIndex: 'pushToTeeStatus',
+      width: '15%',
+      render: (status: string, record: API.DatatableVO) => {
+        if (!status || status === '') {
+          return (
+            <Button
+              type="link"
+              className={styles.uploadBtn}
+              onClick={() => viewInstance.encryptedUpload(record)}
+            >
+              上传
+            </Button>
+          );
+        } else if (status === UploadStatus.RUNNING) {
+          return <div className={styles.uploadLoading}>上传中...</div>;
+        } else if (status === UploadStatus.SUCCESS) {
+          return (
+            <div className={styles.uploadTag}>
+              <Tag color="success">成功</Tag>
+              <Button type="link" onClick={() => viewInstance.encryptedUpload(record)}>
+                重新上传
+              </Button>
+            </div>
+          );
+        } else if (status === UploadStatus.FAILED) {
+          return (
+            <div className={styles.uploadTag}>
+              <Tooltip title={record.pushToTeeErrMsg}>
+                <Tag color="error">失败</Tag>
+              </Tooltip>
+              <Button type="link" onClick={() => viewInstance.encryptedUpload(record)}>
+                重新上传
+              </Button>
+            </div>
+          );
+        } else if (record.status !== 'Available') {
+          return '-';
+        }
+      },
+    },
+    {
       title: '操作',
       key: 'action',
+      width: '15%',
       render: (
         tableInfo: API.DatatableVO,
         tableInfo2: API.DatatableVO,
@@ -192,6 +255,21 @@ export const DataManagerComponent: React.FC = () => {
     });
   };
 
+  useEffect(() => {
+    const flag = viewInstance.tablesList.filter(
+      (item) => item.pushToTeeStatus === UploadStatus.RUNNING,
+    );
+
+    if (flag.length) {
+      clearTimeout(viewInstance.tableListTimeOut);
+      viewInstance.tableListTimeOut = setTimeout(() => {
+        viewInstance.getTableList('', true);
+      }, 2000);
+    } else {
+      clearTimeout(viewInstance.tableListTimeOut);
+    }
+  }, [viewInstance.tablesList]);
+
   return (
     <div className={styles.main}>
       <div className={styles.toolbar}>
@@ -224,7 +302,13 @@ export const DataManagerComponent: React.FC = () => {
       <div className={styles.content}>
         <Table
           dataSource={viewInstance.displayTableList}
-          columns={columns}
+          // tee节点不展示加密上传
+          // MPC 部署模式 不展示加密上传
+          columns={
+            viewInstance.currentNode.nodeId === 'tee' || getPadMode() === 'MPC'
+              ? columns.filter((item) => item.key !== 'pushToTeeStatus')
+              : columns
+          }
           loading={viewInstance.tableLoading}
           pagination={{
             total: viewInstance.totalNum || 1,
@@ -243,16 +327,18 @@ export const DataManagerComponent: React.FC = () => {
         />
       </div>
       {viewInstance.displayTableList.length > 0 && (
-        <Tour
-          open={!guideTourService.DatatableAuthTour}
-          onClose={() => viewInstance.closeGuideTour()}
-          mask={false}
-          type="primary"
-          zIndex={100000000}
-          steps={steps}
-          placement="topRight"
-          rootClassName="dataauth-tour"
-        />
+        <EdgeAuthWrapper>
+          <Tour
+            open={!guideTourService.DatatableAuthTour}
+            onClose={() => viewInstance.closeGuideTour()}
+            mask={false}
+            type="primary"
+            zIndex={100000000}
+            steps={steps}
+            placement="topRight"
+            rootClassName="dataauth-tour"
+          />
+        </EdgeAuthWrapper>
       )}
       {viewInstance.showAuthDrawer && (
         <DataTableAuth
@@ -264,21 +350,10 @@ export const DataManagerComponent: React.FC = () => {
         />
       )}
 
-      {viewInstance.showAddDataDrawer &&
-      viewInstance.currentNode.type === 'embedded' ? (
+      {viewInstance.showAddDataDrawer && (
         <DataTableAddContent
           onClose={() => {
             viewInstance.getTableList();
-            viewInstance.showAddDataDrawer = false;
-          }}
-          visible={viewInstance.showAddDataDrawer}
-        />
-      ) : (
-        <DataTableAddContentBySource
-          onClose={() => {
-            viewInstance.getTableList();
-          }}
-          close={() => {
             viewInstance.showAddDataDrawer = false;
           }}
           visible={viewInstance.showAddDataDrawer}
@@ -333,6 +408,8 @@ export class DataManagerView extends Model {
 
   currentNode: API.NodeVO = {};
 
+  tableListTimeOut: NodeJS.Timeout | undefined;
+
   guideTourService = getModel(GuideTourService);
   dataManagerService = getModel(DataManagerService);
   nodeService = getModel(NodeService);
@@ -356,8 +433,12 @@ export class DataManagerView extends Model {
     this.guideTourService.finishTour(GuideTourKeys.DatatableAuthTour);
   }
 
-  async getTableList(nodeIdParam?: string) {
-    this.tableLoading = true;
+  async getTableList(nodeIdParam?: string, isUpload?: boolean) {
+    if (isUpload) {
+      this.tableLoading = false;
+    } else {
+      this.tableLoading = true;
+    }
     const nodeId = nodeIdParam || this.nodeService.currentNode?.nodeId;
     const listData = await this.dataManagerService.listDataTables(
       nodeId || '',
@@ -366,9 +447,11 @@ export class DataManagerView extends Model {
       this.statusFilter,
       this.search,
     );
+
     this.tableLoading = false;
     this.totalNum = listData?.totalDatatableNums || 1;
     this.tablesList = listData?.datatableVOList || [];
+
     this.displayTableList = this.tablesList;
   }
 
@@ -404,6 +487,28 @@ export class DataManagerView extends Model {
     this.getTableList();
   };
 
+  encryptedUpload = async (record: API.DatatableVO) => {
+    const { datatableId } = record;
+
+    const { search } = window.location;
+    const { nodeId } = parse(search);
+
+    try {
+      const { status } = await pushDatatableToTeeNode({
+        nodeId: nodeId as string,
+        datatableId,
+      });
+
+      if (status?.code === 0) {
+        this.getTableList('', true);
+      } else {
+        message.error(status?.msg || '操作失败');
+      }
+    } catch (e) {
+      message.error((e as Error).message);
+    }
+  };
+
   dataFilter(e: RadioChangeEvent) {
     if (e.target.value === 'all') {
       this.statusFilter = '';
@@ -412,7 +517,7 @@ export class DataManagerView extends Model {
     } else {
       this.statusFilter = 'UnAvailable';
     }
-    this.getTableList();
+    this.getTableList('', true);
   }
 
   searchTable(e: ChangeEvent<HTMLInputElement>) {

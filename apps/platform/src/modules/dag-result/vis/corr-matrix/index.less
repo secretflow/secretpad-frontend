@@ -13,10 +13,17 @@
     .features {
       margin-bottom: 16px;
 
-      .title {
-        display: inline-block;
-        margin-bottom: 10px;
-        font-size: 14px;
+      .titleHeader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .title {
+          margin-bottom: 10px;
+          color: rgb(0 10 26 / 89%);
+          font-size: 14px;
+          font-weight: 500;
+        }
       }
 
       .tagWrapper {
@@ -52,11 +59,11 @@
 
       .openTag {
         position: absolute;
-        top: 72px;
+        top: 74px;
         display: block;
         width: 48px;
+        padding-bottom: 16px;
         margin-right: 8px;
-        margin-bottom: 16px;
         background-color: #fff;
         color: rgb(0 10 26 / 47%);
         text-align: center;
@@ -111,11 +118,53 @@
 }
 
 .customBtn {
-  border: none;
-  animation: none;
+  // border: none;
+  // animation: none;
   color: rgb(0 10 26/68%);
 
-  .customBtn:active {
-    animation: none;
+  &:hover {
+    color: #0068fa !important;
+  }
+
+  // .customBtn:active {
+  //   animation: none;
+  // }
+}
+
+.fullScreenContentPage {
+  overflow: auto;
+  padding-bottom: 24px;
+  background-color: #fff;
+
+  .fullScreenHeader {
+    display: flex;
+    height: 56px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    border: 1px solid #eee;
+    margin-bottom: 16px;
+
+    .title {
+      color: #1d2129;
+      font-size: 20px;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+
+    .exit {
+      color: rgb(0 10 26 / 68%);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 400;
+
+      &:hover {
+        color: #0068fa;
+      }
+    }
+  }
+
+  .fullScreenContentWrap {
+    padding: 0 24px;
   }
 }

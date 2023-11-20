@@ -1,12 +1,23 @@
-import { SearchOutlined, DownloadOutlined } from '@ant-design/icons';
+import {
+  SearchOutlined,
+  DownloadOutlined,
+  FullscreenOutlined,
+  FullscreenExitOutlined,
+} from '@ant-design/icons';
+import { useFullscreen } from 'ahooks';
 import type { InputRef } from 'antd';
 import { Button, Input, Space, Table, Tag } from 'antd';
 import type { ColumnType } from 'antd/es/table';
 import type { FilterConfirmProps } from 'antd/es/table/interface';
+import classNames from 'classnames';
+import classnames from 'classnames';
 import { groupBy, map as lodashMap } from 'lodash';
+import { parse } from 'query-string';
 import type { Key } from 'react';
 import { useState, useRef } from 'react';
 import { CSVLink } from 'react-csv';
+
+import { Download } from '@/modules/dag-result/apply-download';
 
 import styles from './index.less';
 import type { DataType, ResultComponentProps } from './types';
@@ -16,18 +27,20 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef<InputRef>(null);
+  const { mode, projectId } = parse(window.location.search);
   const csvRef = useRef<{
     link: HTMLLinkElement;
   }>(null);
-
+  const fullScreenRef = useRef(null);
+  const [isFullscreen, { enterFullscreen, exitFullscreen }] =
+    useFullscreen(fullScreenRef);
   const downloadData = () => {
     if (csvRef && csvRef.current) {
       csvRef.current.link.click();
     }
   };
   const { data, id } = props;
-
-  const { gmtCreate, meta } = data;
+  const { gmtCreate, meta, jobId, taskId, type: resultType } = data;
   const { rows } = meta;
 
   const handleSearch = (
@@ -103,14 +116,15 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
     nodeId: string;
     key: string;
   }[] = [];
-  const metaInfo: { path: string; nodeId: string; tableId: string }[] = [];
+  const metaInfo: { path: string; nodeId: string; tableId: string; type: string }[] =
+    [];
 
   rows.forEach((r) => {
-    const { path, nodeId, fields, fieldTypes, tableId } = r;
+    const { path, nodeId, fields, fieldTypes, tableId, type } = r;
     if (fields === '') {
       return;
     }
-    metaInfo.push({ path, nodeId, tableId });
+    metaInfo.push({ path, nodeId, tableId, type });
     const fieldList = fields.split(',');
     const fieldTypeList = fieldTypes.split(',');
 
@@ -181,52 +195,107 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
           <span>{formatTimestamp(gmtCreate)}</span>
         </div>
         {metaInfo.map((row, index) => {
-          const { path, nodeId, tableId } = row;
-
+          const { path, nodeId, tableId, type: nodeType } = row;
           return (
-            <>
+            <div key={`table-${path}-${index}`}>
               <div className={styles.item}>
                 <span className={styles.timeLabel}>{nodeId}节点路径：</span>
                 <span>{path}</span>
                 {/* no download for readtable */}
-                {props.codeName !== 'read_data/datatable' && (
-                  <Button
-                    type="link"
-                    size="small"
-                    style={{ paddingLeft: 20 }}
-                    onClick={() => {
-                      const a = document.createElement('a');
-                      a.href = `/node?nodeId=${nodeId}&tab=result&resultName=${tableId}`;
-                      a.target = '_blank';
-                      a.click();
+                {/* 内置节点才展示查看结果跳转 */}
+                {props.codeName !== 'read_data/datatable' &&
+                  nodeType === 'embedded' && (
+                    <Button
+                      type="link"
+                      size="small"
+                      style={{ paddingLeft: 20, fontSize: 12 }}
+                      onClick={() => {
+                        const a = document.createElement('a');
+                        a.href = `/node?nodeId=${nodeId}&tab=result&resultName=${tableId}`;
+                        a.target = '_blank';
+                        a.click();
+                      }}
+                    >
+                      查看结果
+                    </Button>
+                  )}
+                {/* no download for readtable */}
+                {mode === 'TEE' && props.codeName !== 'read_data/datatable' && (
+                  <Download
+                    params={{
+                      nodeID: nodeId,
+                      taskID: taskId,
+                      jobID: jobId,
+                      projectID: projectId as string,
+                      resourceType: resultType,
+                      resourceID: tableId,
                     }}
-                  >
-                    查看结果
-                  </Button>
+                  />
                 )}
               </div>
-            </>
+            </div>
           );
         })}
       </div>
       <div className={styles.tableHeader}>
         <div>表字段</div>
-        <Button
-          type="link"
-          style={{ color: 'rgba(0,10,26,0.68)', fontSize: '12px' }}
-          size="small"
-          onClick={downloadData}
-        >
-          <DownloadOutlined />
-          导出表结构
-        </Button>
+        <Space size={12}>
+          <Space
+            onClick={downloadData}
+            className={classnames(styles.fullScreenText, styles.actionIcon)}
+          >
+            <DownloadOutlined />
+            <span> 导出表结构</span>
+          </Space>
+          <Space
+            onClick={enterFullscreen}
+            className={classnames(styles.fullScreenText, styles.actionIcon)}
+          >
+            <FullscreenOutlined />
+            <span>全屏</span>
+          </Space>
+        </Space>
       </div>
       <CSVLink
         filename={`${id}.csv`}
         data={convertDownDataSource(dataSource)}
         ref={csvRef}
       />
-      <Table dataSource={dataSource} columns={columns} size="small" />
+      <div
+        ref={fullScreenRef}
+        className={classNames({
+          fullScreenContentPage: isFullscreen,
+        })}
+      >
+        {isFullscreen && (
+          <div className="fullScreenHeader">
+            <div className="title">表字段</div>
+            <Space size={12}>
+              <Space
+                onClick={downloadData}
+                className={classnames(styles.fullScreenText, styles.actionIcon)}
+              >
+                <DownloadOutlined />
+                <span> 导出表结构</span>
+              </Space>
+              <Space
+                onClick={exitFullscreen}
+                className={classnames(styles.fullScreenText, styles.actionIcon)}
+              >
+                <FullscreenExitOutlined />
+                <span>退出全屏</span>
+              </Space>
+            </Space>
+          </div>
+        )}
+        <Table
+          rowKey="field"
+          className={classNames({ fullScreenContentWrap: isFullscreen })}
+          dataSource={dataSource}
+          columns={columns}
+          size="small"
+        />
+      </div>
     </div>
   );
 };

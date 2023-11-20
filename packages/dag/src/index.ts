@@ -9,12 +9,13 @@ export * from './types';
 export * from './utils';
 export * from './shapes';
 
-import { GraphEventHandlerProtocol } from './types';
 import type { Graph } from '@antv/x6';
 import { Portal, register as ShapeRegister } from '@antv/x6-react-shape';
+import { createRegistry, Registry } from '@secretflow/utils';
 
+import type { ActionProtocol } from './actions';
 import { Actions } from './actions';
-import { createAction, ActionProtocol } from './actions';
+import { createAction } from './actions';
 import type { ActionFactory } from './actions/protocol';
 import type { DataService } from './data';
 import { DefaultDataService } from './data';
@@ -25,7 +26,7 @@ import { DefaultGraphManager } from './manager';
 import type { DAGProtocol } from './protocol';
 import type { RequestService } from './request';
 import { DefaultRequestService } from './request';
-import { createRegistry, Registry } from '@secretflow/utils';
+import type { GraphEventHandlerProtocol } from './types';
 
 export { Portal, ShapeRegister, Registry };
 

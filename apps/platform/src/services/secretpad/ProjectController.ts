@@ -212,6 +212,19 @@ export async function getProjectDatatable(
   });
 }
 
+/** create project chose tee domain id ,this is for the chose list
+@return successful SecretPadResponse with tee node list view object
+ POST /api/v1alpha1/project/tee/list */
+export async function getTeeNodeList(options?: { [key: string]: any }) {
+  return request<API.SecretPadResponse_List_NodeVO__>(
+    '/api/v1alpha1/project/tee/list',
+    {
+      method: 'POST',
+      ...(options || {}),
+    },
+  );
+}
+
 /** Paging list project job list api
 @param request list project job request
 @return successful SecretPadResponse with paging project job summary view object

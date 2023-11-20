@@ -1,5 +1,11 @@
-import { DownloadOutlined } from '@ant-design/icons';
-import { Button, Empty, Table } from 'antd';
+import {
+  DownloadOutlined,
+  FullscreenExitOutlined,
+  FullscreenOutlined,
+} from '@ant-design/icons';
+import { useFullscreen } from 'ahooks';
+import { Button, Empty, Space, Table } from 'antd';
+import classNames from 'classnames';
 import React, { useRef } from 'react';
 import { CSVLink } from 'react-csv';
 
@@ -7,11 +13,17 @@ import type { DescriptionList, ResultOriginData } from '../typing';
 import { lexicographicalOrder, modifyDataStructure } from '../utils';
 
 import { DescriptionTable } from './description-table';
-
 import './index.less';
 
 export const OutputTable: React.FC<OutputTableProps> = (props) => {
-  const { name: tableName, tableInfo: requestTableInfo } = props;
+  const {
+    name: tableName,
+    tableInfo: requestTableInfo,
+    showFullscreen = false,
+  } = props;
+  const fullScreenRef = React.useRef(null);
+  const [isFullscreen, { enterFullscreen, exitFullscreen }] =
+    useFullscreen(fullScreenRef);
   const tableInfo = modifyDataStructure(requestTableInfo);
   const csvRef = useRef<{
     link: HTMLLinkElement;
@@ -59,6 +71,15 @@ export const OutputTable: React.FC<OutputTableProps> = (props) => {
           return a[name] - b[name];
         },
         showSorterTooltip: false,
+        render: (text) => {
+          return (
+            <div style={{ whiteSpace: 'nowrap' }} title={text}>
+              {text.length > 12
+                ? `${text.slice(0, 6)}...${text.slice(text.length - 6, text.length)}`
+                : text}
+            </div>
+          );
+        },
       });
     } else {
       columnsList.push({
@@ -66,6 +87,15 @@ export const OutputTable: React.FC<OutputTableProps> = (props) => {
         title: name,
         dataIndex: name,
         showSorterTooltip: false,
+        render: (text) => {
+          return (
+            <div style={{ whiteSpace: 'nowrap' }} title={text}>
+              {text.length > 12
+                ? `${text.slice(0, 6)}...${text.slice(text.length - 6, text.length)}`
+                : text}
+            </div>
+          );
+        },
       });
     }
   });
@@ -96,34 +126,68 @@ export const OutputTable: React.FC<OutputTableProps> = (props) => {
   return (
     <div className="VisOutputTableContent">
       <div className="exportBtn">
-        <Button
-          type="link"
-          style={{ color: 'rgba(0,10,26,0.68)', right: 0 }}
-          size="small"
-          onClick={downloadData}
-        >
+        <Button type="link" style={{ right: 8 }} size="small" onClick={downloadData}>
           <DownloadOutlined />
           导出数据
         </Button>
+        {!isFullscreen && showFullscreen && (
+          <Space
+            onClick={enterFullscreen}
+            style={{ color: 'rgba(0,10,26,0.68)', cursor: 'pointer' }}
+          >
+            <FullscreenOutlined />
+            <span>全屏</span>
+          </Space>
+        )}
       </div>
       <CSVLink
         filename={`${tableName}.csv`}
         data={convertDownDataSource(dataSource)}
         ref={csvRef}
       />
-      <Table
-        bordered
-        size="small"
-        columns={columnsList}
-        rowKey={(record) => {
-          return record.name as string;
-        }}
-        dataSource={dataSource}
-        scroll={{ x: '100%' }}
-        pagination={
-          dataSource.length > 100 && { pageSize: 100, showSizeChanger: false }
-        }
-      />
+      <div
+        ref={fullScreenRef}
+        className={classNames({
+          fullScreenContentPage: isFullscreen,
+        })}
+      >
+        {isFullscreen && (
+          <div className="fullScreenHeader">
+            <div className="title">表字段</div>
+            <Space className="exit">
+              <Button
+                type="link"
+                style={{ color: 'rgba(0,10,26,0.68)', right: 8 }}
+                size="small"
+                onClick={downloadData}
+              >
+                <DownloadOutlined />
+                导出数据
+              </Button>
+              <Space onClick={exitFullscreen}>
+                <FullscreenExitOutlined />
+                <span>退出全屏</span>
+              </Space>
+            </Space>
+          </div>
+        )}
+        <Table
+          className={classNames('outPutTableItem', {
+            fullScreenContentWrap: isFullscreen,
+          })}
+          bordered
+          size="small"
+          columns={columnsList}
+          rowKey={(record) => {
+            return record.name as string;
+          }}
+          dataSource={dataSource}
+          scroll={{ x: '100%' }}
+          pagination={
+            dataSource.length > 100 && { pageSize: 100, showSizeChanger: false }
+          }
+        />
+      </div>
     </div>
   );
 };
@@ -140,4 +204,5 @@ export interface Columns {
 export interface OutputTableProps {
   name: string;
   tableInfo: ResultOriginData;
+  showFullscreen?: boolean;
 }

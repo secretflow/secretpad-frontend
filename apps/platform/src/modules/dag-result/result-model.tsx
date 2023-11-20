@@ -1,5 +1,7 @@
 import { Button, Tag, Typography } from 'antd';
+import { parse } from 'query-string';
 
+import { Download } from './apply-download';
 import styles from './index.less';
 import type { ResultComponentProps } from './types';
 import { formatTimestamp } from './utils';
@@ -8,8 +10,8 @@ const { Paragraph } = Typography;
 
 export const ResultModelComponent = (props: ResultComponentProps<'model'>) => {
   const { data, id } = props;
-
-  const { gmtCreate, meta } = data;
+  const { mode, projectId } = parse(window.location.search);
+  const { gmtCreate, meta, jobId, taskId, type } = data;
   const { rows } = meta;
 
   return (
@@ -25,34 +27,50 @@ export const ResultModelComponent = (props: ResultComponentProps<'model'>) => {
       </div>
 
       {rows.map((row, index) => {
-        const { path, nodeId } = row;
+        const { path, nodeId, tableId, type: nodeType } = row;
 
         return (
-          <Paragraph
-            key={index}
-            copyable={{
-              text: path,
-              tooltips: ['复制', '复制成功'],
-            }}
-          >
-            <div className={styles.item} key={index}>
-              <span className={styles.timeLabel}>{nodeId}模型路径：</span>
-              <span>{path}</span>
-              <Button
-                type="link"
-                size="small"
-                style={{ paddingLeft: 20 }}
-                onClick={() => {
-                  const a = document.createElement('a');
-                  a.href = `/node?nodeId=${nodeId}&tab=result&resultName=${path}`;
-                  a.target = '_blank';
-                  a.click();
+          <div className={styles.modelContent} key={`model-${path}-${index}`}>
+            <Paragraph
+              copyable={{
+                text: path,
+                tooltips: ['复制', '复制成功'],
+              }}
+            >
+              <div className={styles.item}>
+                <span className={styles.timeLabel}>{nodeId}模型路径：</span>
+                <span>{path}</span>
+                {/* 内置节点才展示查看结果跳转 */}
+                {nodeType === 'embedded' && (
+                  <Button
+                    type="link"
+                    size="small"
+                    style={{ paddingLeft: 20 }}
+                    onClick={() => {
+                      const a = document.createElement('a');
+                      a.href = `/node?nodeId=${nodeId}&tab=result&resultName=${path}`;
+                      a.target = '_blank';
+                      a.click();
+                    }}
+                  >
+                    查看结果
+                  </Button>
+                )}
+              </div>
+            </Paragraph>
+            {mode === 'TEE' && (
+              <Download
+                params={{
+                  nodeID: nodeId,
+                  taskID: taskId,
+                  jobID: jobId,
+                  projectID: projectId as string,
+                  resourceType: type,
+                  resourceID: tableId,
                 }}
-              >
-                查看结果
-              </Button>
-            </div>
-          </Paragraph>
+              />
+            )}
+          </div>
         );
       })}
     </div>

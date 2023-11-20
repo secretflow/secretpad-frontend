@@ -1,3 +1,5 @@
+import type { ComputeMode } from '../component-tree/component-protocol';
+
 export const ComponentInterpreterService = Symbol('ComponentInterpreterService');
 
 export type ComponentInterpreterService = {
@@ -10,5 +12,6 @@ export type ComponentInterpreterService = {
           version: string;
         }
       | string,
+    mode: ComputeMode,
   ): any;
 };

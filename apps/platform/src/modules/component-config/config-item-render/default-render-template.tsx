@@ -1,4 +1,5 @@
 import { Switch, InputNumber, Input, Select, Form } from 'antd';
+import { useState, useEffect } from 'react';
 
 import type { AtomicConfigNode } from '../component-config-protocol';
 import styles from '../index.less';
@@ -41,7 +42,12 @@ export const DefaultSwitch: React.FC<RenderProp<boolean>> = (config) => {
 
 export const DefaultInputNumber: React.FC<RenderProp<number>> = (config) => {
   const { node, onChange, value, defaultVal, translation } = config;
-  const { minVal, maxVal } = getValueBound(node);
+  const {
+    minVal,
+    maxVal,
+    maxInclusive = false,
+    minInclusive = false,
+  } = getValueBound(node);
   return (
     <Form.Item
       label={
@@ -57,7 +63,35 @@ export const DefaultInputNumber: React.FC<RenderProp<number>> = (config) => {
       tooltip={translation[node.docString] || node.docString}
       rules={[
         {
+          type: 'number',
           required: node.isRequired,
+        },
+        {
+          validator: (_, value) => {
+            if (value === null || value === undefined) return Promise.resolve();
+            if (minVal !== null && minVal !== undefined) {
+              if (minInclusive) {
+                if (value < minVal)
+                  return Promise.reject(new Error(`取值应该大于等于${minVal}`));
+              } else {
+                if (value <= minVal)
+                  return Promise.reject(new Error(`取值应该大于${minVal}`));
+              }
+            }
+
+            if (maxVal !== null && maxVal !== undefined) {
+              if (maxInclusive) {
+                if (value > maxVal) {
+                  return Promise.reject(new Error(`取值应该小于等于${maxVal}`));
+                }
+              } else {
+                if (value >= maxVal) {
+                  return Promise.reject(new Error(`取值应该小于${maxVal}`));
+                }
+              }
+            }
+            return Promise.resolve();
+          },
         },
       ]}
       initialValue={defaultVal}
@@ -66,8 +100,6 @@ export const DefaultInputNumber: React.FC<RenderProp<number>> = (config) => {
     >
       <InputNumber
         value={value}
-        max={maxVal}
-        min={minVal}
         onChange={(val) => {
           onChange(val);
         }}
@@ -115,16 +147,38 @@ export const DefaultInput: React.FC<RenderProp<string>> = (config) => {
 
 export const DefaultSelect: React.FC<RenderProp<string>> = (config) => {
   const { node, onChange, value, defaultVal, translation } = config;
-  const { allowed_values: allowedValues, type } = node;
+  const {
+    allowed_values: allowedValues,
+    type,
+    list_max_length_inclusive,
+    list_min_length_inclusive,
+  } = node;
+  let isMultiple = false;
+  if (['AT_STRINGS', 'AT_INTS', 'AT_FLOATS', 'AT_BOOLS'].includes(type)) {
+    isMultiple = true;
+
+    if (list_max_length_inclusive === 1) isMultiple = false;
+  }
 
   if (!allowedValues) return <></>;
 
-  const options = allowedValues[typeListMap[type]]?.map(
-    (i: string | number | boolean) => ({
-      value: i,
-      label: i,
-    }),
-  );
+  const [selectOptions, setSelectOptions] = useState<
+    {
+      value: string | number | boolean;
+      label: string | number | boolean;
+      disabled?: boolean;
+    }[]
+  >([]);
+
+  useEffect(() => {
+    const options = allowedValues[typeListMap[type]]?.map(
+      (i: string | number | boolean) => ({
+        value: i,
+        label: i,
+      }),
+    );
+    setSelectOptions(options || []);
+  }, [allowedValues]);
 
   return (
     <Form.Item
@@ -143,16 +197,45 @@ export const DefaultSelect: React.FC<RenderProp<string>> = (config) => {
         {
           required: (node as AtomicConfigNode).isRequired,
         },
+        {
+          validator(_, value) {
+            if (value) {
+              if (Array.isArray(value) && list_min_length_inclusive) {
+                return value.length < list_min_length_inclusive
+                  ? Promise.reject(`至少选择${list_min_length_inclusive}项`)
+                  : Promise.resolve();
+              } else if (list_min_length_inclusive) {
+                return list_min_length_inclusive <= 1
+                  ? Promise.resolve()
+                  : Promise.reject(`至少选择${list_min_length_inclusive}项`);
+              }
+            }
+
+            return Promise.resolve();
+          },
+        },
       ]}
-      initialValue={defaultVal}
+      initialValue={isMultiple && defaultVal === undefined ? [] : defaultVal}
       colon={false}
       messageVariables={{ label: translation[node.name] || node.name }}
     >
       <Select
-        value={value}
-        options={options}
+        mode={isMultiple ? 'multiple' : undefined}
+        options={selectOptions}
         onChange={(val) => {
           onChange(val);
+          if (list_max_length_inclusive) {
+            setSelectOptions(
+              selectOptions.map((item) => {
+                return {
+                  ...item,
+                  disabled:
+                    val.length >= list_max_length_inclusive &&
+                    !val.includes(item.value),
+                };
+              }),
+            );
+          }
         }}
       />
     </Form.Item>

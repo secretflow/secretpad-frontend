@@ -8,6 +8,8 @@ export type ResultComponentProps<T extends ResultType> = {
 export type ResultRuleRow = {
   path: string;
   nodeId: string;
+  tableId: string;
+  type: string;
 };
 
 export type ResultModelRow = ResultRuleRow;
@@ -17,6 +19,7 @@ type ResultTableRow = {
   fieldTypes: string;
   tableId: string;
   dsId: string;
+  type: string;
 } & ResultRuleRow;
 
 export type ResultTableData = {
@@ -59,6 +62,8 @@ export type OutputType<T extends ResultType> = {
   codeName: string;
   gmtCreate: string;
   gmtModified: string;
+  jobId: string;
+  taskId: string;
   type: T;
 } & ResultTypeMap[T];
 

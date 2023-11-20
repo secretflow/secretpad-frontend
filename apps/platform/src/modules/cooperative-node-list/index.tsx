@@ -3,17 +3,7 @@ import {
   ReloadOutlined,
   QuestionCircleOutlined,
 } from '@ant-design/icons';
-import {
-  Badge,
-  Button,
-  Input,
-  Popover,
-  Space,
-  Table,
-  Tag,
-  Tooltip,
-  Typography,
-} from 'antd';
+import { Badge, Button, Input, Space, Table, Tag, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { FilterValue } from 'antd/es/table/interface';
 import { parse } from 'query-string';
@@ -37,47 +27,31 @@ export const CooperativeNodeListComponent = () => {
   const viewInstance = useModel(CooperativeNodeView);
   const service = useModel(CooperativeNodeService);
 
-  const NodeInfoPopoverContent = ({ info }: { info: API.NodeRouterVO }) => {
-    return (
-      <Space direction="vertical">
-        <div className={styles.popoverContent}>
-          计算节点名：{info.dstNode?.nodeName}
-        </div>
-        <div className={styles.popoverContent}>计算节点ID：{info?.dstNode?.nodeId}</div>
-        <div className={styles.popoverContent}>节点通讯地址：{info?.dstNetAddress}</div>
-      </Space>
-    );
-  };
-
   const columns: ColumnsType<API.NodeRouterVO> = [
     {
       title: '合作节点',
-      dataIndex: 'dstNodeId',
-      key: 'dstNodeId',
+      dataIndex: 'srcNodeId',
+      key: 'srcNodeId',
       width: '15%',
       render: (text: string, record) => {
         return (
           <>
-            <Popover
-              content={<NodeInfoPopoverContent info={record} />}
-              title={record.dstNode?.nodeName}
-              placement="rightTop"
+            <Typography.Text
+              onClick={() => {
+                viewInstance.clickedCooperativeNode = record;
+                viewInstance.showCooperativeNodeDetailDrawer = true;
+              }}
+              style={{ color: '#1677ff', cursor: 'pointer' }}
+              ellipsis={{
+                tooltip: record.srcNode?.nodeName,
+              }}
             >
-              <Typography.Text
-                onClick={() => {
-                  viewInstance.clickedCooperativeNode = record;
-                  viewInstance.showCooperativeNodeDetailDrawer = true;
-                }}
-                style={{ color: '#1677ff', cursor: 'pointer' }}
-                ellipsis={{
-                  tooltip: record.dstNode?.nodeName,
-                }}
-              >
-                {record.dstNode?.type === 'embedded' &&
-                  record.srcNode?.type === 'embedded' && <Tag color="cyan">内置</Tag>}
-                {record.dstNode?.nodeName}
-              </Typography.Text>
-            </Popover>
+              {record.dstNode?.type === 'embedded' &&
+                record.srcNode?.type === 'embedded' && (
+                  <Tag className={styles.embeddedTag}>内置</Tag>
+                )}
+              {record.srcNode?.nodeName}
+            </Typography.Text>
             <div>
               <Typography.Text
                 className={styles.idText}
@@ -94,16 +68,16 @@ export const CooperativeNodeListComponent = () => {
     },
     {
       title: '合作节点通讯地址',
-      dataIndex: 'dstNetAddress',
-      key: 'dstNetAddress',
+      dataIndex: 'srcNetAddress',
+      key: 'srcNetAddress',
       width: '15%',
-      render: (dstNetAddress: string) => (
+      render: (srcNetAddress: string) => (
         <Typography.Text
           ellipsis={{
-            tooltip: dstNetAddress,
+            tooltip: srcNetAddress,
           }}
         >
-          {dstNetAddress || '- -'}
+          {srcNetAddress || '- -'}
         </Typography.Text>
       ),
     },
@@ -116,16 +90,16 @@ export const CooperativeNodeListComponent = () => {
           </Tooltip>
         </>
       ),
-      dataIndex: 'srcNetAddress',
-      key: 'srcNetAddress',
+      dataIndex: 'dstNetAddress',
+      key: 'dstNetAddress',
       width: '14%',
-      render: (srcNetAddress: string) => (
+      render: (dstNetAddress: string) => (
         <Typography.Text
           ellipsis={{
-            tooltip: srcNetAddress,
+            tooltip: dstNetAddress,
           }}
         >
-          {srcNetAddress || '- -'}
+          {dstNetAddress || '- -'}
         </Typography.Text>
       ),
     },
@@ -174,15 +148,8 @@ export const CooperativeNodeListComponent = () => {
       dataIndex: 'gmtCreate',
       width: '15%',
       sorter: true,
-      ellipsis: true,
       render: (gmtCreate: string) => (
-        <Typography.Text
-          ellipsis={{
-            tooltip: formatTimestamp(gmtCreate as string),
-          }}
-        >
-          {formatTimestamp(gmtCreate as string)}
-        </Typography.Text>
+        <div style={{ width: 80 }}>{formatTimestamp(gmtCreate as string)}</div>
       ),
     },
     {
@@ -190,15 +157,8 @@ export const CooperativeNodeListComponent = () => {
       dataIndex: 'gmtModified',
       width: '15%',
       sorter: true,
-      ellipsis: true,
       render: (gmtModified: string) => (
-        <Typography.Text
-          ellipsis={{
-            tooltip: formatTimestamp(gmtModified as string),
-          }}
-        >
-          {formatTimestamp(gmtModified as string)}
-        </Typography.Text>
+        <div style={{ width: 80 }}>{formatTimestamp(gmtModified as string)}</div>
       ),
     },
     {

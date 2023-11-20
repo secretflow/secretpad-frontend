@@ -17,13 +17,27 @@ export const TemplateSwitch: React.FC<{
   showBlank: boolean;
   viewInstance: CreateProjectModalView;
   visible: boolean;
+  computeMode: 'MPC' | 'TEE';
 }> = (props) => {
-  const { templateList, visible, value, onChange, showBlank, viewInstance } = props;
-
+  const {
+    templateList,
+    visible,
+    value,
+    onChange,
+    showBlank,
+    viewInstance,
+    computeMode = 'MPC',
+  } = props;
   const [tourInited, setTourInited] = useState(false);
+
+  const templateComputeModeList = templateList.filter((item) =>
+    (item?.computeMode || ['MPC']).includes(computeMode),
+  );
   const templateListDisplay = showBlank
-    ? templateList.filter((i) => !i.argsFilled)
-    : templateList.filter((i) => i.type !== PipelineTemplateType.BLANK && i.argsFilled);
+    ? templateComputeModeList.filter((i) => !i.argsFilled)
+    : templateComputeModeList.filter(
+        (i) => i.type !== PipelineTemplateType.BLANK && i.argsFilled,
+      );
 
   const ref1 = useRef(null);
   const steps: TourProps['steps'] = [

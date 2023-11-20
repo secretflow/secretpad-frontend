@@ -46,7 +46,7 @@ export const CooperativeNodeDetailDrawer = ({
       title={
         <div style={{ width: 400 }}>
           <EllipsisMiddle suffixCount={12}>{`「 ${
-            cooperativeNodeDetail?.dstNode?.nodeName || ''
+            cooperativeNodeDetail?.srcNode?.nodeName || ''
           } 」 详情`}</EllipsisMiddle>
         </div>
       }
@@ -66,42 +66,48 @@ export const CooperativeNodeDetailDrawer = ({
       }
       footer={
         <Space style={{ float: 'right' }}>
-          <Button
-            onClick={() => {
-              setShowEditModal(true);
-            }}
-          >
-            编辑
-          </Button>
-          <Button
-            danger
-            onClick={() => {
-              setShowDeleteModal(true);
-            }}
-          >
-            删除
-          </Button>
+          {cooperativeNodeDetail?.dstNode?.type === 'embedded' &&
+          cooperativeNodeDetail?.srcNode?.type === 'embedded' ? null : (
+            <Button
+              onClick={() => {
+                setShowEditModal(true);
+              }}
+            >
+              编辑
+            </Button>
+          )}
+          {cooperativeNodeDetail?.dstNode?.type === 'embedded' &&
+          cooperativeNodeDetail?.srcNode?.type === 'embedded' ? null : (
+            <Button
+              danger
+              onClick={() => {
+                setShowDeleteModal(true);
+              }}
+            >
+              删除
+            </Button>
+          )}
         </Space>
       }
     >
       <Spin spinning={cooperativeNodeLoading}>
         <div className={styles.baseTitle}>合作节点基本信息</div>
         <div className={styles.baseContent}>
-          <Descriptions column={1}>
+          <Descriptions column={1} className={styles.descriptionClass}>
             <Descriptions.Item label="计算节点名">
-              <EllipsisText>{cooperativeNodeDetail?.dstNode?.nodeName}</EllipsisText>
+              <EllipsisText>{cooperativeNodeDetail?.srcNode?.nodeName}</EllipsisText>
             </Descriptions.Item>
             <Descriptions.Item label="计算节点ID">
-              <EllipsisText>{cooperativeNodeDetail?.dstNode?.nodeId}</EllipsisText>
+              <EllipsisText>{cooperativeNodeDetail?.srcNode?.nodeId}</EllipsisText>
             </Descriptions.Item>
             <Descriptions.Item label="节点通讯地址">
-              <EllipsisText>{cooperativeNodeDetail?.dstNode?.netAddress}</EllipsisText>
+              <EllipsisText>{cooperativeNodeDetail?.srcNode?.netAddress}</EllipsisText>
             </Descriptions.Item>
           </Descriptions>
         </div>
-        <Descriptions column={1}>
+        <Descriptions column={1} className={styles.descriptionClass}>
           <Descriptions.Item label="本方通讯地址">
-            <EllipsisText>{cooperativeNodeDetail.srcNetAddress}</EllipsisText>
+            <EllipsisText>{cooperativeNodeDetail.dstNetAddress}</EllipsisText>
           </Descriptions.Item>
           <Descriptions.Item label="发起合作节点">
             <EllipsisText>{cooperativeNodeDetail.srcNode?.nodeName}</EllipsisText>
@@ -127,6 +133,10 @@ export const CooperativeNodeDetailDrawer = ({
                   await service.refreshNode(data.routeId || '');
                   service.getCooperativeNodeDetail(data.routeId || '');
                   onOk();
+                }}
+                style={{
+                  height: 22,
+                  padding: '0 16px',
                 }}
               >
                 刷新

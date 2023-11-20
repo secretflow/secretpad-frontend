@@ -14,6 +14,7 @@ import { ManagementLayoutComponent } from '@/modules/layout/management-layout';
 import { NodeService } from '@/modules/node';
 import { ResultManagerComponent } from '@/modules/result-manager/result-manager.view';
 import { useModel } from '@/util/valtio-helper';
+import { MessageService } from '@/modules/message-center/message.service';
 
 const menuItems: {
   label: string;
@@ -44,6 +45,7 @@ const NodePage = () => {
   const { search } = useLocation();
   const { nodeId } = parse(search);
   const homeLayoutService = useModel(HomeLayoutService);
+  const messageService = useModel(MessageService);
   const nodeService = useModel(NodeService);
 
   useEffect(() => {
@@ -54,8 +56,18 @@ const NodePage = () => {
         if (node) nodeService.setCurrentNode(node);
       }
     };
+    const getMessageTotal = async () => {
+      if (nodeId) {
+        const res = await messageService.getMessageCount(nodeId as string);
+        if (res.status) {
+          homeLayoutService.setMessageCount(res?.data || 0);
+        }
+      }
+    };
     homeLayoutService.setSubTitle('Edge');
     getNodeList();
+    // 获取未处理消息数量
+    getMessageTotal();
   }, []);
   return (
     <HomeLayout>

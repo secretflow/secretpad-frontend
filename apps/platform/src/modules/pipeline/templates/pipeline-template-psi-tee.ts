@@ -1,17 +1,21 @@
 import templateImg from '@/assets/template-psi.jpg';
 import { Model } from '@/util/valtio-helper';
 
-import type { PipelineTemplateContribution } from './pipeline-protocol';
-import { PipelineTemplateType } from './pipeline-protocol';
+import type { PipelineTemplateContribution } from '../pipeline-protocol';
+import { PipelineTemplateType } from '../pipeline-protocol';
 
-export class TemplateGuidePSI extends Model implements PipelineTemplateContribution {
-  type: PipelineTemplateType = PipelineTemplateType.PSI_GUIDE;
+export class TemplateTeePSI extends Model implements PipelineTemplateContribution {
+  type: PipelineTemplateType = PipelineTemplateType.PSI_TEE;
   name = `联合圈人`;
-  argsFilled = true;
+  argsFilled = false;
+  description = '隐私求交的训练流模板';
+  computeMode = ['TEE'];
 
-  // TODO: this is place holder, to be replaced
   minimap = templateImg;
-  content = (graphId: string) => {
+  content = (graphId: string, quickConfigs?: any) => {
+    const { dataTableReceiver, dataTableSender, receiverKey, senderKey } =
+      quickConfigs || {};
+
     return {
       edges: [
         {
@@ -40,15 +44,15 @@ export class TemplateGuidePSI extends Model implements PipelineTemplateContribut
         {
           outputs: [`${graphId}-node-1-output-0`],
           nodeDef: {
+            ...(dataTableReceiver
+              ? {
+                  attrPaths: ['datatable_selected'],
+                  attrs: [{ ...dataTableReceiver, is_na: false }],
+                }
+              : {}),
             domain: `read_data`,
             name: `datatable`,
             version: `0.0.1`,
-            attrPaths: ['datatable_selected'],
-            attrs: [
-              {
-                s: 'alice-table',
-              },
-            ],
           },
           inputs: [],
           codeName: `read_data/datatable`,
@@ -61,15 +65,15 @@ export class TemplateGuidePSI extends Model implements PipelineTemplateContribut
         {
           outputs: [`${graphId}-node-2-output-0`],
           nodeDef: {
+            ...(dataTableSender
+              ? {
+                  attrPaths: ['datatable_selected'],
+                  attrs: [{ ...dataTableSender, is_na: false }],
+                }
+              : {}),
             domain: `read_data`,
             name: `datatable`,
             version: `0.0.1`,
-            attrPaths: ['datatable_selected'],
-            attrs: [
-              {
-                s: 'bob-table',
-              },
-            ],
           },
           inputs: [],
           codeName: `read_data/datatable`,
@@ -82,33 +86,18 @@ export class TemplateGuidePSI extends Model implements PipelineTemplateContribut
         {
           outputs: [`${graphId}-node-3-output-0`],
           nodeDef: {
+            ...(receiverKey && senderKey
+              ? {
+                  attrPaths: ['input/input1/key', 'input/input2/key'],
+                  attrs: [
+                    { ...receiverKey, is_na: false },
+                    { ...senderKey, is_na: false },
+                  ],
+                }
+              : {}),
             domain: `preprocessing`,
             name: `psi`,
             version: `0.0.1`,
-            attrPaths: [
-              'input/receiver_input/key',
-              'input/sender_input/key',
-              'protocol',
-              'bucket_size',
-              'ecdh_curve_type',
-            ],
-            attrs: [
-              {
-                ss: ['id1'],
-              },
-              {
-                ss: ['id2'],
-              },
-              {
-                s: 'ECDH_PSI_2PC',
-              },
-              {
-                i64: 1048576,
-              },
-              {
-                s: 'CURVE_FOURQ',
-              },
-            ],
           },
           inputs: [`${graphId}-node-1-output-0`, `${graphId}-node-2-output-0`],
           codeName: `preprocessing/psi`,

@@ -11,11 +11,13 @@ import { TableSelector } from './table-selector';
 import type { FieldInfoType, TableInfoType } from './type';
 
 export const MultiFieldSelectModal = (props: IProps) => {
-  const { visible, hideModal, submit, tableInfos, multiple, fields, disabled } = props;
+  const { visible, hideModal, submit, tableInfos, multiple, fields, disabled, rules } =
+    props;
   const [selectedTable, setSelectedTable] = useState<TableInfoType | undefined>();
   const [selectedFields, setSelectedFields] = useState<FieldInfoType[]>([]);
   const [selectedTables, setSelectedTables] = useState<TableInfoType[] | undefined>();
   const [showWarn, setShowWarn] = useState(false);
+  const [showError, setShowError] = useState<undefined | string>(undefined);
   const { search } = useLocation();
   const { projectId } = parse(search) as { projectId: string };
 
@@ -69,6 +71,15 @@ export const MultiFieldSelectModal = (props: IProps) => {
     }
   }, [tableInfos, multiple]);
 
+  useEffect(() => {
+    // validate selected features
+    if (!rules) return;
+    setShowError(undefined);
+    const { max, min } = rules;
+    if (selectedFields.length < min) setShowError(`请至少选择${min}列`);
+    if (max && selectedFields.length > max) setShowError(`至多选择${max}列`);
+  }, [selectedFields]);
+
   const onSubmit = () => {
     setShowWarn(false);
     if (submit)
@@ -84,7 +95,7 @@ export const MultiFieldSelectModal = (props: IProps) => {
       open={visible}
       width={800}
       maskClosable={false}
-      okButtonProps={{ disabled }}
+      okButtonProps={{ disabled: disabled || showError !== undefined }}
       onOk={onSubmit}
       onCancel={hideModal}
       className={style.selectModal}
@@ -110,6 +121,15 @@ export const MultiFieldSelectModal = (props: IProps) => {
           setSelectedTables(tables);
         }}
       />
+      {showError && (
+        <Alert
+          message={showError}
+          type={'error'}
+          showIcon
+          closable={false}
+          style={{ marginTop: 8 }}
+        />
+      )}
       <FieldBlock
         schema={multiple ? selectedTables : selectedTable}
         selectedFields={selectedFields}
@@ -130,4 +150,5 @@ export interface IProps {
   dataType?: string;
   multiple?: boolean;
   disabled?: boolean;
+  rules?: { max?: number; min: number };
 }

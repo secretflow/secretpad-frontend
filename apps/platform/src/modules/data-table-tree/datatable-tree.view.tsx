@@ -1,10 +1,12 @@
 import { DatabaseOutlined, PlusOutlined, ProfileOutlined } from '@ant-design/icons';
-import { Alert, Space, Tree, Tooltip, Empty, Tour, Typography } from 'antd';
+import { Alert, Space, Tree, Tooltip, Empty, Tour, Typography, Tag } from 'antd';
 import { parse } from 'query-string';
 import { useRef, useEffect } from 'react';
+import { useLocation } from 'umi';
 
 import { DatatablePreview } from '@/components/datatable-preview';
-import { getDatatable } from '@/services/secretpad/DatatableController';
+import { EdgeAuthWrapper } from '@/components/edge-wrapper-auth';
+import { getProjectDatatable } from '@/services/secretpad/ProjectController';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { DatatableTreeService } from './datatable-tree.service';
@@ -15,6 +17,12 @@ const { Text } = Typography;
 export const DatatableTreeComponent = () => {
   const viewInstance = useModel(DatatableTreeView);
   const ref1 = useRef(null);
+  const { pathname, search } = useLocation();
+  const { projectId } = parse(search);
+
+  useEffect(() => {
+    viewInstance.getDatatables();
+  }, [projectId]);
 
   const useUpdateEffect = (
     effect: () => void,
@@ -50,14 +58,15 @@ export const DatatableTreeComponent = () => {
 
     return isTable ? (
       <DatatablePreview
-        tableInfo={viewInstance.previewDatatable || {}}
+        // tableInfo={viewInstance.previewDatatable || {}}
         node={item}
-        loading={viewInstance.datatableFetching}
+        key={item.nodeId}
+        datatableId={table?.datatableId || ''}
       >
         <div
-          onMouseEnter={() =>
-            viewInstance.getDatatableInfo(item.nodeId || '', table?.datatableId || '')
-          }
+        // onMouseEnter={() =>
+        //   viewInstance.getDatatableInfo(item.nodeId || '', table?.datatableId || '')
+        // }
         >
           <Text style={{ width: 150 }} ellipsis={{ tooltip: node.title }}>
             {node.title}
@@ -68,6 +77,15 @@ export const DatatableTreeComponent = () => {
       <div className={styles.treeRootNode}>
         <span style={{ flex: 1, width: 150 }}>
           <Space>
+            {/* 需要服务端增加type字段 */}
+            {node?.nodeType === 'embedded' && (
+              <Tag
+                bordered={false}
+                style={{ marginRight: '0', backgroundColor: '#ECFFF4' }}
+              >
+                内置
+              </Tag>
+            )}
             <DatabaseOutlined />
             <Text style={{ width: 120 }} ellipsis={{ tooltip: node.title }}>
               {node.title}
@@ -75,18 +93,22 @@ export const DatatableTreeComponent = () => {
           </Space>
         </span>
         <span className={styles.treeRootNodeActions}>
-          <Space>
-            <Tooltip title="查看详情">
-              <ProfileOutlined
-                onClick={() => viewInstance.gotoNodeCenter(item.nodeId as string)}
-              />
-            </Tooltip>
-            <Tooltip title="添加数据">
-              <PlusOutlined
-                onClick={() => viewInstance.gotoNodeCenter(item.nodeId as string)}
-              />
-            </Tooltip>
-          </Space>
+          {node.nodeType === 'embedded' && (
+            <EdgeAuthWrapper>
+              <Space>
+                <Tooltip title="查看详情">
+                  <ProfileOutlined
+                    onClick={() => viewInstance.gotoNodeCenter(item.nodeId as string)}
+                  />
+                </Tooltip>
+                <Tooltip title="添加数据">
+                  <PlusOutlined
+                    onClick={() => viewInstance.gotoNodeCenter(item.nodeId as string)}
+                  />
+                </Tooltip>
+              </Space>
+            </EdgeAuthWrapper>
+          )}
         </span>
       </div>
     );
@@ -130,17 +152,22 @@ export const DatatableTreeComponent = () => {
                     <div style={{ fontSize: '12px', color: 'rgba(0, 0, 0, 0.4)' }}>
                       暂无数据授权
                     </div>
-                    <a
-                      href={`/node?nodeId=${item.nodeId}&tab=data-management`}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{
-                        fontSize: 12,
-                        color: '#0068fa',
-                      }}
-                    >
-                      去节点中心添加
-                    </a>
+                    {(item as API.NodeVO & { nodeType?: 'embedded' }).nodeType ===
+                      'embedded' && (
+                      <EdgeAuthWrapper>
+                        <a
+                          href={`/node?nodeId=${item.nodeId}&tab=data-management`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            fontSize: 12,
+                            color: '#0068fa',
+                          }}
+                        >
+                          去节点中心添加
+                        </a>
+                      </EdgeAuthWrapper>
+                    )}
                   </div>
                 }
               />
@@ -223,9 +250,12 @@ export class DatatableTreeView extends Model {
   async getDatatableInfo(nodeId: string, datatableId: string) {
     this.datatableFetching = true;
     this.currentDatatableFetch = nodeId + datatableId;
-    const { data } = await getDatatable({
+    const { search } = window.location;
+    const { projectId } = parse(search);
+    const { data } = await getProjectDatatable({
       nodeId,
       datatableId,
+      projectId: projectId as string,
     });
 
     // 防止多个数据表预览出现冲突
@@ -237,11 +267,12 @@ export class DatatableTreeView extends Model {
     this.datatableFetching = false;
   }
 
-  buildTableTreeData(nodeInfo: API.NodeVO) {
+  buildTableTreeData(nodeInfo: API.NodeVO & { nodeType?: 'embedded' }) {
     const data = [
       {
         title: nodeInfo.nodeName + '节点',
         key: nodeInfo.nodeId + '_root',
+        nodeType: nodeInfo.nodeType,
         children: nodeInfo.datatables?.map((table, index) => {
           return {
             title: table.datatableName,

@@ -1,11 +1,14 @@
 import { HolderOutlined } from '@ant-design/icons';
 import { Popover, Tree } from 'antd';
-import { useCallback } from 'react';
+import { parse } from 'query-string';
+import { useCallback, useEffect } from 'react';
+import { useLocation } from 'umi';
 
 import { DefaultComponentInterpreterService as ComponentInterpreterService } from '@/modules/component-interpreter/component-interpreter-service';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { ComponentIcons } from './component-icon';
+import type { ComputeMode } from './component-protocol';
 import type { ComponentTreeItem } from './component-tree-protocol';
 import { DefaultComponentTreeService as ComponentTreeService } from './component-tree-service';
 import SearchInput from './components/search-input';
@@ -15,6 +18,14 @@ const { DirectoryTree } = Tree;
 
 export const ComponentTree = () => {
   const viewInstance = useModel(ComponentTreeView);
+
+  const { search } = useLocation();
+  const { mode = 'MPC' } = parse(search);
+
+  useEffect(() => {
+    viewInstance.setTreeData(mode as ComputeMode);
+  }, [mode]);
+
   const interpreter = viewInstance.componentInterpreter;
   const treeNodeRender = useCallback(
     (treeNode: ComponentTreeItem) => {
@@ -24,24 +35,36 @@ export const ComponentTree = () => {
 
       if (isLeaf) {
         const interpretion =
-          interpreter.getComponentTranslationMap({
-            domain: category,
-            name: title,
-            version,
-          }) || {};
+          interpreter.getComponentTranslationMap(
+            {
+              domain: category,
+              name: title,
+              version,
+            },
+            mode as ComputeMode,
+          ) || {};
         return (
           <Popover
-            content={interpretion[docString] || docString}
+            content={
+              <div
+                style={{
+                  width: 200,
+                  wordWrap: 'break-word',
+                  whiteSpace: 'pre-wrap',
+                  maxHeight: 400,
+                  overflow: 'auto',
+                }}
+              >
+                {interpretion[docString] || docString}
+              </div>
+            }
             placement="right"
-            overlayStyle={{
-              width: 200,
-              wordWrap: 'break-word',
-              whiteSpace: 'pre-wrap',
-            }}
           >
             <div
               className={style.node}
-              onMouseDown={(e) => viewInstance.startDrag(e, treeNode)}
+              onMouseDown={(e) =>
+                viewInstance.startDrag(e, treeNode, mode as ComputeMode)
+              }
             >
               <div className={style.nodeTitle}>
                 <span className={style.icon}>
@@ -59,11 +82,14 @@ export const ComponentTree = () => {
         const child = treeNode.children?.[0];
         const { category: _category, title: name, version: _version } = child || {};
         const interpretion =
-          interpreter.getComponentTranslationMap({
-            domain: _category || '',
-            name: name?.val || '',
-            version: _version,
-          }) || {};
+          interpreter.getComponentTranslationMap(
+            {
+              domain: _category || '',
+              name: name?.val || '',
+              version: _version,
+            },
+            mode as ComputeMode,
+          ) || {};
 
         return <span className={style.dir}>{interpretion[title] || title}</span>;
       }
@@ -77,7 +103,9 @@ export const ComponentTree = () => {
         <SearchInput
           className={style.search}
           placeholder="请输入搜索关键字"
-          onSearch={viewInstance.handleSearchComponent}
+          onSearch={(key) =>
+            viewInstance.handleSearchComponent(mode as ComputeMode, key)
+          }
         ></SearchInput>
       </div>
       {viewInstance.componentTreeData.length && (
@@ -106,17 +134,17 @@ export class ComponentTreeView extends Model {
   componentTreeService = getModel(ComponentTreeService);
   componentInterpreter = getModel(ComponentInterpreterService);
 
-  onViewMount = () => {
-    this.componentTreeData = this.componentTreeService.convertToTree();
+  setTreeData = (mode: ComputeMode) => {
+    this.componentTreeData = this.componentTreeService.convertToTree(mode);
   };
 
-  handleSearchComponent = (keyword?: string) => {
+  handleSearchComponent = (mode: ComputeMode, keyword?: string) => {
     if (!keyword) {
       this.searchComponents = [];
       return;
     }
     const { componentList } = this.componentTreeService;
-    const searchRes = componentList
+    const searchRes = componentList[mode]
       .map(({ name, desc, domain, version }) => ({
         isLeaf: true,
         title: { val: name },
@@ -127,11 +155,14 @@ export class ComponentTreeView extends Model {
       }))
       .filter(({ category, version, key }) => {
         const interpretion =
-          this.componentInterpreter.getComponentTranslationMap({
-            domain: category,
-            name: key,
-            version,
-          }) || {};
+          this.componentInterpreter.getComponentTranslationMap(
+            {
+              domain: category,
+              name: key,
+              version,
+            },
+            mode,
+          ) || {};
 
         return (interpretion[key] || key).toLowerCase().includes(keyword.toLowerCase());
       });
@@ -141,10 +172,11 @@ export class ComponentTreeView extends Model {
   startDrag = (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
     treeNode: ComponentTreeItem,
+    mode: ComputeMode,
   ) => {
     e.persist();
     const { title, category } = treeNode;
 
-    this.componentTreeService.dragComponent({ title: title.val, category }, e);
+    this.componentTreeService.dragComponent({ title: title.val, category }, mode, e);
   };
 }

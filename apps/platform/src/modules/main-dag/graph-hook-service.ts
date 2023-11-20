@@ -1,8 +1,10 @@
 import { DefaultHookService } from '@secretflow/dag';
 import type { GraphPort, GraphNodeOutput } from '@secretflow/dag';
+import { parse } from 'query-string';
 
 import { getModel } from '@/util/valtio-helper';
 
+import type { ComputeMode } from '../component-tree/component-protocol';
 import { DefaultComponentTreeService } from '../component-tree/component-tree-service';
 
 export class GraphHookService extends DefaultHookService {
@@ -10,10 +12,15 @@ export class GraphHookService extends DefaultHookService {
 
   async createResult(nodeId: string, codeName: string) {
     const [domain, name] = codeName.split('/');
-    const component = await this.componentService.getComponentConfig({
-      domain,
-      name,
-    });
+    const { mode } = parse(window.location.search);
+    if (!this.componentService.isLoaded) await this.componentService.getComponentList();
+    const component = await this.componentService.getComponentConfig(
+      {
+        domain,
+        name,
+      },
+      mode as ComputeMode,
+    );
 
     if (component) {
       const results: GraphNodeOutput[] = [];
@@ -33,10 +40,15 @@ export class GraphHookService extends DefaultHookService {
 
   async createPort(nodeId: string, codeName: string) {
     const [domain, name] = codeName.split('/');
-    const component = await this.componentService.getComponentConfig({
-      domain,
-      name,
-    });
+    const { mode } = parse(window.location.search);
+    if (!this.componentService.isLoaded) await this.componentService.getComponentList();
+    const component = await this.componentService.getComponentConfig(
+      {
+        domain,
+        name,
+      },
+      mode as ComputeMode,
+    );
     if (component) {
       const ports: GraphPort[] = [];
       const { inputs, outputs } = component;

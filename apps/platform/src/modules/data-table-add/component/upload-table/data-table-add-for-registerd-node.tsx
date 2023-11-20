@@ -409,6 +409,7 @@ export class UploadTableViewByDataSource extends UploadTableView {
 
   submit = async () => {
     try {
+      this.submitting = true;
       await this.formInstance?.validateFields();
 
       const { status } = await createDataByDataSource({
@@ -416,12 +417,15 @@ export class UploadTableViewByDataSource extends UploadTableView {
         nodeId: this.nodeService.currentNode?.nodeId,
       });
 
+      this.submitting = false;
+
       if (status?.code === 0) {
         message.success('上传成功');
       } else {
         message.error(status?.msg || '上传失败');
       }
     } catch (e) {
+      this.submitting = false;
       this.onFinishedFailed(e);
       throw e;
     }

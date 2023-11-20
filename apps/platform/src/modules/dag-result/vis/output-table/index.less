@@ -6,6 +6,62 @@
 
 .exportBtn {
   position: absolute;
-  top: -48px;
+  top: -36px;
   right: 0;
+
+  button {
+    color: rgb(0 10 26 / 68%);
+
+    &:hover {
+      color: #0068fa !important;
+    }
+  }
+}
+
+.outPutTableItem {
+  .ant-table-column-title {
+    white-space: nowrap !important;
+  }
+}
+
+.fullScreenContentPage {
+  overflow: auto;
+  padding-bottom: 24px;
+  background-color: #fff;
+
+  .fullScreenHeader {
+    display: flex;
+    height: 56px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    border: 1px solid #eee;
+    margin-bottom: 16px;
+
+    .title {
+      color: #1d2129;
+      font-size: 20px;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+
+    .exit {
+      color: rgb(0 10 26 / 68%);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 400;
+    }
+  }
+
+  .fullScreenContentWrap {
+    padding: 0 24px;
+  }
+
+  .customBtn {
+    color: rgb(0 10 26/68%);
+
+    &:hover {
+      color: #0068fa !important;
+    }
+  }
 }

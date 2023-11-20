@@ -45,7 +45,7 @@ export const CorrMatrix: React.FC<CorrMatrixProps> = ({ data: requestData }) => 
   };
 
   const renderTabBarExtraContent = () => (
-    <div>
+    <div style={{ paddingBottom: 6 }}>
       {activeKey === 'table' && (
         <Button
           type="link"

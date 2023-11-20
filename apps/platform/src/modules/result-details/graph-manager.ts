@@ -2,6 +2,8 @@ import type { Graph } from '@antv/x6';
 import type { GraphMode } from '@secretflow/dag';
 import { ActionType, DefaultGraphManager } from '@secretflow/dag';
 
+import type { ComputeMode } from '../component-tree/component-protocol';
+
 export class GraphManager extends DefaultGraphManager {
   init = (
     dagId: string,
@@ -10,6 +12,7 @@ export class GraphManager extends DefaultGraphManager {
     highlightNodeId: string,
     nodes: API.GraphNodeDetail[] = [],
     edges: API.GraphEdge[] = [],
+    computeMode: ComputeMode,
   ) => {
     this.dagId = dagId;
 
@@ -18,6 +21,7 @@ export class GraphManager extends DefaultGraphManager {
         nodes,
         edges,
         highlightNodeId,
+        mode: computeMode,
       });
     }
 

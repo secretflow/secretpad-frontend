@@ -1,13 +1,15 @@
 import { listComponentI18n } from '@/services/secretpad/GraphController';
 import { Model } from '@/util/valtio-helper';
 
+import type { ComputeMode } from '../component-tree/component-protocol';
+
 import type { ComponentInterpreterService } from './protocol';
 
 export class DefaultComponentInterpreterService
   extends Model
   implements ComponentInterpreterService
 {
-  translationMap: Record<string, any> = {};
+  translationMap: Record<ComputeMode, Record<string, any>> = { TEE: {}, MPC: {} };
 
   constructor() {
     super();
@@ -16,7 +18,10 @@ export class DefaultComponentInterpreterService
 
   async getComponentI18n() {
     const { data } = await listComponentI18n();
-    if (data) this.translationMap = data;
+    if (data) {
+      this.translationMap['MPC'] = data['secretflow'];
+      this.translationMap['TEE'] = data['trustedflow'];
+    }
   }
 
   getComponentTranslationMap(
@@ -27,10 +32,11 @@ export class DefaultComponentInterpreterService
           version?: string;
         }
       | string,
+    mode: ComputeMode,
   ) {
-    if (typeof component === 'string') return this.translationMap[component];
+    if (typeof component === 'string') return this.translationMap[mode][component];
     const { domain, name, version } = component;
     const key = `${domain}/${name}:${version}`;
-    return this.translationMap[key];
+    return this.translationMap[mode][key];
   }
 }

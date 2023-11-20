@@ -29,10 +29,13 @@ export const RecordListComponent = (props: {
   const { multiSelectEnabled, visible } = props;
   const recordService = useModel(DefaultRecordService);
   const [recordList, setRecordList] = useState<ExecutionRecord>();
-  const [currentPage, setCurrentPage] = useState(1);
+
+  const [currentPage, setCurrentPage] = useState(
+    (history.location.state as any)?.pageNum || 1,
+  );
 
   const [isRefreshed, setIsRefreshed] = useState(false);
-
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const { search, pathname } = useLocation();
   const { projectId, dagId } = parse(search) as {
     projectId: string;
@@ -70,7 +73,10 @@ export const RecordListComponent = (props: {
   }, [visible, dagId, projectId, currentPage, pathname, isRefreshed]);
 
   useEffect(() => {
-    setCurrentPage(1);
+    if (pathname === '/dag') {
+      setCurrentPage(1);
+    }
+    setSelectedItem(dagId);
   }, [dagId, projectId, pathname]);
 
   const Selectable: React.FC<{
@@ -111,6 +117,7 @@ export const RecordListComponent = (props: {
             ? recordList?.pageTotal * recordList?.pageSize
             : 0,
         pageSize: recordList?.pageSize,
+        current: currentPage,
         size: 'small',
         hideOnSinglePage: true,
       }}
@@ -118,12 +125,15 @@ export const RecordListComponent = (props: {
       dataSource={recordList?.data as ExecutionRecordData[]}
       renderItem={(item: ExecutionRecordData) => (
         <List.Item
+          className={classnames(selectedItem === item.jobId ? styles.selectedItem : '')}
           onClick={() => {
+            setSelectedItem(item.jobId);
             const searchDagParams = window.location.search;
-            const { projectId: id } = parse(searchDagParams);
+            const { projectId: id, mode } = parse(searchDagParams);
             const searchParams = {
               dagId: item.jobId,
               projectId: id,
+              mode,
             };
             const { pipelineName, pipelineId } = history.location.state as {
               pipelineName: string;
@@ -134,7 +144,7 @@ export const RecordListComponent = (props: {
                 pathname: '/record',
                 search: stringify(searchParams),
               },
-              { pipelineName, pipelineId },
+              { pipelineName, pipelineId, pageNum: currentPage },
             );
           }}
         >

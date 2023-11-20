@@ -65,10 +65,10 @@ export class DefaultPipelineService extends Model {
 
   setCurrentPipeline = (pipelineId: string, pipelineName?: string) => {
     if (!pipelineId) {
-      const { projectId } = parse(window.location.search);
+      const { projectId, mode } = parse(window.location.search);
       history.replace({
         pathname: '/dag',
-        search: `projectId=${projectId}`,
+        search: `projectId=${projectId}&mode=${mode}`,
       });
       return;
     }
