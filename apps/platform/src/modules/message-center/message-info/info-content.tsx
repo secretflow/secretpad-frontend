@@ -1,14 +1,15 @@
 import { Descriptions, Tag, Typography } from 'antd';
 
 import { EllipsisText } from '@/components/text-ellipsis.tsx';
+import { formatTimestamp } from '@/modules/dag-result/utils';
 import { DataTableStructure } from '@/modules/data-table-info/component/data-table-structure';
 import { PreviewGraphComponents } from '@/modules/result-details/graph';
 import { FullscreenGraphModalComponent } from '@/modules/result-details/graph-fullscreen-modal';
 
 import { MessageTypeTag, NodeStatusList } from '../component/common';
+import { StatusEnum } from '../message.service';
 
 import styles from './index.less';
-import { StatusEnum } from '../message.service';
 
 interface IProps {
   info: Record<string, any>;
@@ -44,7 +45,11 @@ export const TeeDownloadInfo = (props: IProps) => {
           <EllipsisText width={110}>{info.graphName}</EllipsisText>
         </Descriptions.Item>
         <Descriptions.Item label="生成时间">
-          <EllipsisText width={160}>{info?.project?.gmtCreated || ''}</EllipsisText>
+          <EllipsisText width={160}>
+            {info?.project?.gmtCreated
+              ? formatTimestamp(info?.project?.gmtCreated)
+              : ''}
+          </EllipsisText>
         </Descriptions.Item>
         <Descriptions.Item label="计算模式">
           <EllipsisText>

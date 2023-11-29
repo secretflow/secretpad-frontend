@@ -36,17 +36,17 @@ import {
 } from '@/services/secretpad/DatatableController';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
-import { DataTableAddContentBySource } from '../data-table-add/data-table-add-by-source.view';
+import { LoginService } from '../login/login.service';
 
 import { DataManagerService, UploadStatus } from './data-manager.service';
 import styles from './index.less';
-import { getPadMode } from '@/components/PadModeWrapper';
 
 const embeddedSheets = ['alice.csv', 'bob.csv'];
 
 export const DataManagerComponent: React.FC = () => {
   const viewInstance = useModel(DataManagerView);
   const guideTourService = useModel(GuideTourService);
+  const loginService = useModel(LoginService);
   const [messageApi, contextHolder] = message.useMessage();
   const ref1 = useRef(null);
   const steps: TourProps['steps'] = [
@@ -305,7 +305,8 @@ export const DataManagerComponent: React.FC = () => {
           // tee节点不展示加密上传
           // MPC 部署模式 不展示加密上传
           columns={
-            viewInstance.currentNode.nodeId === 'tee' || getPadMode() === 'MPC'
+            viewInstance.currentNode.nodeId === 'tee' ||
+            loginService.userInfo?.deployMode === 'MPC'
               ? columns.filter((item) => item.key !== 'pushToTeeStatus')
               : columns
           }

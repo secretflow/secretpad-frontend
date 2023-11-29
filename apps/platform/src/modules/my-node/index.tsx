@@ -215,6 +215,7 @@ export const MyNodeComponent: React.FC = () => {
       await myNodeService.resetEdgeNodePwd(
         nodeId as string,
         nodeId as string,
+        value.passwordHash,
         value.newPassword,
       );
       setIsModalOpen(false);
@@ -368,6 +369,19 @@ export const MyNodeComponent: React.FC = () => {
                       requiredMark="optional"
                       autoComplete="off"
                     >
+                      <Form.Item
+                        name="passwordHash"
+                        label="原密码"
+                        rules={[
+                          { required: isModalOpen, message: '请输入原密码' },
+                          {
+                            pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,20}$/,
+                            message: '需同时包含小写字母、大写字母、数字，8-20字符',
+                          },
+                        ]}
+                      >
+                        <Input.Password placeholder="请输入" />
+                      </Form.Item>
                       <Form.Item
                         name="newPassword"
                         label="新密码"

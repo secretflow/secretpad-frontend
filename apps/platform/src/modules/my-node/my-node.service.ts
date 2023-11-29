@@ -44,11 +44,17 @@ export class MyNodeService extends Model {
     message.success('通讯地址更改成功');
   };
 
-  resetEdgeNodePwd = async (nodeId: string, name: string, pwd: string) => {
+  resetEdgeNodePwd = async (
+    nodeId: string,
+    name: string,
+    pwd: string,
+    newPwd: string,
+  ) => {
     const res = await resetPwd({
       nodeId,
       name,
-      newPasswordHash: sha256(pwd).toString(),
+      passwordHash: sha256(pwd).toString(),
+      newPasswordHash: sha256(newPwd).toString(),
     });
     if (res.status?.code == 0) {
       message.success('密码设置成功');

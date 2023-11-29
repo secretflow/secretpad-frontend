@@ -36,6 +36,7 @@ export interface User {
   name: string;
   ownerType: 'CENTER' | 'EDGE'; // 宿主类型
   ownerId: string; // 	NODE的话这里存nodeId
+  deployMode: 'ALL-IN-ONE' | 'MPC' | 'TEE';
 }
 export interface UserInfo {
   user: User | null;

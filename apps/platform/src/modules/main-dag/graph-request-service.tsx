@@ -4,7 +4,7 @@ import { DefaultRequestService } from '@secretflow/dag';
 import { message, Image as AntdImage } from 'antd';
 import { parse } from 'query-string';
 
-import dagSuccessLink from '@/assets/dag-success.png';
+import dagSuccessLocalLink from '@/assets/dag-success.png';
 import type {
   AtomicConfigNode,
   StructConfigNode,
@@ -23,6 +23,7 @@ import {
   startGraph,
   stopGraphNode,
 } from '@/services/secretpad/GraphController';
+import { getImgLink } from '@/util/platform';
 import { getModel } from '@/util/valtio-helper';
 
 import type { IGraphEdgeType, IGraphNodeType } from './graph.protocol';
@@ -68,33 +69,12 @@ export class GraphRequestService extends DefaultRequestService {
   }
 
   logDagSuccess() {
-    const onlineLink =
-      'https://mianyang-test.oss-cn-shanghai.aliyuncs.com/dag-success.png';
-    const storageKey = 'dag-task_success';
-
-    const storageVal = localStorage.getItem(storageKey);
-
-    let imgLink = '';
-
-    if (!storageVal) {
-      // 问题：首次任务，要是断网，就获取不到在线图片，无法 log（在线图片 = log）
-      // 解决方式：
-      // 断网的时候，拿本地图片，但不会到 localstorage
-      // 只有获取在线图片，才标记 localstorage
-      const img = new Image();
-      img.src = onlineLink;
-
-      img.onerror = () => {
-        imgLink = dagSuccessLink;
-      };
-
-      img.onload = () => {
-        imgLink = onlineLink;
-        localStorage.setItem(storageKey, 'true');
-      };
-    } else {
-      imgLink = dagSuccessLink;
-    }
+    const imgLink = getImgLink({
+      onlineLink: 'https://mianyang-test.oss-cn-shanghai.aliyuncs.com/dag-success.png',
+      localLink: dagSuccessLocalLink,
+      offlineLink: dagSuccessLocalLink,
+      localStorageTag: 'dag-task_success',
+    });
 
     message.info({
       icon: (
@@ -103,7 +83,7 @@ export class GraphRequestService extends DefaultRequestService {
             width={20}
             preview={false}
             src={imgLink}
-            fallback={dagSuccessLink}
+            fallback={dagSuccessLocalLink}
           />
         </span>
       ),

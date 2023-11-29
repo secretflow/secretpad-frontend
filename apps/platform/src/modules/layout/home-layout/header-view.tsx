@@ -6,15 +6,15 @@ import {
   LogoutOutlined,
   DatabaseOutlined,
 } from '@ant-design/icons';
-import { Badge, Button, Dropdown, Image, Space } from 'antd';
+import { Badge, Button, Dropdown, Image as AntdImage, Space } from 'antd';
 import { parse } from 'query-string';
 import { useEffect, useState } from 'react';
 import { history, useLocation } from 'umi';
 
 import centerOfflineImgLink from '@/assets/center-offline.png';
-import centerImgLink from '@/assets/center.png';
+import centerLocalImgLink from '@/assets/center.png';
 import edgeOfflineImgLink from '@/assets/edge-offline.png';
-import edgeImgLink from '@/assets/edge.png';
+import edgeLocalImgLink from '@/assets/edge.png';
 import Logo from '@/assets/logo.svg';
 import fallbackLink from '@/assets/offline-user.png';
 import { EdgeAuthWrapper } from '@/components/edge-wrapper-auth';
@@ -24,31 +24,25 @@ import { LoginService } from '@/modules/login/login.service';
 import platformConfig from '@/platform.config';
 import { logout } from '@/services/secretpad/AuthController';
 import { get } from '@/services/secretpad/NodeController';
+import type { AvatarInfo } from '@/util/platform';
+import { getImgLink } from '@/util/platform';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { HomeLayoutService } from './home-layout.service';
 import styles from './index.less';
 
-type IAvatarMapping = Record<
-  User['platformType'],
-  {
-    onlineLink: string;
-    localLink: string;
-    offlineLink: string;
-    localStorageTag: string;
-  }
->;
+type IAvatarMapping = Record<User['platformType'], AvatarInfo>;
 
 const avatarMapping: IAvatarMapping = {
   CENTER: {
     onlineLink: 'https://mianyang-test.oss-cn-shanghai.aliyuncs.com/center.png',
-    localLink: centerImgLink,
+    localLink: centerLocalImgLink,
     offlineLink: centerOfflineImgLink,
     localStorageTag: 'secretpad-center',
   },
   EDGE: {
     onlineLink: 'https://mianyang-test.oss-cn-shanghai.aliyuncs.com/edge.png',
-    localLink: edgeImgLink,
+    localLink: edgeLocalImgLink,
     offlineLink: edgeOfflineImgLink,
     localStorageTag: 'secretpad-edge',
   },
@@ -98,21 +92,17 @@ export const HeaderComponent = () => {
   useEffect(() => {
     if (!loginService?.userInfo) return;
 
+    // 获取平台类型
     const platformType = loginService.userInfo.platformType;
 
     if (platformType) {
+      // 如果是 CENTER / EDGE
       const avatarInfo = avatarMapping[platformType];
       setAvatarOfflineLink(avatarInfo.offlineLink);
 
-      const storageKey = avatarInfo.localStorageTag;
-      const storageVal = localStorage.getItem(storageKey);
-
-      if (!storageVal) {
-        setAvatarLink(avatarInfo.onlineLink);
-        localStorage.setItem(storageKey, 'true');
-      } else {
-        setAvatarLink(avatarInfo.localLink);
-      }
+      // get online or local img
+      const imgLink = getImgLink(avatarInfo);
+      setAvatarLink(imgLink);
     }
   }, [loginService?.userInfo]);
 
@@ -255,10 +245,12 @@ export const HeaderComponent = () => {
         >
           <div style={{ cursor: 'pointer' }} onClick={(e) => e.preventDefault()}>
             <Space>
-              <Image
+              <AntdImage
                 width={28}
                 preview={false}
-                src={avatarLink}
+                src={avatarLink || fallbackLink}
+                // 一般只有在请求在线图片链接失败的时候会用到 avatarOfflineLink
+                // fallbackLink 是本地调试断网的时候，兜底用的
                 fallback={avatarOfflineLink || fallbackLink}
               />
               {loginService?.userInfo?.name}
