@@ -1,3 +1,4 @@
+import { CloseOutlined } from '@ant-design/icons';
 import { Drawer } from 'antd';
 import React from 'react';
 
@@ -21,6 +22,7 @@ export const DataTableAuth: React.FC<IProps<API.DatatableVO>> = ({
   return (
     <Drawer
       title={<div>「{data.datatableName}」授权管理</div>}
+      extra={<CloseOutlined style={{ fontSize: 12 }} onClick={close} />}
       width={700}
       open={visible}
       onClose={close}

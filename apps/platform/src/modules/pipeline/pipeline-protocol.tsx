@@ -3,9 +3,13 @@ import { CopyOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 export enum PipelineTemplateType {
   BLANK = 'blank',
   RISK = 'risk', // 金融风控
-  PSI = 'psi', // 联合圈人 // 联合圈人
+  PSI = 'psi', // 联合圈人
+  PSI_TEE = 'psi-tee', // 联合圈人
+  PSI_TEE_GUIDE = 'psi-tee-guide',
   RISK_GUIDE = 'risk-guide', // 金融风控
   PSI_GUIDE = 'psi-guide',
+  TEE = 'TEE', // Tee
+  TEE_GUIDE = 'tee-guide', // Tee guide
 }
 
 export type Pipeline = {
@@ -28,6 +32,7 @@ export interface PipelineTemplateContribution {
   description?: string;
   minimap?: string;
   content: (graphId: string, options?: any) => { edges: any[]; nodes: any[] };
+  computeMode?: string[];
 }
 
 export const PipelineCommands = {

@@ -27,22 +27,39 @@
   &:focus {
     outline: none;
   }
+
+  .actionIcon {
+    color: rgb(0 10 26 / 68%);
+
+    &:hover {
+      color: #0068fa;
+    }
+  }
 }
 
 .report {
   padding: 11px 12px 4px 11px;
   margin-bottom: 16px;
   background-color: rgb(0 0 0 / 2%);
+  font-size: 12px;
 
   :global(.ant-typography) {
     display: flex;
     margin-bottom: 0;
   }
 
+  :global {
+    .ant-table-thead,
+    .ant-table-tbody {
+      font-size: 12px;
+    }
+  }
+
   .item {
     display: flex;
     align-items: center;
     margin-bottom: 8px;
+    font-size: 12px;
 
     .name {
       margin-right: 6px;
@@ -63,6 +80,16 @@
   .time {
     margin-bottom: 8px;
   }
+
+  .ruleContent {
+    display: flex;
+    align-items: baseline;
+  }
+
+  .modelContent {
+    display: flex;
+    align-items: baseline;
+  }
 }
 
 .tableHeader {
@@ -71,6 +98,13 @@
   margin-bottom: 8px;
   font-size: 14px;
   font-weight: 500;
+
+  .fullScreenText {
+    margin-left: 8px;
+    color: rgb(0 10 26 / 68%);
+    cursor: pointer;
+    font-weight: 400;
+  }
 }
 
 .tabsTable {
@@ -80,5 +114,132 @@
     .ant-tabs-nav::before {
       border-bottom: none !important;
     }
+
+    .ant-table-container {
+      border-radius: 0;
+    }
+  }
+
+  :global(.ant-tabs-tab) {
+    padding: 0 0 8px !important;
+  }
+
+  :global(.ant-tabs-nav) {
+    margin-bottom: 8px !important;
+  }
+}
+
+.result {
+  :global {
+    .ant-table-thead,
+    .ant-table-tbody {
+      font-size: 12px;
+    }
+  }
+}
+
+.fullScreenContentPage {
+  overflow: auto;
+  padding-bottom: 24px;
+  background-color: #fff;
+}
+
+.fullScreenContentWrap {
+  padding: 0 24px;
+}
+
+.fullScreenHeader {
+  display: flex;
+  height: 56px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 16px;
+
+  .title {
+    color: #1d2129;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  .exit {
+    color: rgb(0 10 26 / 88%);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 400;
+
+    &:hover {
+      color: #0068fa;
+    }
+  }
+
+  .close {
+    cursor: pointer;
+  }
+}
+
+.resultModalTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .resultExitFullScreen {
+    margin-top: 6px;
+    margin-right: 8px;
+    color: rgb(0 10 26 / 88%);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 400;
+
+    &:hover {
+      color: #0068fa;
+    }
+  }
+}
+
+.model {
+  :global(.ant-alert-icon) {
+    margin-bottom: 20px !important;
+  }
+
+  .list {
+    display: flex;
+    align-items: flex-start;
+    padding: 8px;
+    border-radius: 4px;
+    margin: 8px 0;
+    background-color: #f9fafa;
+  }
+
+  .listError {
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  .downloadContent {
+    background-color: #f9fafa;
+  }
+
+  .downloadRejectReason {
+    .rejectBottom {
+      padding: 4px 8px;
+    }
+  }
+
+  .rightText {
+    margin-left: 16px;
+  }
+}
+
+.applyDownloadBtn {
+  font-size: 12px !important;
+}
+
+.applyDownloadContent {
+  .rightText {
+    margin-left: 16px;
+    font-size: 12px !important;
   }
 }

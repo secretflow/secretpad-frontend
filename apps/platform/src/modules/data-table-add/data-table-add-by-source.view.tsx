@@ -1,5 +1,6 @@
 import { Button, Space } from 'antd';
 import { Drawer } from 'antd';
+import { debounce } from 'lodash';
 import React from 'react';
 
 import { useModel } from '@/util/valtio-helper';
@@ -36,14 +37,14 @@ export const DataTableAddContentBySource: React.FC<{
             <Button
               type="primary"
               loading={UploadInstance.submitting}
-              onClick={async () => {
+              onClick={debounce(async () => {
                 try {
                   await UploadInstance.submit();
                   closeHandler();
                 } catch (e) {
                   return;
                 }
-              }}
+              }, 1000)}
             >
               提交
             </Button>

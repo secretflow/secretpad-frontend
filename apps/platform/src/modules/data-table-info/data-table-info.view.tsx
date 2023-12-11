@@ -1,4 +1,4 @@
-import { RedoOutlined } from '@ant-design/icons';
+import { CloseOutlined, RedoOutlined } from '@ant-design/icons';
 import { Badge, Descriptions, message, Space, Tabs } from 'antd';
 import { Drawer } from 'antd';
 import type { TabsProps } from 'antd';
@@ -64,6 +64,7 @@ export const DataTableInfoDrawer: React.FC<IProps<PropsData>> = (props) => {
           </Space>
         </div>
       }
+      extra={<CloseOutlined style={{ fontSize: 12 }} onClick={close} />}
       width={700}
       open={visible}
       onClose={close}

@@ -2,42 +2,105 @@ English (US) | [简体中文](CONTRIBUTING.zh-Hans.md)
 
 # Contributing
 
-## collaboration
+## Development
 
-### Submit Information
+Make sure you have [pnpm](https://pnpm.io/installation) and
+[Turborepo](https://turbo.build/repo/docs/installing) installed globally.
 
-We use
-[Angular's Commit Specification](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commit-message-format).
-
-The format of the title is `type: subject`:
-
-- `type` a label indicating what kind of commit this is (what changes are involved)
-- A one-sentence description of the `subject` submission
-  - Use English imperative sentences (what this commit will do); lowercase initials; do not use periods
-- (We don't use `scope` for now)
-
-Commonly used `type`:
-
-- `fix` This is a commit that fixes a bug
-- `feat` This is a commit that adds a new feature
-- `refactor` This is a commit that refactors an existing feature
-- `docs` This commit updates the docs (README/comments/…)
-- `ci` commits changes to CI (changed ESLint rules/updated testing tools/updated GitHub
-  Actions...)
-- `chore` Other changes that do not meet the above description (such as regular dependency updates)
-
-**If you find that your commit satisfies multiple tags at the same time, your commit needs to be split into multiple. **
-
-Example:
-
-```
-feat: add ahooks
-ci: update tooling config
-refactor: remove useless ide-scql
-docs: make issues/PR templates bilingual
+```bash
+npm -g install pnpm nx
+npm -g exec pnpm setup
 ```
 
-### source branch
+### First time setup
 
-Branch naming follows a similar convention to commit messages. The format is `type/subject`, where `subject` uses
-`kebab-case` (all lower case, use - as hyphen), **branch name does not need to add your name. **
+```bash
+pnpm bootstrap
+```
+
+> This will install deps with `pnpm install`, ant then setup all packages with
+> `nx run-many setup`.
+
+### Starting the dev server
+
+```bash
+pnpm dev
+```
+
+The example app will be available at http://localhost:8000 by default.
+
+### Formatting
+
+```bash
+pnpm fix
+# run ESLint/Stylelint/Prettier and attempt to fix found issues
+```
+
+### Linting and testing
+
+```bash
+pnpm lint
+pnpm test
+```
+
+### Building
+
+```bash
+pnpm build
+```
+
+You may then serve the built app with `pnpm serve`.
+
+### Per-package operations
+
+[https://pnpm.io/filtering](https://pnpm.io/filtering)
+
+Use either the package name (the `"name"` field in `package.json`) or the **relative**
+path to the package's folder (must be prefixed with `./`) to specify the package(s) on
+which the command should be run.
+
+```bash
+pnpm --filter <package> <command> [...]
+
+pnpm --filter web add react react-dom
+pnpm --filter ./apps/web add react react-dom
+# add react and react-dom as dependencies to the package named "web"
+# whose folder is located at ./apps/web
+
+pnpm --filter "@scope/*" run clean
+pnpm --filter "./packages/*" run clean
+# use glob to select multiple packages, the pattern must be quoted
+```
+
+#### Adding dependencies
+
+[https://pnpm.io/cli/add](https://pnpm.io/cli/add)
+
+`add` for normal dependencies `dependencies`
+
+```bash
+pnpm --filter <package> add [dependency ...]
+# pnpm --filter web add react react-dom
+```
+
+`add -D` for development dependencies `devDependencies`
+
+```bash
+pnpm --filter <package> add -D [dependency ...]
+# pnpm --filter web add -D jest
+```
+
+`add --save-peer` for peer dependencies `peerDependencies`
+
+```bash
+pnpm --filter <package> add --save-peer [dependency ...]
+# pnpm --filter ui add --save-peer react "monaco-editor@^0.31.0"
+```
+
+💡 for adding workspace packages as dependencies, use the same command as above, but
+append `--workspace`
+
+```bash
+pnpm --filter <package> add [--save-dev|--save-peer] [dependency ...] --workspace
+# pnpm --filter web add -D eslint-config-project --workspace
+```

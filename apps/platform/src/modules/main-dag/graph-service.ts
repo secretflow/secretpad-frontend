@@ -16,7 +16,7 @@ import { ComponentConfigRegistry } from '../component-config/component-config-re
 import { DefaultComponentConfigService } from '../component-config/component-config-service';
 import { componentConfigDrawer } from '../component-config/config-modal';
 import { DefaultComponentInterpreterService } from '../component-interpreter/component-interpreter-service';
-import type { Component } from '../component-tree/component-protocol';
+import type { Component, ComputeMode } from '../component-tree/component-protocol';
 import { DefaultComponentTreeService } from '../component-tree/component-tree-service';
 import type { LogParam } from '../dag-log/dag-log.service';
 import { DagLogService } from '../dag-log/dag-log.service';
@@ -60,6 +60,8 @@ export class GraphService implements GraphEventHandlerProtocol {
     status: NodeStatus;
     e: React.MouseEvent<HTMLDivElement, MouseEvent>;
   }) {
+    const { search } = window.location;
+    const { mode } = parse(search);
     const { domain, name, version, outputs } = component;
     const nodeOutputs = outputs?.map((o) => {
       const { types } = o;
@@ -68,16 +70,19 @@ export class GraphService implements GraphEventHandlerProtocol {
       return { ...o, type: resultType };
     });
 
-    const interpretion = this.componentInterpreter.getComponentTranslationMap({
-      domain,
-      name,
-      version,
-    });
+    const interpretion = this.componentInterpreter.getComponentTranslationMap(
+      {
+        domain,
+        name,
+        version,
+      },
+      mode as ComputeMode,
+    );
     mainDag.graphManager.executeAction(
       ActionType.dragNode,
       {
         id: `test-node-${Date.now()}`,
-        label: interpretion[name] || name,
+        label: (interpretion && interpretion[name]) || name,
         codeName: `${component.domain}/${component.name}`,
         version: component.version,
         outputs: nodeOutputs,

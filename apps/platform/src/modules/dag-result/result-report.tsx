@@ -53,12 +53,22 @@ export const ResultReportComponent = (props: ResultComponentProps<'report'>) => 
   );
 };
 
-export const getVisComponents = (key: string, data: Tab, id: string) => {
+export const getVisComponents = (
+  key: string,
+  data: Tab,
+  id: string,
+  showFullscreen?: boolean,
+) => {
   const ComponentVisMap: Record<string, any> = {
     // pva
     'ml.eval/prediction_bias_eval': <PVAChart data={data} />,
     // 相关系数矩阵
-    'stats/ss_pearsonr': <CorrMatrix data={transformCorrMatrixData(data)} />,
+    'stats/ss_pearsonr': (
+      <CorrMatrix
+        data={transformCorrMatrixData(data)}
+        showFullscreen={showFullscreen}
+      />
+    ),
     // 全表统计
     // "stats/table_statistics": div,
   };
@@ -67,5 +77,5 @@ export const getVisComponents = (key: string, data: Tab, id: string) => {
     return ComponentVisMap[key];
   }
 
-  return <OutputTable tableInfo={data} name={id} />;
+  return <OutputTable tableInfo={data} name={id} showFullscreen={showFullscreen} />;
 };

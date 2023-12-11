@@ -7,6 +7,8 @@ import { useLocation } from 'umi';
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import { Model, useModel } from '@/util/valtio-helper';
 
+import type { ComputeMode } from '../component-tree/component-protocol';
+
 import { fullscreenGraphModal } from './graph-fullscreen-modal';
 import styles from './index.less';
 import resultPreviewDag from './result-preview-dag';
@@ -17,8 +19,9 @@ const X6ReactPortalProvider = Portal.getProvider(); // 注意，一个 graph 只
 export const PreviewGraphComponents: React.FC<{
   graph: API.GraphDetailVO;
   id: string;
+  projectMode: ComputeMode;
 }> = (props) => {
-  const { graph, id } = props;
+  const { graph, id, projectMode } = props;
   const { pathname } = useLocation();
 
   /** id: record.domainDataId */
@@ -49,6 +52,7 @@ export const PreviewGraphComponents: React.FC<{
           nodeTaskId,
           graph.nodes,
           graph.edges,
+          projectMode,
         );
 
         const node = graph.nodes?.find((n) => n.taskId === nodeTaskId);
@@ -79,7 +83,7 @@ export const PreviewGraphComponents: React.FC<{
   };
 
   return (
-    <>
+    <div className={styles.dagBox}>
       <div className={styles.graphContainer} id="minimap-id">
         <ShowMenuContext.Provider value={pathname === '/dag'}>
           <X6ReactPortalProvider />
@@ -102,7 +106,7 @@ export const PreviewGraphComponents: React.FC<{
         </div>
         聚焦
       </div>
-    </>
+    </div>
   );
 };
 
@@ -113,6 +117,7 @@ export class GraphView extends Model {
     highlightNodeId: string,
     nodes: API.GraphNodeDetail[] = [],
     edges: API.GraphEdge[] = [],
+    mode: ComputeMode,
   ) => {
     if (container) {
       const { clientWidth, clientHeight } = container;
@@ -127,6 +132,7 @@ export class GraphView extends Model {
         highlightNodeId,
         nodes,
         edges,
+        mode,
       );
     }
   };

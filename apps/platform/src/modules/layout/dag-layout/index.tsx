@@ -62,7 +62,7 @@ export const DagLayout = () => {
           <ArrowLeftOutlined />
         </span>
         <Divider type="vertical" />
-        <span className={styles.title}>进入项目</span>
+        <span className={styles.title}>项目空间</span>
         <span className={styles.slot}>
           <ProjectListComponent />
         </span>

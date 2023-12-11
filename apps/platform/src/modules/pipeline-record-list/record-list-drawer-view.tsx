@@ -66,7 +66,7 @@ export const RecordListDrawer = () => {
 
   const goToDag = () => {
     const searchDagParams = window.location.search;
-    const { projectId } = parse(searchDagParams);
+    const { projectId, mode } = parse(searchDagParams);
     const { pipelineName, pipelineId } = history.location.state as {
       pipelineId: string;
       pipelineName: string;
@@ -75,6 +75,7 @@ export const RecordListDrawer = () => {
     const searchParams = {
       dagId: pipelineId,
       projectId,
+      mode,
     };
     history.push(
       {

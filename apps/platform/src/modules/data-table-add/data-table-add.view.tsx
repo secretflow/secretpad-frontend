@@ -1,6 +1,7 @@
 import { Button, Space } from 'antd';
 import { Drawer } from 'antd';
-import React from 'react';
+import { debounce } from 'lodash';
+import React, { useState } from 'react';
 
 import { useModel } from '@/util/valtio-helper';
 
@@ -15,6 +16,7 @@ export const DataTableAddContent: React.FC<{
   visible: boolean;
 }> = ({ visible, onClose }) => {
   const UploadInstance = useModel(UploadTableView);
+  const [disabled, setDisabled] = useState(false);
 
   const closeHandler = () => {
     UploadInstance.reset();
@@ -30,14 +32,12 @@ export const DataTableAddContent: React.FC<{
       footer={
         <div className={styles.actions}>
           <Space>
-            <Button type="primary" onClick={closeHandler}>
-              取消
-            </Button>
+            <Button onClick={closeHandler}>取消</Button>
             <Button
-              disabled={UploadInstance.step === 0}
+              disabled={UploadInstance.step === 0 || disabled}
               type="primary"
               loading={UploadInstance.submitting}
-              onClick={async () => {
+              onClick={debounce(async () => {
                 try {
                   await UploadInstance.submit();
                   onClose();
@@ -45,7 +45,7 @@ export const DataTableAddContent: React.FC<{
                   return;
                 }
                 closeHandler();
-              }}
+              }, 1000)}
             >
               提交
             </Button>
@@ -53,7 +53,7 @@ export const DataTableAddContent: React.FC<{
         </div>
       }
     >
-      <UploadTable />
+      <UploadTable setDisabled={setDisabled} />
     </Drawer>
   );
 };

@@ -1,16 +1,20 @@
 import type { GraphModel, GraphNode } from '@secretflow/dag';
 import { NodeStatus } from '@secretflow/dag';
 import { DefaultRequestService } from '@secretflow/dag';
-import { message } from 'antd';
+import { message, Image as AntdImage } from 'antd';
 import { parse } from 'query-string';
 
+import dagSuccessLocalLink from '@/assets/dag-success.png';
 import type {
   AtomicConfigNode,
   StructConfigNode,
 } from '@/modules/component-config/component-config-protocol';
 import { ComponentConfigRegistry } from '@/modules/component-config/component-config-registry';
 import { DefaultComponentConfigService } from '@/modules/component-config/component-config-service';
-import type { Component } from '@/modules/component-tree/component-protocol';
+import type {
+  Component,
+  ComputeMode,
+} from '@/modules/component-tree/component-protocol';
 import { DefaultComponentTreeService } from '@/modules/component-tree/component-tree-service';
 import {
   fullUpdateGraph,
@@ -19,6 +23,7 @@ import {
   startGraph,
   stopGraphNode,
 } from '@/services/secretpad/GraphController';
+import { getImgLink } from '@/util/platform';
 import { getModel } from '@/util/valtio-helper';
 
 import type { IGraphEdgeType, IGraphNodeType } from './graph.protocol';
@@ -47,6 +52,12 @@ export class GraphRequestService extends DefaultRequestService {
 
     const { nodes, finished } = data;
 
+    const isAllNodeStatusSuccess =
+      nodes && nodes.length > 0 && nodes.every((node) => node.status === 'SUCCEED');
+    if (isAllNodeStatusSuccess) {
+      this.logDagSuccess();
+    }
+
     return {
       nodeStatus:
         nodes?.map(({ graphNodeId, status }) => ({
@@ -57,7 +68,31 @@ export class GraphRequestService extends DefaultRequestService {
     };
   }
 
+  logDagSuccess() {
+    const imgLink = getImgLink({
+      onlineLink: 'https://mianyang-test.oss-cn-shanghai.aliyuncs.com/dag-success.png',
+      localLink: dagSuccessLocalLink,
+      offlineLink: dagSuccessLocalLink,
+      localStorageTag: 'dag-task_success',
+    });
+
+    message.info({
+      icon: (
+        <span style={{ marginRight: 6, display: 'inline-block' }}>
+          <AntdImage
+            width={20}
+            preview={false}
+            src={imgLink}
+            fallback={dagSuccessLocalLink}
+          />
+        </span>
+      ),
+      content: '任务执行成功',
+    });
+  }
+
   async queryDag(dagId: string) {
+    const { mode } = parse(window.location.search);
     this.graphData = { nodes: [], edges: [] };
 
     if (!dagId) {
@@ -78,9 +113,12 @@ export class GraphRequestService extends DefaultRequestService {
     const convertedNodes = nodes?.map((n) => {
       const { graphNodeId, status, codeName, ...options } = n;
       const configs =
-        (this.componentConfigService.getComponentConfig({
-          name: codeName as string,
-        }) as AtomicConfigNode[]) || [];
+        (this.componentConfigService.getComponentConfig(
+          {
+            name: codeName as string,
+          },
+          mode as ComputeMode,
+        ) as AtomicConfigNode[]) || [];
 
       const isFinished = isConfigFinished(n, configs);
 
@@ -117,18 +155,25 @@ export class GraphRequestService extends DefaultRequestService {
 
   async saveDag(dagId: string, model: GraphModel) {
     const { nodes: n, edges: e } = model;
+    const { mode } = parse(window.location.search);
 
     const nodes = await Promise.all(
       n.map(async (i) => {
         const { id, codeName, nodeDef, ...restNodes } = i;
-        const config = this.componentConfigRegistry.getComponentConfig(codeName);
+        const config = this.componentConfigRegistry.getComponentConfig(
+          codeName,
+          mode as ComputeMode,
+        );
         const { version, domain } = config as StructConfigNode;
 
         const [, name] = codeName.split('/');
-        const component = await this.componentTreeService.getComponentConfig({
-          domain: domain || '',
-          name,
-        });
+        const component = await this.componentTreeService.getComponentConfig(
+          {
+            domain: domain || '',
+            name,
+          },
+          mode as ComputeMode,
+        );
 
         const { outputs } = component as Component;
         const outputPorts = outputs?.map((_, index) => `${id}-output-${index}`);

@@ -1,10 +1,11 @@
 import { SearchOutlined } from '@ant-design/icons';
-import { Input, Table, Typography } from 'antd';
+import { Input, Table, Typography, Button, Badge } from 'antd';
 import type { FilterValue, SorterResult } from 'antd/es/table/interface';
 import { parse } from 'query-string';
-import type { ChangeEvent } from 'react';
+import { useEffect, type ChangeEvent } from 'react';
 import { history } from 'umi';
 
+import type { ComputeMode } from '@/modules/component-tree/component-protocol';
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import { formatTimestamp } from '@/modules/dag-result/utils';
 import { NodeService } from '@/modules/node';
@@ -16,7 +17,11 @@ import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
 import type { TableType } from './result-manager.protocol';
-import { ResultManagerService, TableTypeMap } from './result-manager.service';
+import {
+  ResultManagerService,
+  ResultTableState,
+  TableTypeMap,
+} from './result-manager.service';
 
 export const ResultManagerComponent = () => {
   const viewInstance = useModel(ResultManagerView);
@@ -29,11 +34,17 @@ export const ResultManagerComponent = () => {
       dataIndex: 'domainDataId',
       key: 'domainDataId',
       width: '20%',
+      ellipsis: true,
       render: (text: string, record: API.NodeResultsVO) => {
         return (
           <Link
+            ellipsis
             onClick={() =>
-              viewInstance.showDrawer(`「${text}」详情`, record.domainDataId as string)
+              viewInstance.showDrawer(
+                `「${text}」详情`,
+                record.domainDataId as string,
+                (record?.computeMode || 'MPC') as ComputeMode,
+              )
             }
           >
             {text}
@@ -45,7 +56,7 @@ export const ResultManagerComponent = () => {
       title: '结果类型',
       dataIndex: 'datatableType',
       key: 'datatableType',
-      width: '15%',
+      width: '10%',
       filters: [
         {
           text: '规则',
@@ -70,13 +81,15 @@ export const ResultManagerComponent = () => {
       title: '来源项目',
       dataIndex: 'sourceProjectName',
       key: 'sourceProjectName',
-      width: '20%',
+      width: '15%',
       render: (sourceProject: string) => <span>{sourceProject}</span>,
+      // ...getColumnSearchProps('sourceProjectName', '请输入项目名称搜索'),
     },
     {
       title: '所属训练流',
       dataIndex: 'trainFlow',
       width: '15%',
+      // ...getColumnSearchProps('trainFlow', '请输入训练流名称搜索')
     },
     {
       title: '生成时间',
@@ -94,16 +107,85 @@ export const ResultManagerComponent = () => {
         </Typography.Text>
       ),
     },
+    {
+      title: '状态',
+      dataIndex: 'pullFromTeeStatus',
+      width: '10%',
+      render: (status: string, record: API.NodeResultsVO) => {
+        if (record.computeMode === 'MPC' || status === '') {
+          return '-';
+        } else if (status === ResultTableState.SUCCESS) {
+          return <Badge status="success" text="获取成功" />;
+        } else if (status === ResultTableState.FAILED) {
+          return <Badge status="error" text="获取失败" />;
+        } else if (status === ResultTableState.RUNNING) {
+          return <Badge status="processing" text="获取中" />;
+        }
+      },
+    },
+    {
+      title: '操作',
+      dataIndex: 'action',
+      width: '10%',
+      render: (_: string, record: API.NodeResultsVO) => {
+        if (record.datatableType === 'report') {
+          return '-';
+        } else if (
+          record?.pullFromTeeStatus === ResultTableState.SUCCESS ||
+          record?.pullFromTeeStatus === ''
+        ) {
+          return (
+            <Button
+              type="link"
+              style={{ paddingLeft: 0 }}
+              onClick={() => viewInstance.download(record)}
+            >
+              下载
+            </Button>
+          );
+        } else if (record?.pullFromTeeStatus === ResultTableState.FAILED) {
+          return (
+            <Button
+              type="link"
+              style={{ paddingLeft: 0 }}
+              onClick={() => viewInstance.download(record)}
+            >
+              重新获取
+            </Button>
+          );
+        } else if (record?.pullFromTeeStatus === ResultTableState.RUNNING) {
+          return (
+            <Button type="link" disabled>
+              -
+            </Button>
+          );
+        }
+      },
+    },
   ];
+
+  useEffect(() => {
+    const flag = viewInstance.resultTableList.filter(
+      (item) => item?.pullFromTeeStatus === ResultTableState.RUNNING,
+    );
+
+    if (flag.length) {
+      clearTimeout(viewInstance.resultListTimer);
+      viewInstance.resultListTimer = setTimeout(() => {
+        viewInstance.getResultTableList('', true);
+      }, 2000);
+    } else {
+      clearTimeout(viewInstance.resultListTimer);
+    }
+  }, [viewInstance.resultTableList]);
 
   return (
     <div className={styles.main}>
       <div className={styles.toolbar}>
-        <div style={{ flex: 1 }}></div>
         <div style={{ width: 220 }}>
           <Input
             defaultValue={parse(window.location.search).resultName || ''}
-            placeholder="搜索表名/所属项目/训练流"
+            placeholder="搜索结果名称"
             onChange={viewInstance.searchResult}
             suffix={
               <SearchOutlined
@@ -119,10 +201,24 @@ export const ResultManagerComponent = () => {
         <Table
           loading={viewInstance.loading}
           dataSource={viewInstance.resultTableList}
-          columns={columns}
-          onChange={(pagination, filters: Record<string, FilterValue | null>, sorter) =>
-            viewInstance.typeFilter(filters, sorter as SorterResult<API.NodeResultsVO>)
+          sortDirections={['descend', 'ascend']}
+          columns={
+            viewInstance.nodeService.currentNode &&
+            viewInstance.nodeService.currentNode.nodeId === 'tee'
+              ? columns.filter(
+                  (item) =>
+                    item.dataIndex !== 'action' &&
+                    item.dataIndex !== 'pullFromTeeStatus',
+                )
+              : columns
           }
+          onChange={(
+            pagination,
+            filters: Record<string, FilterValue | null>,
+            sorter,
+          ) => {
+            viewInstance.typeFilter(filters, sorter as SorterResult<API.NodeResultsVO>);
+          }}
           pagination={{
             total: viewInstance.totalNum || 1,
             current: viewInstance.pageNumber,
@@ -167,6 +263,8 @@ export class ResultManagerView extends Model {
 
   modalManager = getModel(DefaultModalManager);
 
+  resultListTimer: ReturnType<typeof setTimeout> | undefined;
+
   onViewMount() {
     const { search } = window.location;
     const { resultName } = parse(search);
@@ -179,8 +277,12 @@ export class ResultManagerView extends Model {
     });
   }
 
-  async getResultTableList(nodeId?: string) {
-    this.loading = true;
+  async getResultTableList(nodeId?: string, isLoading?: boolean) {
+    if (isLoading) {
+      this.loading = false;
+    } else {
+      this.loading = true;
+    }
     const currentNodeId = nodeId ? nodeId : this.nodeService.currentNode?.nodeId;
 
     let sort = '';
@@ -230,8 +332,8 @@ export class ResultManagerView extends Model {
     this.getResultTableList();
   };
 
-  showDrawer = (title: string, id: string) => {
-    this.modalManager.openModal(resultDetailsDrawer.id, { id });
+  showDrawer = (title: string, id: string, projectMode: ComputeMode) => {
+    this.modalManager.openModal(resultDetailsDrawer.id, { id, projectMode });
   };
 
   download = async (tableInfo: API.NodeResultsVO) => {

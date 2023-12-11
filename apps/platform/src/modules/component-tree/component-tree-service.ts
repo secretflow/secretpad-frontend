@@ -13,8 +13,7 @@ import { ComponentConfigRegistry } from '../component-config/component-config-re
 import { DefaultComponentConfigService } from '../component-config/component-config-service';
 import { DefaultComponentInterpreterService as ComponentInterpreterService } from '../component-interpreter/component-interpreter-service';
 
-import type { Component } from './component-protocol';
-import type { ComponentTreeItem } from './component-tree-protocol';
+import type { Component, ComponentTreeItem, ComputeMode } from './component-protocol';
 
 export class DefaultComponentTreeService extends Model {
   protected readonly onComponentDraggedEmitter = new Emitter<{
@@ -24,12 +23,17 @@ export class DefaultComponentTreeService extends Model {
   }>();
 
   onComponentDragged = this.onComponentDraggedEmitter.on;
-  componentList: Component[] = [];
-  componentConfigMap: Record<string, Component> = {};
+  componentList: Record<ComputeMode, Component[]> = { TEE: [], MPC: [] };
+  componentConfigMap: Record<ComputeMode, Record<string, Component>> = {
+    TEE: {},
+    MPC: {},
+  };
 
   componentConfigRegistry = getModel(ComponentConfigRegistry);
   componentInterpreter = getModel(ComponentInterpreterService);
   componentConfigService = getModel(DefaultComponentConfigService);
+
+  isLoaded = false;
 
   constructor() {
     super();
@@ -42,50 +46,78 @@ export class DefaultComponentTreeService extends Model {
       message.error(componentListStatus?.msg || '获取组件失败');
       return;
     }
-    this.componentList = data.comps as Component[];
+    this.componentList = {
+      TEE: data['trustedflow']?.comps || ([] as Component[]),
+      MPC: data['secretflow']?.comps || ([] as Component[]),
+    };
 
-    const { data: specList, status } = await batchGetComponent(
-      this.componentList.map((node) => ({
+    const { data: specMpcList, status } = await batchGetComponent(
+      this.componentList['MPC'].map((node) => ({
+        app: 'secretflow',
         name: node.name,
         domain: node.domain,
       })),
     );
 
-    if (status && status.code !== 0) {
-      message.error(status.msg);
-    }
+    const { data: specTeeList, status: teeStatus } = await batchGetComponent(
+      this.componentList['TEE'].map((node) => ({
+        app: 'trustedflow',
+        name: node.name,
+        domain: node.domain,
+      })),
+    );
 
-    if (specList) {
-      specList.forEach((componentConfig: Component) => {
-        this.componentConfigMap[`${componentConfig.domain}/${componentConfig.name}`] =
-          componentConfig;
-        this.componentConfigRegistry.registerConfigNode(componentConfig);
+    if (specMpcList) {
+      specMpcList.forEach((componentConfig: Component) => {
+        this.componentConfigMap['MPC'][
+          `${componentConfig.domain}/${componentConfig.name}`
+        ] = componentConfig;
+        this.componentConfigRegistry.registerConfigNode(componentConfig, 'MPC');
       });
     }
+
+    if (specTeeList) {
+      specTeeList.forEach((componentConfig: Component) => {
+        this.componentConfigMap['TEE'][
+          `${componentConfig.domain}/${componentConfig.name}`
+        ] = componentConfig;
+        this.componentConfigRegistry.registerConfigNode(componentConfig, 'TEE');
+      });
+    }
+
+    this.isLoaded = true;
   }
 
-  async getComponentConfig(componentName: {
-    name: string;
-    domain: string;
-  }): Promise<Component | undefined> {
+  async getComponentConfig(
+    componentName: {
+      name: string;
+      domain: string;
+    },
+    mode: ComputeMode,
+  ): Promise<Component | undefined> {
     const mapRes =
-      this.componentConfigMap[`${componentName.domain}/${componentName.name}`];
+      this.componentConfigMap[mode][`${componentName.domain}/${componentName.name}`];
     if (mapRes) return mapRes;
 
-    const { data: component } = await getComponent(componentName);
-    return component as Component;
+    // const { data: component } = await getComponent(componentName);
+    // return component as Component;
   }
 
   async dragComponent(
     node: { title: string; category: string },
+    mode: ComputeMode,
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
   ) {
-    const componentConfig = await this.getComponentConfig({
-      name: node.title,
-      domain: node.category,
-    });
+    const componentConfig = await this.getComponentConfig(
+      {
+        name: node.title,
+        domain: node.category,
+      },
+      mode,
+    );
     const isConfigNeeded = this.componentConfigService.isConfigNeeded(
       `${node.category}/${node.title}`,
+      mode,
     );
 
     componentConfig &&
@@ -96,8 +128,8 @@ export class DefaultComponentTreeService extends Model {
       });
   }
 
-  convertToTree(): ComponentTreeItem[] {
-    return this.componentList.reduce<ComponentTreeItem[]>((acc, component) => {
+  convertToTree(mode: ComputeMode): ComponentTreeItem[] {
+    return this.componentList[mode].reduce<ComponentTreeItem[]>((acc, component) => {
       const { domain: category, name: label, desc, version } = component;
       const treeItem = {
         category,

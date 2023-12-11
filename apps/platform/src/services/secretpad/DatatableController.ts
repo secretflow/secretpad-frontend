@@ -58,3 +58,21 @@ export async function listDatatables(
     },
   );
 }
+
+/** Push datable to tee node api
+@param request push datable to tee node request
+@return successful SecretPadResponse with null data
+ POST /api/v1alpha1/datatable/pushToTee */
+export async function pushDatatableToTeeNode(
+  body?: API.PushDatatableToTeeRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.SecretPadResponse>('/api/v1alpha1/datatable/pushToTee', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}

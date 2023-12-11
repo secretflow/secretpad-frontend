@@ -9,11 +9,14 @@ import {
   Space,
   Tooltip,
   Typography,
+  Tag,
+  Alert,
 } from 'antd';
 import React, { useEffect } from 'react';
 
 import { formatTimestamp } from '@/modules/dag-result/utils';
 import { NodeService } from '@/modules/node';
+import { ComputeModeType, computeModeText } from '@/modules/project-list';
 import { ProjectListService } from '@/modules/project-list/project-list.service';
 import { getDatatable } from '@/services/secretpad/DatatableController';
 import {
@@ -24,6 +27,7 @@ import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { DatatableInfoService } from './data-table-auth.service';
 import styles from './index.less';
+import { PadModeWrapper } from '@/components/PadModeWrapper';
 
 const { Text } = Typography;
 
@@ -45,8 +49,15 @@ export const DataTableAuthComponent: React.FC<IProps> = (props: IProps) => {
     viewInstance.getTableInfo(tableInfo);
   }, [tableInfo, tableInfo.authProjects, viewInstance]);
 
+  useEffect(() => {
+    viewInstance.newAuthList = [];
+  }, []);
+
   return (
-    <div className={`${styles.auth} ${size === 'middle' ? styles.authLarge : ''}`}>
+    <div
+      style={{ fontSize: '12px' }}
+      className={`${styles.auth} ${size === 'middle' ? styles.authLarge : ''}`}
+    >
       <Descriptions
         column={5}
         style={{
@@ -88,6 +99,7 @@ export const DataTableAuthComponent: React.FC<IProps> = (props: IProps) => {
           block
           onClick={() => viewInstance.addNewAuth()}
           style={{
+            fontSize: 12,
             height: 28,
             lineHeight: '18px',
           }}
@@ -107,7 +119,7 @@ export const DataTableAuthComponent: React.FC<IProps> = (props: IProps) => {
               <div
                 className={styles.authItem}
                 style={{
-                  width: 160,
+                  width: 170,
                 }}
               >
                 <Select
@@ -116,12 +128,29 @@ export const DataTableAuthComponent: React.FC<IProps> = (props: IProps) => {
                   value={item.project}
                   onChange={(e) => (item.project = e)}
                   size={size}
-                  showSearch
+                  popupClassName={styles.popup}
                   optionFilterProp="children"
+                  dropdownRender={(menu) => (
+                    <>
+                      <PadModeWrapper type={['ALL-IN-ONE', 'TEE']}>
+                        <Alert
+                          message="授权到枢纽类型项目，数据表会自动加密上传到TEE存储中"
+                          type="warning"
+                          showIcon
+                        />
+                      </PadModeWrapper>
+                      {menu}
+                    </>
+                  )}
                 >
                   {viewInstance.projectList?.map((i) => {
                     return (
                       <Select.Option key={i.projectId} value={i.projectId}>
+                        <Tag>
+                          {computeModeText[
+                            i.computeMode as keyof typeof computeModeText
+                          ] || computeModeText[ComputeModeType.MPC]}
+                        </Tag>
                         {i.projectName}
                       </Select.Option>
                     );
@@ -133,6 +162,7 @@ export const DataTableAuthComponent: React.FC<IProps> = (props: IProps) => {
                   style={{ width: 94 }}
                   placeholder="关联键"
                   value={item.key}
+                  popupClassName={styles.popup}
                   onChange={(e) => (item.key = e)}
                   size={size}
                 >
@@ -150,6 +180,7 @@ export const DataTableAuthComponent: React.FC<IProps> = (props: IProps) => {
                   style={{ width: 94 }}
                   placeholder="标签列"
                   value={item.label}
+                  popupClassName={styles.popup}
                   onChange={(e) => (item.label = e)}
                   size={size}
                 >
@@ -203,6 +234,10 @@ export const DataTableAuthComponent: React.FC<IProps> = (props: IProps) => {
                   width: 170,
                 }}
               >
+                <Tag>
+                  {computeModeText[item?.computeMode as keyof typeof computeModeText] ||
+                    computeModeText[ComputeModeType.MPC]}
+                </Tag>
                 <span className={styles.authItemText}>{item.name}</span>
               </div>
               <div style={{ width: 120 }} className={styles.authItem}>
@@ -255,6 +290,7 @@ interface AuthInfo {
   project?: string;
   key?: string;
   label?: string;
+  computeMode?: string;
 }
 
 export class DataTableAuth extends Model {

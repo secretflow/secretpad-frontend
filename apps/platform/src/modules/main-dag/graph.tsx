@@ -11,6 +11,7 @@ import templateImg from '@/assets/dag-background.svg';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { DefaultComponentInterpreterService } from '../component-interpreter/component-interpreter-service';
+import type { ComputeMode } from '../component-tree/component-protocol';
 import { DefaultComponentTreeService } from '../component-tree/component-tree-service';
 import { DagLogService } from '../dag-log/dag-log.service';
 import { DefaultModalManager } from '../dag-modal-manager';
@@ -32,7 +33,7 @@ export const GraphComponents: React.FC<{
   const dagInstatnce = props?.dagInstatnce || mainDag;
   const modalManager = useModel(DefaultModalManager);
   const { search, pathname } = useLocation();
-  const dagId = parse(search)?.dagId as string;
+  const { dagId, mode } = parse(search);
 
   const viewRef = React.useRef<HTMLDivElement>(null);
   const { width, height } = useSize(viewRef.current) || {};
@@ -41,9 +42,13 @@ export const GraphComponents: React.FC<{
     dagInstatnce.dispose();
     if (dagId && containerRef.current) {
       modalManager.closeAllModalsBut(RecordListDrawerItem.id);
-      viewInstance.initGraph(dagId, containerRef.current);
+      viewInstance.initGraph(
+        dagId as string,
+        containerRef.current,
+        mode as ComputeMode,
+      );
     }
-  }, [dagId]);
+  }, [dagId, mode]);
 
   React.useEffect(() => {
     const graph = dagInstatnce.graphManager.getGraphInstance();
@@ -90,7 +95,7 @@ export class GraphView extends Model {
     mainDag.dispose();
   }
 
-  initGraph(dagId: string, container: HTMLDivElement) {
+  initGraph(dagId: string, container: HTMLDivElement, mode: ComputeMode) {
     if (container) {
       const { clientWidth, clientHeight } = container;
       mainDag.init(
@@ -104,10 +109,13 @@ export class GraphView extends Model {
             const { codeName } = node.getData();
             const [domain, name] = codeName.split('/');
             const { type, index } = splitPortId(port.id);
-            const component = await this.componentService.getComponentConfig({
-              domain,
-              name,
-            });
+            const component = await this.componentService.getComponentConfig(
+              {
+                domain,
+                name,
+              },
+              mode,
+            );
 
             if (component) {
               const interpretion = this.componentInterpreter.getComponentTranslationMap(
@@ -116,6 +124,7 @@ export class GraphView extends Model {
                   name,
                   version: component.version,
                 },
+                mode,
               );
               const ioType = type === 'input' ? 'inputs' : 'outputs';
               const des = component?.[ioType]?.[index].desc;

@@ -129,7 +129,41 @@ export const QuickConfigRisk = () => {
           return { ss: value };
         }}
       >
-        <MultiTableFeatureSelection tableKeys={selectedTableInfo} size={'small'} />
+        <MultiTableFeatureSelection
+          tableKeys={selectedTableInfo}
+          size={'small'}
+          rules={{ min: 1 }}
+        />
+      </Form.Item>
+
+      <Form.Item
+        name="labelSelects"
+        label={<div className={styles.configItemLabel}>选择标签</div>}
+        required
+        messageVariables={{ msg: '请选择标签列' }}
+        rules={[
+          {
+            required: true,
+            message: '${msg}',
+            validator: (_, val) => {
+              if (!val || val.length === 0) return Promise.reject(new Error('${msg}'));
+
+              return Promise.resolve();
+            },
+          },
+        ]}
+        getValueProps={(value) => {
+          return { value: value?.ss };
+        }}
+        getValueFromEvent={(value) => {
+          return { ss: value };
+        }}
+      >
+        <MultiTableFeatureSelection
+          tableKeys={selectedTableInfo}
+          size={'small'}
+          rules={{ min: 1, max: 1 }}
+        />
       </Form.Item>
 
       <Form.Item

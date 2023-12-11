@@ -36,6 +36,21 @@ export const ManagementLayoutComponent = (props: ManagementLayoutComponentProps)
   const [tabKey, setTabKey] = useState<string>();
 
   useEffect(() => {
+    history.replace({
+      pathname: pathname === '/' ? '/home' : pathname,
+      search: stringify(
+        nodeId
+          ? {
+              ...parsedSearch,
+              nodeId,
+              tab: tab || defaultTabKey,
+            }
+          : { tab: tab || defaultTabKey },
+      ),
+    });
+  }, [defaultTabKey, tab]);
+
+  useEffect(() => {
     setTabKey(tab || defaultTabKey);
   }, [tab]);
 

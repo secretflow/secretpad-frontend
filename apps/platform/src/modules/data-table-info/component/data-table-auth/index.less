@@ -22,6 +22,10 @@
       background-color: #fafafa;
     }
 
+    .ant-tag {
+      background-color: white;
+    }
+
     .ant-descriptions .ant-descriptions-row > th {
       padding: 0;
       padding-bottom: 0;
@@ -35,6 +39,7 @@
       display: flex;
       align-items: center;
       color: rgb(0 0 0 / 88%);
+      font-size: 12px;
 
       .ant-divider {
         margin-right: 10px;
@@ -63,12 +68,32 @@
     padding: 0 10px;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    :global {
+      .ant-typography {
+        font-size: 12px;
+      }
+
+      .ant-select-selection-placeholder {
+        font-size: 12px;
+      }
+    }
   }
 
   .authItemText {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+}
+
+.popup {
+  width: 240px !important;
+
+  :global {
+    .ant-tag {
+      background-color: white;
+    }
   }
 }
 

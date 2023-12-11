@@ -109,7 +109,12 @@ export const DefaultColSelection: React.FC<RenderProp<string>> = (config) => {
                     tooltip={translation[node.docString] || node.docString}
                     labelCol={{ span: 6 }}
                     wrapperCol={{ span: 20 }}
-                    required={col_min_cnt_inclusive > 0}
+                    rules={[
+                      {
+                        required: col_min_cnt_inclusive > 0,
+                        message: `至少选择${col_min_cnt_inclusive || 1}列作为关联键`,
+                      },
+                    ]}
                   >
                     <Select options={colsOptions} />
                   </Form.Item>

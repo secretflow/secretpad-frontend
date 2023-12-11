@@ -99,7 +99,7 @@ export async function update(
   body?: API.UpdateNodeRouterRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.SecretPadResponse_Void_>('/api/v1alpha1/nodeRoute/update', {
+  return request<API.SecretPadResponse_String_>('/api/v1alpha1/nodeRoute/update', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

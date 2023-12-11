@@ -7,8 +7,15 @@
 
     .search {
       height: 28px;
-      border: 1px solid rgba(214 216 218 / 100%);
       margin: 0;
+
+      &:hover {
+        border-color: #0068fa;
+      }
+    }
+
+    :global(.ant-input-affix-wrapper-focused) {
+      border-color: #0068fa;
     }
   }
 

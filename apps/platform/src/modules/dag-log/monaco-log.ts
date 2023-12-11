@@ -87,7 +87,7 @@ monaco.languages.setMonarchTokensProvider('log', {
       [/\bW\//, 'warning'],
       // ERROR
       [
-        /\b(ALERT|CRITICAL|EMERGENCY|ERROR|FAILURE|FAIL|Fatal|FATAL|Error|EE)\b|\b([eE][rR][rR][oO][rR])\:/,
+        /\b(ALERT|CRITICAL|EMERGENCY|ERROR|FAILURE|FAIL|Fatal|FATAL|Error)\b|\b([eE][rR][rR][oO][rR])\:/,
         'error',
       ],
       // Serilog ERROR

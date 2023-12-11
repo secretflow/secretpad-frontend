@@ -57,6 +57,14 @@
     :global(.ant-input-disabled) {
       background-color: rgb(0 0 0 / 2%);
     }
+
+    :global(.ant-form-item) {
+      margin-bottom: 16px !important;
+    }
+
+    :global(.ant-form-item:last-child) {
+      margin-bottom: 0 !important;
+    }
   }
 }
 
@@ -76,8 +84,23 @@
 
   .baseContent {
     padding: 16px;
+    padding-bottom: 0;
     border-radius: 8px;
-    margin: 16px 0;
-    background-color: #fafafa;
+    margin-bottom: 16px;
+    background-color: rgb(0 0 0 / 2%);
+  }
+}
+
+.embeddedTag {
+  border: 1px solid #cdfadf;
+  border-radius: 4px;
+  background-color: #ecfff4;
+  color: rgb(0 0 0 / 88%);
+  font-weight: 400;
+}
+
+.descriptionClass {
+  :global(.ant-descriptions-item) {
+    padding-bottom: 14px !important;
   }
 }

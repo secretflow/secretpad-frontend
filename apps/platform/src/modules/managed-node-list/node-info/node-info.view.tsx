@@ -1,4 +1,4 @@
-import { ReloadOutlined } from '@ant-design/icons';
+import { ReloadOutlined, CloseOutlined } from '@ant-design/icons';
 import {
   Typography,
   Drawer,
@@ -15,9 +15,8 @@ import {
 import type { MessageInstance } from 'antd/es/message/interface';
 import React from 'react';
 
-import { confirmDelete } from '@/components/comfirm-delete';
+import { confirmDeleteInput } from '@/components/comfirm-delete';
 import { EllipsisText } from '@/components/text-ellipsis.tsx';
-import { EllipsisMiddle } from '@/components/text-ellipsis.tsx';
 import { formatTimestamp } from '@/modules/dag-result/utils';
 import {
   get,
@@ -68,12 +67,13 @@ export const NodeInfoDrawer = ({
   }, [data, visible]);
 
   const handleDelete = () => {
-    confirmDelete({
+    confirmDeleteInput({
       name: nodeInfo.nodeName || '',
       description: '',
       onOk: () => {
         viewInstance.deleteNode(messageApi);
         close();
+        callBack && callBack();
       },
     });
   };
@@ -82,24 +82,34 @@ export const NodeInfoDrawer = ({
     <>
       {contextHolder}
       <Drawer
+        closeIcon={false}
+        className={styles.nodeDrawer}
         title={
           <div className={styles.drawerTitle}>
-            <span className={styles.title}>
-              <EllipsisMiddle suffixCount={12}>{`「 ${
-                nodeInfo?.nodeName || ''
-              } 」 详情`}</EllipsisMiddle>
-            </span>
-            <Badge
-              status={
-                NodeStateText[(nodeInfo?.nodeStatus as NodeState) || NodeState.UNKNOWN]
-                  .icon
-              }
-              text={
-                NodeStateText[(nodeInfo?.nodeStatus as NodeState) || NodeState.UNKNOWN]
-                  .text
-              }
-              className={styles.badge}
-            />
+            <div className={styles.drawerTitleName}>
+              <span className={styles.title}>
+                <div>「</div>
+                <div style={{ flex: 1 }}>
+                  <EllipsisText style={{ maxWidth: 200, width: '100%' }}>{`${
+                    nodeInfo?.nodeName || ''
+                  }`}</EllipsisText>
+                </div>
+                <div>」详情</div>
+              </span>
+              <Badge
+                status={
+                  NodeStateText[
+                    (nodeInfo?.nodeStatus as NodeState) || NodeState.UNKNOWN
+                  ].icon
+                }
+                text={
+                  NodeStateText[
+                    (nodeInfo?.nodeStatus as NodeState) || NodeState.UNKNOWN
+                  ].text
+                }
+                className={styles.badge}
+              />
+            </div>
             <Button
               type="link"
               icon={<ReloadOutlined />}
@@ -107,11 +117,13 @@ export const NodeInfoDrawer = ({
                 refreshStatus(messageApi);
                 callBack && callBack();
               }}
+              style={{ marginRight: 9 }}
             >
               刷新
             </Button>
           </div>
         }
+        extra={<CloseOutlined onClick={() => close()} style={{ cursor: 'pointer' }} />}
         destroyOnClose
         open={visible}
         onClose={close}
@@ -138,7 +150,7 @@ export const NodeInfoDrawer = ({
           <div className={styles.baseContent}>
             <Descriptions column={1}>
               <Descriptions.Item label="计算节点名">
-                <EllipsisText>{nodeInfo.nodeName}</EllipsisText>
+                {nodeInfo.nodeName}
               </Descriptions.Item>
               <Descriptions.Item label="计算节点ID">
                 <EllipsisText>{nodeInfo.nodeId}</EllipsisText>
@@ -153,12 +165,13 @@ export const NodeInfoDrawer = ({
               <Popover
                 placement="topLeft"
                 title="部署令牌"
+                onOpenChange={() => viewInstance.getToken()}
                 overlayClassName={styles.tokenPopover}
                 content={
                   <Spin spinning={viewInstance.tokenLoading}>
                     <div className={styles.contentName}>
-                      <Tooltip title={tokenInfo.token}>
-                        <span className={styles.name}>{tokenInfo.token}</span>
+                      <Tooltip title={tokenInfo?.token}>
+                        <span className={styles.name}>{tokenInfo?.token}</span>
                       </Tooltip>
                       {/* TODO: tokenInfo 判断 */}
                       <Tag
@@ -189,11 +202,9 @@ export const NodeInfoDrawer = ({
                     </div>
                   </Spin>
                 }
-                trigger="click"
+                // trigger="click"
               >
-                <span className={styles.spanClick} onClick={viewInstance.getToken}>
-                  查看
-                </span>
+                <span className={styles.spanClick}>查看</span>
               </Popover>
             </Descriptions.Item>
             {/* <Descriptions.Item label="节点公钥">
@@ -232,7 +243,7 @@ export const NodeInfoDrawer = ({
               {nodeInfo.cert && nodeInfo.cert === DomainCertConfigEnum.configured ? (
                 '已配置'
               ) : (
-                <Tooltip title="节点公钥获取后自动配置" placement="right">
+                <Tooltip title="节点部署成功后即可配置完成" placement="right">
                   <span className={styles.disableText}>待配置</span>
                 </Tooltip>
               )}

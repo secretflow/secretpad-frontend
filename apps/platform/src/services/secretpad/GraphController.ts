@@ -166,10 +166,13 @@ export async function listComponentI18n(options?: { [key: string]: any }) {
 @return successful SecretPadResponse with component list view object
  POST /api/v1alpha1/component/list */
 export async function listComponents(options?: { [key: string]: any }) {
-  return request<API.SecretPadResponse_CompListVO_>('/api/v1alpha1/component/list', {
-    method: 'POST',
-    ...(options || {}),
-  });
+  return request<API.SecretPadResponse_Map_String_CompListVO__>(
+    '/api/v1alpha1/component/list',
+    {
+      method: 'POST',
+      ...(options || {}),
+    },
+  );
 }
 
 /** List graph api

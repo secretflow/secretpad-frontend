@@ -3,24 +3,30 @@ import { DefaultDataService } from '@secretflow/dag';
 import type { IGraphEdgeType, IGraphNodeType } from '@/modules/main-dag/graph.protocol';
 import { nodeStatus } from '@/modules/main-dag/util';
 
+import type { ComputeMode } from '../component-tree/component-protocol';
+
 export class GraphDataService extends DefaultDataService {
   nodes: IGraphNodeType[] = [];
   edges: IGraphEdgeType[] = [];
 
   highlightNodeId = '';
+  mode: ComputeMode | undefined;
 
   setGraphInfo = ({
     nodes,
     edges,
     highlightNodeId,
+    mode,
   }: {
     nodes: IGraphNodeType[];
     edges: IGraphEdgeType[];
     highlightNodeId: string;
+    mode: ComputeMode;
   }) => {
     this.nodes = nodes;
     this.edges = edges;
     this.highlightNodeId = highlightNodeId;
+    this.mode = mode;
   };
 
   async fetch() {

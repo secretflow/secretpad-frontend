@@ -2,6 +2,7 @@ import { Emitter } from '@secretflow/utils';
 
 import { Model, getModel } from '@/util/valtio-helper';
 
+import type { ComputeMode } from '../component-tree/component-protocol';
 import type { PipelineTemplateType } from '../pipeline/pipeline-protocol';
 
 import type {
@@ -23,11 +24,12 @@ export class DefaultComponentConfigService extends Model {
   componentConfigRegistry = getModel(ComponentConfigRegistry);
 
   // flat the config tree
-  getComponentConfig(graphNode: { name: string }) {
+  getComponentConfig(graphNode: { name: string }, mode: ComputeMode) {
     const { name } = graphNode;
 
     const node = this.componentConfigRegistry.getComponentConfig(
       name,
+      mode,
     ) as StructConfigNode;
     const leaves: AtomicConfigNode[] = [];
     if (node && node?.children.length > 0) this.getLeavesInTree(node, leaves);
@@ -35,10 +37,13 @@ export class DefaultComponentConfigService extends Model {
     return leaves;
   }
 
-  isConfigNeeded(nodeName: string): boolean {
-    const configNodes = this.getComponentConfig({
-      name: nodeName,
-    });
+  isConfigNeeded(nodeName: string, mode: ComputeMode): boolean {
+    const configNodes = this.getComponentConfig(
+      {
+        name: nodeName,
+      },
+      mode,
+    );
     if (configNodes.length === 0) return false;
     for (const configNode of configNodes) {
       if (isAtomicConfigNode(configNode, 'isRequired')) {

@@ -71,4 +71,5 @@ export interface GraphEventHandlerProtocol {
   onEdgeUpdated?: () => void;
   onResultClick?: (graphId: string, outputId: string, codeName: string) => void;
   onNodeRunning?: (isRunning: boolean) => void;
+  onCopyActionChange?: (isCopied: boolean) => void;
 }

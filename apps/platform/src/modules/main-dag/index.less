@@ -19,13 +19,13 @@
 
 .toolbutton {
   display: flex;
-  border: 1px solid #e6e8eb;
   border-radius: 6px;
 
   .search {
     display: flex;
     align-items: center;
-    border-right: 1px solid #e6e8eb;
+    border: 1px solid #e6e8eb;
+    border-radius: 6px 0 0 6px;
 
     .searchselect {
       overflow: hidden;
@@ -43,12 +43,20 @@
     :global(.ant-select-selector) {
       border: none !important;
     }
+
+    :global(.ant-select-focused) {
+      border: 1px solid #2989ff;
+      border-radius: 6px;
+    }
   }
 
   .btns {
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid #e6e8eb;
+    border-radius: 0 6px 6px 0;
+    border-left: none;
 
     button {
       width: 36px;

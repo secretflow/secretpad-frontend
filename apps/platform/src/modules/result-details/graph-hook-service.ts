@@ -4,15 +4,21 @@ import { DefaultHookService } from '@secretflow/dag';
 import { DefaultComponentTreeService } from '@/modules/component-tree/component-tree-service';
 import { getModel } from '@/util/valtio-helper';
 
+import type { GraphDataService } from './graph-data-service';
+
 export class GraphHookService extends DefaultHookService {
   componentService = getModel(DefaultComponentTreeService);
 
   async createResult(nodeId: string, codeName: string) {
     const [domain, name] = codeName.split('/');
-    const component = await this.componentService.getComponentConfig({
-      domain,
-      name,
-    });
+    const { mode = 'MPC' } = this.context.dataService as GraphDataService;
+    const component = await this.componentService.getComponentConfig(
+      {
+        domain,
+        name,
+      },
+      mode,
+    );
 
     if (component) {
       const results: GraphNodeOutput[] = [];
@@ -33,11 +39,15 @@ export class GraphHookService extends DefaultHookService {
 
   async createPort(nodeId: string, codeName: string) {
     const [domain, name] = codeName.split('/');
+    const { mode = 'MPC' } = this.context.dataService as GraphDataService;
 
-    const component = await this.componentService.getComponentConfig({
-      domain,
-      name,
-    });
+    const component = await this.componentService.getComponentConfig(
+      {
+        domain,
+        name,
+      },
+      mode,
+    );
 
     if (component) {
       const ports: GraphPort[] = [];

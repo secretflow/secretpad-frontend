@@ -7,6 +7,8 @@ import { createPortTooltip } from '@/modules/main-dag/util';
 import { RecordListDrawerItem } from '@/modules/pipeline-record-list/record-list-drawer-view';
 import { getModel, useModel } from '@/util/valtio-helper';
 
+import type { ComputeMode } from '../component-tree/component-protocol';
+
 import mainDag from './dag';
 import { RecordGraphService } from './graph-service';
 
@@ -31,7 +33,7 @@ export class RecordGraphView extends GraphView {
     mainDag.dispose();
   }
 
-  initGraph(dagId: string, container: HTMLDivElement) {
+  initGraph(dagId: string, container: HTMLDivElement, mode: ComputeMode) {
     if (container) {
       const { clientWidth, clientHeight } = container;
       mainDag.init(
@@ -44,10 +46,13 @@ export class RecordGraphView extends GraphView {
             const { codeName } = node.getData();
             const [domain, name] = codeName.split('/');
             const { type, index } = splitPortId(port.id);
-            const component = await this.componentService.getComponentConfig({
-              domain,
-              name,
-            });
+            const component = await this.componentService.getComponentConfig(
+              {
+                domain,
+                name,
+              },
+              mode,
+            );
             if (component) {
               const interpretion = this.componentInterpreter.getComponentTranslationMap(
                 {
@@ -55,6 +60,7 @@ export class RecordGraphView extends GraphView {
                   name,
                   version: component.version,
                 },
+                mode,
               );
               const ioType = type === 'input' ? 'inputs' : 'outputs';
               const des = component[ioType][index].desc;

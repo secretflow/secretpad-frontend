@@ -27,14 +27,13 @@ export const AuthorizationNode = (prop: IProp) => {
             return (
               <DatatablePreview
                 key={item.datatableId}
-                tableInfo={dataTable}
+                datatableId={item.datatableId}
                 node={nodeInfo}
-                loading={false}
               >
                 <div
-                  onMouseEnter={async () => {
-                    await getDatatableInfo(nodeId, item.datatableId as string);
-                  }}
+                  // onMouseEnter={async () => {
+                  //   await getDatatableInfo(nodeId, item.datatableId as string);
+                  // }}
                   className={styles.nodeList}
                 >
                   {item.datatableName}

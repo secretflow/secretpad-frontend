@@ -4,12 +4,13 @@ import React from 'react';
 interface IProps {
   children?: React.ReactNode;
   width?: string | number;
+  style?: React.CSSProperties;
 }
 
 const { Text } = Typography;
 
 export const EllipsisText = (props: IProps) => {
-  const { children, width = 180 } = props;
+  const { children, width = 180, style } = props;
   if (children === undefined || children === null) {
     return <Typography.Text>{'--'}</Typography.Text>;
   }
@@ -20,6 +21,7 @@ export const EllipsisText = (props: IProps) => {
       }}
       style={{
         width,
+        ...style,
       }}
     >
       {children}

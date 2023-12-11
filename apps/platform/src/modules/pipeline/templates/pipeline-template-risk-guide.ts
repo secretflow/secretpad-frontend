@@ -1,8 +1,8 @@
 import templateImg from '@/assets/template-risk-control.jpg';
 import { Model } from '@/util/valtio-helper';
 
-import type { PipelineTemplateContribution } from './pipeline-protocol';
-import { PipelineTemplateType } from './pipeline-protocol';
+import type { PipelineTemplateContribution } from '../pipeline-protocol';
+import { PipelineTemplateType } from '../pipeline-protocol';
 
 export class TemplateGuideRisk extends Model implements PipelineTemplateContribution {
   type: PipelineTemplateType = PipelineTemplateType.RISK_GUIDE;
@@ -165,6 +165,7 @@ export class TemplateGuideRisk extends Model implements PipelineTemplateContribu
           attrs: [
             {
               s: 'alice-table',
+              is_na: false,
             },
           ],
         },
@@ -200,9 +201,58 @@ export class TemplateGuideRisk extends Model implements PipelineTemplateContribu
       {
         outputs: [`${graphId}-node-11-output-0`],
         nodeDef: {
-          domain: `ml.train`,
-          name: `ss_sgd_train`,
-          version: `0.0.1`,
+          attrPaths: [
+            'input/train_dataset/label',
+            'epochs',
+            'learning_rate',
+            'batch_size',
+            'sig_type',
+            'reg_type',
+            'penalty',
+            'l2_norm',
+            'eps',
+          ],
+          attrs: [
+            {
+              is_na: false,
+              ss: ['y'],
+            },
+            {
+              i64: 10,
+              is_na: false,
+            },
+            {
+              f: 0.1,
+              is_na: false,
+            },
+            {
+              i64: 1024,
+              is_na: false,
+            },
+            {
+              is_na: false,
+              s: 't1',
+            },
+            {
+              is_na: false,
+              s: 'logistic',
+            },
+            {
+              is_na: false,
+              s: 'None',
+            },
+            {
+              f: 0.5,
+              is_na: false,
+            },
+            {
+              f: 0.001,
+              is_na: false,
+            },
+          ],
+          domain: 'ml.train',
+          name: 'ss_sgd_train',
+          version: '0.0.1',
         },
         inputs: [`${graphId}-node-7-output-0`],
         codeName: `ml.train/ss_sgd_train`,
@@ -230,23 +280,30 @@ export class TemplateGuideRisk extends Model implements PipelineTemplateContribu
       {
         outputs: [`${graphId}-node-13-output-0`],
         nodeDef: {
-          domain: `ml.predict`,
-          name: `ss_sgd_predict`,
-          version: `0.0.1`,
           attrPaths: ['batch_size', 'receiver', 'pred_name', 'save_ids', 'save_label'],
           attrs: [
             {
               i64: 1024,
+              is_na: false,
             },
             {
+              is_na: false,
               s: 'bob',
             },
             {
+              is_na: false,
               s: 'pred',
             },
-            {},
-            {},
+            {
+              is_na: true,
+            },
+            {
+              is_na: true,
+            },
           ],
+          domain: 'ml.predict',
+          name: 'ss_sgd_predict',
+          version: '0.0.1',
         },
         inputs: [`${graphId}-node-11-output-0`, `${graphId}-node-8-output-0`],
         codeName: `ml.predict/ss_sgd_predict`,
@@ -296,6 +353,7 @@ export class TemplateGuideRisk extends Model implements PipelineTemplateContribu
           attrs: [
             {
               s: 'bob-table',
+              is_na: false,
             },
           ],
         },
@@ -310,37 +368,42 @@ export class TemplateGuideRisk extends Model implements PipelineTemplateContribu
       {
         outputs: [`${graphId}-node-3-output-0`],
         nodeDef: {
-          domain: `preprocessing`,
-          name: `psi`,
-          version: `0.0.1`,
           attrPaths: [
             'input/receiver_input/key',
             'input/sender_input/key',
             'protocol',
-            'precheck_input',
+            'sort',
             'bucket_size',
-            'curve_type',
+            'ecdh_curve_type',
           ],
           attrs: [
             {
+              is_na: false,
               ss: ['id1'],
             },
             {
+              is_na: false,
               ss: ['id2'],
             },
             {
+              is_na: false,
               s: 'ECDH_PSI_2PC',
             },
             {
-              b: true,
+              is_na: true,
             },
             {
               i64: 1048576,
+              is_na: false,
             },
             {
+              is_na: false,
               s: 'CURVE_FOURQ',
             },
           ],
+          domain: 'preprocessing',
+          name: 'psi',
+          version: '0.0.1',
         },
         inputs: [`${graphId}-node-1-output-0`, `${graphId}-node-2-output-0`],
         codeName: `preprocessing/psi`,
@@ -388,6 +451,7 @@ export class TemplateGuideRisk extends Model implements PipelineTemplateContribu
           version: `0.0.1`,
           attrPaths: [
             'input/input_data/feature_selects',
+            'input/input_data/label',
             'secure_device_type',
             'binning_method',
             'bin_num',
@@ -399,6 +463,11 @@ export class TemplateGuideRisk extends Model implements PipelineTemplateContribu
           attrs: [
             {
               ss: ['duration'],
+              is_na: false,
+            },
+            {
+              ss: ['y'],
+              is_na: false,
             },
             {
               s: 'spu',
@@ -435,11 +504,11 @@ export class TemplateGuideRisk extends Model implements PipelineTemplateContribu
         outputs: [`${graphId}-node-7-output-0`],
         nodeDef: {
           domain: `feature`,
-          name: `vert_woe_substitution`,
+          name: `vert_bin_substitution`,
           version: `0.0.1`,
         },
         inputs: [`${graphId}-node-5-output-0`, `${graphId}-node-6-output-0`],
-        codeName: `feature/vert_woe_substitution`,
+        codeName: `feature/vert_bin_substitution`,
         x: -320,
         y: 110,
         label: `WOE转换`,
@@ -450,11 +519,11 @@ export class TemplateGuideRisk extends Model implements PipelineTemplateContribu
         outputs: [`${graphId}-node-8-output-0`],
         nodeDef: {
           domain: `feature`,
-          name: `vert_woe_substitution`,
+          name: `vert_bin_substitution`,
           version: `0.0.1`,
         },
         inputs: [`${graphId}-node-5-output-1`, `${graphId}-node-6-output-0`],
-        codeName: `feature/vert_woe_substitution`,
+        codeName: `feature/vert_bin_substitution`,
         x: -10,
         y: 100,
         label: `WOE转换`,

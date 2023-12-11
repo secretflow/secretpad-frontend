@@ -2,9 +2,11 @@
   display: flex;
   overflow: auto;
   width: 100%;
+  height: 100%;
   box-sizing: border-box;
   flex-direction: column;
-  padding: 20px;
+  padding: 24px;
+  padding-bottom: 0;
   border-radius: 8px;
   background: #fff;
 }
@@ -22,6 +24,14 @@
 
   :global(.ant-table-row) {
     height: 54px;
+  }
+
+  :global(.ant-pagination) {
+    position: sticky;
+    bottom: 0;
+    padding: 16px 16px 16px 0;
+    margin: 0 !important;
+    background-color: #fff;
   }
 }
 
@@ -41,6 +51,33 @@
   white-space: nowrap;
 }
 
+.uploadTitle {
+  display: flex;
+
+  .uploadText {
+    margin-right: 9px;
+  }
+
+  .uploadIcon {
+    color: rgb(0 0 0 / 45%);
+    cursor: pointer;
+  }
+}
+
+.uploadLoading {
+  color: rgb(0 0 0 / 45%);
+}
+
+.uploadTag {
+  :global(.ant-tag) {
+    margin-right: 0;
+  }
+
+  :global(.ant-btn) {
+    padding: 4px 7px;
+  }
+}
+
 :global {
   .dataauth-tour {
     width: 353px;
@@ -49,4 +86,8 @@
   .dataauth-tour .ant-tour-inner .ant-tour-footer .ant-tour-buttons {
     margin-inline-start: 0%;
   }
+}
+
+.uploadBtn {
+  padding: 0;
 }

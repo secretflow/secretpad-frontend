@@ -4,6 +4,7 @@ import type {
   ParameterNode,
   UnionParameterNode,
   IoDef,
+  ComputeMode,
 } from '@/modules/component-tree/component-protocol';
 import { Model } from '@/util/valtio-helper';
 
@@ -14,13 +15,16 @@ import type {
 } from './component-config-protocol';
 
 export class ComponentConfigRegistry extends Model {
-  readonly root: StructConfigNode = {
-    name: 'ROOT',
-    children: [],
+  readonly root: Record<ComputeMode, StructConfigNode> = {
+    TEE: {
+      name: 'ROOT',
+      children: [],
+    },
+    MPC: { name: 'ROOT', children: [] },
   };
 
-  registerConfigNode(component: Component) {
-    if (this.hasConfigNode(component)) return;
+  registerConfigNode(component: Component, mode: ComputeMode) {
+    if (this.hasConfigNode(component, mode)) return;
     const { name, domain, version, attrs, inputs } = component;
     const parent: StructConfigNode = {
       name: `${domain}/${name}`,
@@ -43,11 +47,11 @@ export class ComponentConfigRegistry extends Model {
       }
     }
 
-    this.root.children.push(parent);
+    this.root[mode].children.push(parent);
   }
 
-  private hasConfigNode(component: Component) {
-    return this.root.children.find((i) => i.name === component.name);
+  private hasConfigNode(component: Component, mode: ComputeMode) {
+    return this.root[mode].children.find((i) => i.name === component.name);
   }
 
   getNodeByPath(
@@ -74,9 +78,8 @@ export class ComponentConfigRegistry extends Model {
       if (i.attrs) {
         const { name: inputName, attrs } = i;
 
-        let isRequired = true;
-
         attrs.map((attr) => {
+          let isRequired = true;
           const {
             name: colName,
             desc,
@@ -136,8 +139,8 @@ export class ComponentConfigRegistry extends Model {
     }
   }
 
-  getComponentConfig(componentName: string): ConfigItem | undefined {
-    return this.root.children.find(
+  getComponentConfig(componentName: string, mode: ComputeMode): ConfigItem | undefined {
+    return this.root[mode].children.find(
       ({ name }: Pick<ConfigItem, 'name'>) => name === componentName,
     );
   }

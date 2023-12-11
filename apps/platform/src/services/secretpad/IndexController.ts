@@ -81,3 +81,23 @@ export async function index7(options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+/** index_8 All page requests are returned to this index, and the front end handles page routing
+@return the string
+ GET /my-node/ */
+export async function index8(options?: { [key: string]: any }) {
+  return request<API.OneApiResult_string_>('/my-node/', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+/** index_9 All page requests are returned to this index, and the front end handles page routing
+@return the string
+ GET /message/ */
+export async function index9(options?: { [key: string]: any }) {
+  return request<API.OneApiResult_string_>('/message/', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}

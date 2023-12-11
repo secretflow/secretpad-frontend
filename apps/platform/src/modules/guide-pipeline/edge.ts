@@ -8,6 +8,7 @@ Graph.registerEdge(
       line: {
         stroke: '#C1C7D0',
         strokeWidth: 4,
+        opacity: 0.2,
         targetMarker: null,
       },
     },

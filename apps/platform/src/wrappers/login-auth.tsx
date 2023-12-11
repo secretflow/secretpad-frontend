@@ -4,9 +4,10 @@ import { Navigate, Outlet } from 'umi';
 const BeginnerAuth = () => {
   const neverLogined = localStorage.getItem('neverLogined');
   if (!neverLogined) {
-    localStorage.setItem('neverLogined', 'true');
+    // localStorage.setItem('neverLogined', 'true');
     return <Navigate to="/login" />;
   }
+
   return <Outlet />;
 };
 

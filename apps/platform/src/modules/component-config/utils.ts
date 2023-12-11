@@ -70,13 +70,18 @@ export function getValueBound(config: AtomicConfigNode) {
   if (!key) return {};
 
   let maxVal;
-  if (config.has_upper_bound) {
+  if (config.upper_bound_enabled) {
     maxVal = config.upper_bound?.[key as keyof AtomicParameter] as number;
   }
   let minVal;
-  if (config.has_lower_bound) {
+  if (config.lower_bound_enabled) {
     minVal = (config.lower_bound?.[key as keyof AtomicParameter] || 0) as number;
   }
 
-  return { maxVal, minVal };
+  return {
+    maxVal,
+    minVal,
+    maxInclusive: config.upper_bound_inclusive,
+    minInclusive: config.lower_bound_inclusive,
+  };
 }

@@ -2,6 +2,19 @@
 // 该文件由 OneAPI 自动生成，请勿手动修改！
 
 declare namespace API {
+  type AbstractInitiatingTypeMessage = Record<string, any>;
+
+  interface AbstractPageResponse {
+    pageSize?: number;
+    pageNum?: number;
+    total?: number;
+    totalPage?: number;
+  }
+
+  type AbstractVoteConfig = Record<string, any>;
+
+  type AbstractVoteTypeMessage = Record<string, any>;
+
   interface AddInstToProjectRequest {
     /** Project id */
     projectId?: string;
@@ -25,21 +38,21 @@ declare namespace API {
     datatableId?: string;
     /** Datatable column config list */
     configs?: Array<TableColumnConfigParam>;
+    /** Tee node id, it can be blank and has default value */
+    teeNodeId?: string;
+    /** Datasource id, it can be blank and has default value */
+    datasourceId?: string;
   }
 
-  type AuthErrorCode =
-    | 202011601
-    | 'USER_NOT_FOUND'
-    | 202011602
-    | 'WRONG_PASSWORD'
-    | 202011603
-    | 'AUTH_FAILED';
+  type AuthErrorCode = 202011601 | 'USER_OR_PASSWORD_ERROR' | 202011602 | 'AUTH_FAILED';
 
   interface AuthProjectVO {
     /** Project id */
     projectId?: string;
     /** Project name */
     name?: string;
+    /** Compute mode */
+    computeMode?: string;
     /** Association key list */
     associateKeys?: Array<string>;
     /** Group key list */
@@ -50,40 +63,24 @@ declare namespace API {
     gmtCreate?: string;
   }
 
-  interface CompListVO {
-    /** Component name */
-    name?: string;
-    /** Component description */
-    desc?: string;
-    /** Component version */
-    version?: string;
-    /** Component summaryDef list */
-    comps?: Array<ComponentSummaryDef>;
-  }
-
-  interface ComponentSummaryDef {
-    /** Namespace of the component */
-    domain?: string;
-    /** Component name */
-    name?: string;
-    /** Component description */
-    desc?: string;
-    /** Component version */
-    version?: string;
+  interface CreateApprovalRequest {
+    nodeID?: string;
+    voteType?: string;
+    voteConfig?: AbstractVoteConfig;
   }
 
   interface CreateDataByDataSourceRequest {
-    /** 节点Id */
+    /** nodeId */
     nodeId?: string;
-    /** 表名称 */
+    /** name */
     name?: string;
-    /** 数据路径 */
+    /** tablePath */
     tablePath?: string;
-    /** 数据源id */
+    /** datasourceId */
     datasourceId?: string;
-    /** 表描述 */
+    /** description */
     description?: string;
-    /** 表schema */
+    /** datatableSchema */
     datatableSchema?: Array<DatatableSchema>;
   }
 
@@ -124,18 +121,20 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
   interface CreateNodeRequest {
     /** Node name, the value cannot be empty and can be the same */
     name?: string;
+    /** node feature indicates by bit, bit0 - mpc | bit1 - tee | bit2 mpc&tee */
+    mode: number;
   }
 
   interface CreateNodeRouterRequest {
-    /** 本方节点id */
+    /** srcNodeId */
     srcNodeId?: string;
-    /** 合作方节点id */
+    /** dstNodeId */
     dstNodeId?: string;
     /** 本方通讯地址 */
     srcNetAddress?: string;
-    /** 合作方通讯地址 */
+    /** dstNetAddress */
     dstNetAddress?: string;
-    /** 访问模式： 双向:FullDuplex 单向:HalfDuplex */
+    /** routeType： FullDuplex HalfDuplex */
     routeType?: string;
   }
 
@@ -144,8 +143,10 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     name?: string;
     /** Project description */
     description?: string;
-    /** 计算模式 pipeline:管道模式 ,hub:枢纽模式 */
+    /** computeMode mpc,tee */
     computeMode?: string;
+    /** tee node domainId */
+    teeNodeId?: string;
   }
 
   interface CreateProjectVO {
@@ -167,10 +168,12 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     | 202011806
     | 'NAME_DUPLICATION_ERROR';
 
+  type DataResourceType = 'NODE_ID' | 'PROJECT_ID';
+
   interface DataSourceVO {
-    /** 数据源名称 */
+    /** datasource name */
     name?: string;
-    /** 数据源路径 */
+    /** path */
     path?: string;
   }
 
@@ -184,7 +187,13 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     | 202011304
     | 'DELETE_DATATABLE_FAILED'
     | 202011305
-    | 'DATATABLE_DUPLICATED_AUTHORIZED';
+    | 'DATATABLE_DUPLICATED_AUTHORIZED'
+    | 202011306
+    | 'QUERY_DATATABLE_GRANT_FAILED'
+    | 202011307
+    | 'CREATE_DATATABLE_GRANT_FAILED'
+    | 202011308
+    | 'CREATE_TEE_JOB_FAILED';
 
   interface DatatableListVO {
     /** Datatable view object list */
@@ -209,6 +218,10 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     datatableName?: string;
     /** Datatable status Status：Available，Unavailable */
     status?: string;
+    /** Datatable push to tee status Status：FAILED/SUCCESS/RUNNING */
+    pushToTeeStatus?: string;
+    /** Datatable push to tee error message */
+    pushToTeeErrMsg?: string;
     /** The data source id which it belongs to */
     datasourceId?: string;
     /** Relative uri */
@@ -223,11 +236,19 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     authProjects?: Array<AuthProjectVO>;
   }
 
+  type DbChangeAction = 'CREATE' | 'UPDATE' | 'REMOVE';
+
   interface DeleteDatatableRequest {
     /** Node id */
     nodeId?: string;
     /** Datatable id */
     datatableId?: string;
+    /** Tee node id, it can be blank and has default value */
+    teeNodeId?: string;
+    /** Datasource id, it can be blank and has default value */
+    datasourceId?: string;
+    /** Relative uri */
+    relativeUri?: string;
   }
 
   interface DeleteGraphRequest {
@@ -253,6 +274,11 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     domainDataId?: string;
   }
 
+  interface EnvDTO {
+    plaformType?: PlaformType;
+    platformNodeId?: string;
+  }
+
   type FileMeta = Record<string, any>;
 
   interface FullUpdateGraphRequest {
@@ -267,6 +293,8 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
   }
 
   interface GetComponentRequest {
+    /** app of the component, it can not be blank */
+    app?: string;
     /** Namespace of the component, it can not be blank */
     domain?: string;
     /** Component name, it can not be blank */
@@ -278,6 +306,8 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     nodeId?: string;
     /** Datatable id */
     datatableId?: string;
+    /** Tee node id, it can be blank and has default value */
+    teeNodeId?: string;
   }
 
   interface GetGraphRequest {
@@ -490,6 +520,12 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     tabs?: Record<string, any>;
     /** Graph node output file meta */
     meta?: GraphNodeOutputVOFileMeta;
+    /** Graph node output jobId */
+    jobId?: string;
+    /** Graph node output taskId */
+    taskId?: string;
+    /** this output produced by this graph */
+    graphID?: string;
     /** Graph start time */
     gmtCreate?: string;
     /** Graph update time */
@@ -503,6 +539,8 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     graphNodeId?: string;
     /** Graph node task id */
     taskId?: string;
+    /** Graph node job id */
+    jobId?: string;
     /** Graph node task status */
     status?: GraphNodeTaskStatus;
   }
@@ -545,7 +583,7 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     | 202011904
     | 'PROJECT_JOB_DELETE_ERROR';
 
-  type KusciaGrpcErrorCode = 202011101 | 'RPC_ERROR';
+  type KusciaGrpcErrorCode = 202012101 | 'RPC_ERROR';
 
   interface ListDatatableRequest {
     /** How many pieces of data are in each page */
@@ -559,6 +597,8 @@ Unavailable：Datatables that filter unavailable status Other values or null：A
     datatableNameFilter?: string;
     /** Node Id */
     nodeId?: string;
+    /** Tee node id, it can be blank and has default value */
+    teeNodeId?: string;
   }
 
   interface ListGraphNodeStatusRequest {
@@ -576,6 +616,8 @@ Unavailable：Datatables that filter unavailable status Other values or null：A
   interface ListNodeResultRequest {
     /** Node id */
     nodeId?: string;
+    /** Tee node id, it can be blank and has default value */
+    teeNodeId?: string;
     /** How many pieces of data are in each page */
     pageSize?: number;
     /** What page is currently requested? Note that starting at 1 represents the first page */
@@ -615,6 +657,85 @@ id here Filter by ID */
     name?: string;
   }
 
+  interface MessageDetailRequest {
+    /** requester nodeID */
+    nodeID?: string;
+    /** unique voteID */
+    voteID?: string;
+    /** if it is initiator */
+    isInitiator: boolean;
+    voteType?: string;
+    projectID?: string;
+  }
+
+  interface MessageDetailVO {
+    messageName?: string;
+    type?: string;
+    status?: string;
+  }
+
+  interface MessageListRequest {
+    /** page num default 1 */
+    page?: number;
+    /** page size default 10 */
+    size?: number;
+    /** sort，property,property(,ASC|DESC) "createdDate,desc" */
+    sort?: Record<string, any>;
+    /** if i am initiator */
+    isInitiator?: boolean;
+    /** requester nodeID */
+    nodeID?: string;
+    /** if the message has been processed */
+    isProcessed?: boolean;
+    /** vote type {@link VoteTypeEnum} */
+    type?: string;
+    /** fuzzy search */
+    keyWord?: string;
+  }
+
+  interface MessageListVO {
+    pageSize?: number;
+    pageNum?: number;
+    total?: number;
+    totalPage?: number;
+    messages?: Array<MessageVO>;
+  }
+
+  interface MessagePendingCountRequest {
+    /** participant node id */
+    nodeID?: string;
+  }
+
+  interface MessageVO {
+    /** see {@link org.secretflow.secretpad.service.enums.VoteTypeEnum} */
+    type?: string;
+    /** see {@link org.secretflow.secretpad.service.enums.VoteStatusEnum} approved/rejected/null
+
+<p>for indicator this status id decided by multi-party all party approve,it is approved one
+party reject,it is rejected no party reject,some party approve and some party not voted,it is
+waiting approved
+
+<p>for vote receiver,the status is only its own status */
+    status?: string;
+    initiatingTypeMessage?: AbstractInitiatingTypeMessage;
+    voteTypeMessage?: AbstractVoteTypeMessage;
+    /** messageName */
+    messageName?: string;
+    /** create time */
+    createTime?: string;
+    /** vote id */
+    voteID?: string;
+  }
+
+  interface NodeBaseInfoVO {
+    /** id */
+    nodeId?: string;
+    /** nodeName */
+    nodeName?: string;
+    /** netAddress */
+    netAddress?: string;
+  }
+
   interface NodeDatatableVO {
     /** Datatable id */
     datatableId?: string;
@@ -646,15 +767,15 @@ id here Filter by ID */
   }
 
   interface NodeInstanceDTO {
-    /** 节点名称 */
+    /** domain name */
     name?: string;
-    /** 节点状态 可用 Ready, 不可用 NotReady */
+    /** domain status Ready, NotReady */
     status?: string;
-    /** 节点Agent版本 */
+    /** Agent version */
     version?: string;
-    /** 最后心跳时间，RFC3339格式（e.g. 2006-01-02T15:04:05Z） */
+    /** lastHeartbeatTime，RFC3339（e.g. 2006-01-02T15:04:05Z） */
     lastHeartbeatTime?: string;
-    /** 最后更新时间，RFC3339格式（e.g. 2006-01-02T15:04:05Z） */
+    /** lastTransitionTime，RFC3339（e.g. 2006-01-02T15:04:05Z） */
     lastTransitionTime?: string;
   }
 
@@ -694,20 +815,26 @@ id here Filter by ID */
     jobId?: string;
     /** The training flow the node result belongs to */
     trainFlow?: string;
+    /** Result pull from tee status Status：FAILED/SUCCESS/RUNNING */
+    pullFromTeeStatus?: string;
+    /** Result pull from tee error message */
+    pullFromTeeErrMsg?: string;
     /** Start time of the node result */
     gmtCreate?: string;
+    /** project computeMode mpc,tee */
+    computeMode?: string;
   }
 
   type NodeRouteErrorCode =
-    | 202011901
+    | 202012901
     | 'NODE_ROUTE_ALREADY_EXISTS'
-    | 202011902
+    | 202012902
     | 'NODE_ROUTE_CREATE_ERROR'
-    | 202011903
+    | 202012903
     | 'NODE_ROUTE_NOT_EXIST_ERROR'
-    | 202011904
+    | 202012904
     | 'NODE_ROUTE_DELETE_ERROR'
-    | 202011905
+    | 202012905
     | 'NODE_ROUTE_UPDATE_ERROR';
 
   interface NodeRouteVO {
@@ -728,25 +855,25 @@ id here Filter by ID */
   interface NodeRouterVO {
     /** id */
     routeId?: string;
-    /** 本方节点id */
+    /** srcNodeId */
     srcNodeId?: string;
-    /** 合作方节点id */
+    /** dstNodeId */
     dstNodeId?: string;
-    /** 本方节点信息 */
+    /** srcNode */
     srcNode?: NodeVO;
-    /** 合作方节点 信息 */
+    /** dstNode */
     dstNode?: NodeVO;
-    /** 本方通讯地址 */
+    /** srcNetAddress */
     srcNetAddress?: string;
-    /** 合作方通讯地址 */
+    /** dstNetAddress */
     dstNetAddress?: string;
-    /** 状态 创建中.. Pending, 可用 Succeeded, 不可用 Failed, 未知 Unknown */
+    /** status Pending, Succeeded, Failed, Unknown */
     status?: string;
-    /** 创建时间 */
+    /** gmtCreate */
     gmtCreate?: string;
-    /** 修改时间 */
+    /** gmtModified */
     gmtModified?: string;
-    /** 访问模式： 双向:FullDuplex 单向:HalfDuplex */
+    /** routeType： :FullDuplex :HalfDuplex */
     routeType?: string;
   }
 
@@ -758,10 +885,24 @@ id here Filter by ID */
   interface NodeTokenVO {
     /** token */
     token?: string;
-    /** token 状态 */
+    /** tokenStatus */
     tokenStatus?: string;
-    /** 上次过渡时间 */
+    /** lastTransitionTime */
     lastTransitionTime?: string;
+  }
+
+  interface NodeUserCreateRequest {
+    /** Node id */
+    nodeId?: string;
+    /** User name */
+    name?: string;
+    /** User password */
+    passwordHash?: string;
+  }
+
+  interface NodeUserListByNodeIdRequest {
+    /** Node id */
+    nodeId?: string;
   }
 
   interface NodeVO {
@@ -787,6 +928,8 @@ id here Filter by ID */
     nodeStatus?: string;
     /** node type embedded */
     type?: string;
+    /** node feature indicates by bit, bit0 - mpc | bit1 - tee | bit2 mpc&tee */
+    mode?: number;
     /** gmtCreate */
     gmtCreate?: string;
     /** gmtModified */
@@ -807,26 +950,26 @@ result management list interface */
   type OneApiResult_string_ = Record<string, any>;
 
   interface PageNodeRequest {
-    /** 第几页，从1开始，默认为第1页 */
+    /** page num default 1 */
     page?: number;
-    /** 每一页的大小，默认为10 */
+    /** page size default 10 */
     size?: number;
-    /** 排序相关的信息，以property,property(,ASC|DESC)的方式组织 "createdDate,desc" */
+    /** sort，property,property(,ASC|DESC) "createdDate,desc" */
     sort?: Record<string, any>;
     /** name,nodeId,netAddress search */
     search?: string;
   }
 
   interface PageNodeRouteRequest {
-    /** 第几页，从1开始，默认为第1页 */
+    /** page num default 1 */
     page?: number;
-    /** 每一页的大小，默认为10 */
+    /** page size default 10 */
     size?: number;
-    /** 排序相关的信息，以property,property(,ASC|DESC)的方式组织 "createdDate,desc" */
+    /** sort，property,property(,ASC|DESC) "createdDate,desc" */
     sort?: Record<string, any>;
-    /** 节点名称,节点Id,通讯地址 查询 */
+    /** dstNodeId,dstNetAddress,dstNodeName search */
     search?: string;
-    /** 节点Id */
+    /** srcNodeId data filter */
     nodeId?: string;
   }
 
@@ -854,6 +997,27 @@ result management list interface */
     /** Page data list */
     data?: Array<ProjectJobSummaryVO>;
   }
+
+  interface Participant {
+    /** this id means the node who initiate a vote */
+    nodeID?: string;
+    /** the status by this vote
+
+<p>{@link org.secretflow.secretpad.service.enums.VoteStatusEnum} */
+    status?: string;
+    nodeName?: string;
+    voteInfos?: Array<ParticipantVoteInfo>;
+  }
+
+  type Participant$VoteInfo = Record<string, any>;
+
+  type ParticipantVoteInfo = Record<string, any>;
+
+  type PermissionTargetType = 'ROLE';
+
+  type PermissionUserType = 'USER' | 'EDGE_USER' | 'NODE';
+
+  type PlaformType = 'EDGE' | 'CENTER' | 'TEST';
 
   interface ProjectDatatableBaseVO {
     /** Datatable id */
@@ -942,9 +1106,13 @@ result management list interface */
     nodeId?: string;
     /** Node name */
     nodeName?: string;
+    /** Node Type */
+    nodeType?: string;
     /** Datatable list of the node, it is empty for list requests */
     datatables?: Array<ProjectDatatableBaseVO>;
   }
+
+  type ProjectNodesInfo = Record<string, any>;
 
   interface ProjectResultBaseVO {
     /** Result kind enum */
@@ -968,44 +1136,87 @@ result management list interface */
     jobCount?: number;
     /** Start time of the project */
     gmtCreate?: string;
-    /** computeMode pipeline: ,hub: */
+    /** computeMode mpc,tee */
     computeMode?: string;
+    /** tee node domainId */
+    teeNodeId?: string;
   }
+
+  interface PullStatusRequest {
+    projectID?: string;
+    jobID?: string;
+    taskID?: string;
+    resourceType?: string;
+    resourceID?: string;
+  }
+
+  interface PullStatusVO {
+    resourceID?: string;
+    resourceType?: string;
+    taskID?: string;
+    graphID?: string;
+    jobID?: string;
+    parties?: Array<Participant>;
+  }
+
+  interface PushDatatableToTeeRequest {
+    /** Node id, it can not be blank */
+    nodeId?: string;
+    /** Datatable id, it can not be blank */
+    datatableId?: string;
+    /** Tee node id, it can be blank and has default value */
+    teeNodeId?: string;
+    /** Datasource id, it can be blank and has default value */
+    datasourceId?: string;
+    /** Relative uri */
+    relativeUri?: string;
+  }
+
+  interface ResetNodeUserPwdRequest {
+    /** nodeId */
+    nodeId?: string;
+    /** User name */
+    name?: string;
+    /** User password */
+    newPasswordHash?: string;
+  }
+
+  type ResourceType = 'INTERFACE' | 'NODE_ID';
 
   type ResultKind = 'FedTable' | 'Model' | 'Rule' | 'Report';
 
   interface RouterIdRequest {
-    /** 路由Id */
+    /** routerId */
     routerId?: string;
   }
 
   interface SecretPadPageRequest {
-    /** 第几页，从1开始，默认为第1页 */
+    /** page num default 1 */
     page?: number;
-    /** 每一页的大小，默认为10 */
+    /** page size default 10 */
     size?: number;
-    /** 排序相关的信息，以property,property(,ASC|DESC)的方式组织 "createdDate,desc" */
+    /** sort，property,property(,ASC|DESC) "createdDate,desc" */
     sort?: Record<string, any>;
   }
 
   interface SecretPadPageResponse {
-    /** 列表数据 */
+    /** page list */
     list?: Array<Record<string, any>>;
-    /** 总记录数 */
+    /** total */
     total?: number;
   }
 
   interface SecretPadPageResponse_NodeRouterVO_ {
-    /** 列表数据 */
+    /** page list */
     list?: Array<NodeRouterVO>;
-    /** 总记录数 */
+    /** total */
     total?: number;
   }
 
   interface SecretPadPageResponse_NodeVO_ {
-    /** 列表数据 */
+    /** page list */
     list?: Array<NodeVO>;
-    /** 总记录数 */
+    /** total */
     total?: number;
   }
 
@@ -1018,9 +1229,9 @@ result management list interface */
 
   type SecretPadResponseStatus = Record<string, any>;
 
-  interface SecretPadResponse_CompListVO_ {
+  interface SecretPadResponse_ {
     status?: SecretPadResponseSecretPadResponseStatus;
-    data?: CompListVO;
+    data?: any;
   }
 
   interface SecretPadResponse_CreateGraphVO_ {
@@ -1041,6 +1252,11 @@ result management list interface */
   interface SecretPadResponse_DatatableVO_ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: DatatableVO;
+  }
+
+  interface SecretPadResponse_EnvDTO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: EnvDTO;
   }
 
   interface SecretPadResponse_GraphDetailVO_ {
@@ -1073,6 +1289,11 @@ result management list interface */
     data?: Array<GraphMetaVO>;
   }
 
+  interface SecretPadResponse_List_NodeBaseInfoVO__ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: Array<NodeBaseInfoVO>;
+  }
+
   interface SecretPadResponse_List_NodeVO__ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: Array<NodeVO>;
@@ -1081,6 +1302,31 @@ result management list interface */
   interface SecretPadResponse_List_ProjectVO__ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: Array<ProjectVO>;
+  }
+
+  interface SecretPadResponse_List_UserVO__ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: Array<UserVO>;
+  }
+
+  interface SecretPadResponse_Long_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: number;
+  }
+
+  interface SecretPadResponse_Map_String_CompListVO__ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: Record<string, any>;
+  }
+
+  interface SecretPadResponse_MessageDetailVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: MessageDetailVO;
+  }
+
+  interface SecretPadResponse_MessageListVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: MessageListVO;
   }
 
   interface SecretPadResponse_NodeResultDetailVO_ {
@@ -1128,6 +1374,11 @@ result management list interface */
     data?: ProjectVO;
   }
 
+  interface SecretPadResponse_PullStatusVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: PullStatusVO;
+  }
+
   interface SecretPadResponse_SecretPadPageResponse_NodeRouterVO__ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: SecretPadPageResponse_NodeRouterVO_;
@@ -1153,10 +1404,17 @@ result management list interface */
     data?: UploadDataResultVO;
   }
 
+  interface SecretPadResponse_UserContextDTO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: UserContextDTO;
+  }
+
   interface SecretPadResponse_Void_ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: Record<string, any>;
   }
+
+  type SseEmitter = Record<string, any>;
 
   interface StartGraphRequest {
     /** Project id, it can not be blank */
@@ -1202,7 +1460,15 @@ result management list interface */
     | 202011104
     | 'HTTP_404_ERROR'
     | 202011105
-    | 'HTTP_5XX_ERROR';
+    | 'HTTP_5XX_ERROR'
+    | 202011106
+    | 'ENCODE_ERROR'
+    | 2020111107
+    | 'SIGNATURE_ERROR'
+    | 202011108
+    | 'SSE_ERROR'
+    | 202011109
+    | 'REMOTE_CALL_ERROR';
 
   interface TableColumnConfigParam {
     /** Column name, it can not be blank */
@@ -1223,6 +1489,10 @@ result management list interface */
     /** Column comment */
     colComment?: string;
   }
+
+  type TeeJobKind = 'PushAuth' | 'Push' | 'Auth' | 'CancelAuth' | 'Pull' | 'Delete';
+
+  type TeeJobStatus = 'RUNNING' | 'SUCCESS' | 'FAILED';
 
   interface UpdateGraphMetaRequest {
     /** Project id, it can not be blank */
@@ -1248,11 +1518,11 @@ result management list interface */
   }
 
   interface UpdateNodeRouterRequest {
-    /** 路由id */
+    /** routerId */
     routerId?: string;
-    /** 本方通讯地址 */
+    /** srcNetAddress */
     srcNetAddress?: string;
-    /** 合作方通讯地址 */
+    /** dstNetAddress */
     dstNetAddress?: string;
   }
 
@@ -1276,4 +1546,82 @@ create operation */
     /** Data source type */
     datasourceType?: string;
   }
+
+  interface UserContextDTO {
+    token?: string;
+    name?: string;
+    platformType?: PlaformType;
+    platformNodeId?: string;
+    ownerType?: UserOwnerType;
+    ownerId?: string;
+    projectIds?: Array<string>;
+    interfaceResources?: Array<string>;
+    /** only for edge platform rpc. */
+    virtualUserForNode?: boolean;
+  }
+
+  interface UserCreateRequest {
+    /** CENTER or EDGE */
+    ownerType?: UserOwnerType;
+    ownerId?: string;
+    /** User name */
+    name?: string;
+    /** User password */
+    passwordHash?: string;
+  }
+
+  type UserOwnerType = 'EDGE' | 'CENTER';
+
+  interface UserVO {
+    /** User name */
+    name?: string;
+    /** CENTER or EDGE */
+    ownerType?: UserOwnerType;
+    /** code or 'CENTER' */
+    ownerId?: string;
+  }
+
+  type VoteActionEnum = 'APPROVE' | 'REJECT';
+
+  type VoteErrorCode =
+    | 202012201
+    | 'VOTE_NOT_EXISTS'
+    | 202012202
+    | 'VOTE_CHECK_FAIL'
+    | 202012203
+    | 'VOTE_SIGNATURE_SYNCHRONIZING';
+
+  type VoteExecuteEnum = 'EXECUTING' | 'COMMITTED' | 'SUCCESS' | 'OBSERVER' | 'FAILED';
+
+  type VoteInfo = Record<string, any>;
+
+  interface VoteReplyRequest {
+    action?: string;
+    reason?: string;
+    voteID?: string;
+    voteParticipantID?: string;
+  }
+
+  type VoteStatusEnum =
+    | 0
+    | 'REVIEWING'
+    | 1
+    | 'APPROVED'
+    | 2
+    | 'REJECTED'
+    | 3
+    | 'NOT_INITIATED';
+
+  interface VoteSyncRequest {
+    syncDataType?: string;
+    projectNodesInfo?: ProjectNodesInfo;
+  }
+
+  type VoteSyncTypeEnum =
+    | 'VOTE_REQUEST'
+    | 'VOTE_INVITE'
+    | 'NODE_ROUTE'
+    | 'TEE_NODE_DATATABLE_MANAGEMENT';
+
+  type VoteTypeEnum = 'TEE_DOWNLOAD' | 'NODE_ROUTE';
 }

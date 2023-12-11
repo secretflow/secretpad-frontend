@@ -35,7 +35,6 @@ export const SearchInput = (props: IProps) => {
       value={value}
       onChange={handleSearch}
       size="small"
-      bordered={false}
       placeholder={props.placeholder}
     />
   );

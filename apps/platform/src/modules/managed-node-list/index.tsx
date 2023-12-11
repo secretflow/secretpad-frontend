@@ -6,6 +6,7 @@ import type { FilterValue } from 'antd/es/table/interface';
 import type { ChangeEvent } from 'react';
 
 import { confirmDeleteInput } from '@/components/comfirm-delete';
+import { LoginService } from '@/modules/login/login.service';
 import { NodeService } from '@/modules/node';
 import {
   page as requestList,
@@ -29,7 +30,7 @@ export const ManagedNodeListComponent = () => {
       title: '节点名称',
       dataIndex: 'nodeName',
       key: 'nodeName',
-      width: '20%',
+      width: '35%',
       render: (text: string, record) => {
         return (
           <>
@@ -40,7 +41,9 @@ export const ManagedNodeListComponent = () => {
                 tooltip: text,
               }}
             >
-              {record.type === 'embedded' && <Tag color="cyan">内置</Tag>}
+              {record.type === 'embedded' && (
+                <Tag className={styles.embeddedTag}>内置</Tag>
+              )}
               {text}
             </Typography.Text>
             <div>
@@ -61,14 +64,15 @@ export const ManagedNodeListComponent = () => {
       title: '节点状态',
       dataIndex: 'nodeStatus',
       key: 'nodeStatus',
-      width: '15%',
+      width: '25%',
       render: (nodeStatus: NodeState, record) => (
-        <Space>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <Badge
             status={NodeStateText[nodeStatus || NodeState.UNKNOWN].icon}
             text={NodeStateText[nodeStatus || NodeState.UNKNOWN].text}
           />
           <Button
+            style={{ padding: '4px 12px' }}
             type="link"
             icon={<ReloadOutlined />}
             onClick={() => {
@@ -81,13 +85,13 @@ export const ManagedNodeListComponent = () => {
           >
             刷新
           </Button>
-        </Space>
+        </div>
       ),
     },
     {
       title: '注册时间',
       dataIndex: 'gmtCreate',
-      width: '15%',
+      width: '25%',
       sorter: true,
       ellipsis: true,
       render: (gmtCreate: string) => (
@@ -103,21 +107,24 @@ export const ManagedNodeListComponent = () => {
     {
       title: '操作',
       key: 'action',
-      width: '20%',
+      width: '10%',
       render: (_, record) => {
         return (
           <div className={styles.action}>
-            <Button
-              type="link"
-              onClick={() => {
-                const a = document.createElement('a');
-                a.href = `/node?nodeId=${record.nodeId}`;
-                a.target = '_blank';
-                a.click();
-              }}
-            >
-              进入节点
-            </Button>
+            {record.type === 'embedded' && (
+              <Button
+                type="link"
+                style={{ padding: 0 }}
+                onClick={() => {
+                  const a = document.createElement('a');
+                  a.href = `/node?nodeId=${record.nodeId}`;
+                  a.target = '_blank';
+                  a.click();
+                }}
+              >
+                进入节点
+              </Button>
+            )}
             {record.type !== 'embedded' && (
               <>
                 {/* <Button
@@ -131,6 +138,7 @@ export const ManagedNodeListComponent = () => {
                 <Button
                   type="link"
                   disabled={false}
+                  style={{ padding: 0 }}
                   onClick={() => handleDelete(record)}
                 >
                   删除
@@ -259,9 +267,19 @@ export class ManagedNodeView extends Model {
   showEditNodeModel = false;
 
   nodeService = getModel(NodeService);
+  loginService = getModel(LoginService);
 
   onViewMount() {
-    this.getNodeList();
+    const hasNodeMenu =
+      this.loginService.userInfo?.platformType === 'CENTER' &&
+      this.loginService.userInfo?.ownerType === 'EDGE';
+    if (!hasNodeMenu) {
+      this.getNodeList();
+    }
+  }
+
+  onViewUnMount() {
+    this.search = '';
   }
 
   async getNodeList() {

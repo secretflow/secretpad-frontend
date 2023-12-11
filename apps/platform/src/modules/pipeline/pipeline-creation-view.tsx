@@ -1,7 +1,8 @@
 import { PlusOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Button, Dropdown, Popover, Typography, App } from 'antd';
-import { useEffect } from 'react';
+import { parse } from 'query-string';
+import { useEffect, useMemo } from 'react';
 
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
@@ -37,7 +38,7 @@ export const QuickConfigEntry = (prop: { type: PipelineTemplateType }) => {
 export const PipelineCreationComponent = () => {
   const viewInstance = useModel(PipelineCreationView);
   const { message } = App.useApp();
-
+  const { mode } = parse(window.location.search);
   useEffect(() => {
     return () => {
       message.destroy('quick-config');
@@ -47,7 +48,12 @@ export const PipelineCreationComponent = () => {
   const onClick: MenuProps['onClick'] = async ({ key }) => {
     try {
       await viewInstance.create(key as PipelineTemplateType);
-      if (key === PipelineTemplateType.PSI || key === PipelineTemplateType.RISK) {
+      if (
+        key === PipelineTemplateType.PSI ||
+        key === PipelineTemplateType.RISK ||
+        key === PipelineTemplateType.TEE ||
+        key === PipelineTemplateType.PSI_TEE
+      ) {
         message.success({
           content: <QuickConfigEntry type={key} />,
           duration: 15,
@@ -61,7 +67,13 @@ export const PipelineCreationComponent = () => {
     }
   };
 
-  const templates: MenuProps['items'] = viewInstance.templates.map((t) => ({
+  const templateList = useMemo(() => {
+    return viewInstance.templates.filter(({ computeMode = ['MPC'] }) =>
+      computeMode?.includes(mode as string),
+    );
+  }, [mode]);
+
+  const templates: MenuProps['items'] = templateList.map((t) => ({
     key: t.type,
     label: (
       <>

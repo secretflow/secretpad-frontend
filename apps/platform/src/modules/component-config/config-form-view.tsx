@@ -11,6 +11,7 @@ import { DefaultComponentInterpreterService } from '../component-interpreter/com
 import type {
   AtomicParameter,
   Attribute,
+  ComputeMode,
   ValueOf,
 } from '../component-tree/component-protocol';
 
@@ -61,7 +62,8 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
     graphNode: savedNode,
     inputNodes,
   } = node;
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  const { mode } = parse(search);
 
   const [form] = Form.useForm();
   const [componentConfig, setConfig] = useState<AtomicConfigNode[] | undefined>(
@@ -77,22 +79,29 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
 
   useEffect(() => {
     const fetchConfig = () => {
-      const configNode = componentConfigService.getComponentConfig(node);
+      const configNode = componentConfigService.getComponentConfig(
+        node,
+        mode as ComputeMode,
+      );
       setConfig(configNode);
     };
     const getTranslation = () => {
       const { version } = configRegistry.getComponentConfig(
         node.name,
+        mode as ComputeMode,
       ) as StructConfigNode;
 
       setTranslation(
-        interpreter.getComponentTranslationMap(`${node.name}:${version}`) || {},
+        interpreter.getComponentTranslationMap(
+          `${node.name}:${version}`,
+          mode as ComputeMode,
+        ) || {},
       );
     };
     getTranslation();
     setGraphNode(savedNode);
     fetchConfig();
-  }, [node, nodeId, savedNode]);
+  }, [node, nodeId, savedNode, mode]);
 
   useEffect(() => {
     if (pathname !== '/dag') setIsEditable(false);
@@ -118,7 +127,12 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
         const { is_na, ...val } = attrs[index];
 
         let attrVal = Object.values(val)[0];
-        if (Array.isArray(attrVal) && attrVal.length === 0) attrVal = [null];
+
+        if (
+          codeNameRenderKey[nodeName as keyof typeof codeNameRenderKey] ===
+          'UNION_KEY_SELECT'
+        )
+          if (Array.isArray(attrVal) && attrVal.length === 0) attrVal = [null];
         if (!is_na) ret[path] = attrVal;
       });
 
@@ -183,7 +197,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
       const formedAttrVal = Array.isArray(attrVal) ? attrVal.filter((i) => i) : attrVal;
       param[typeKey] = formedAttrVal as ValueOf<Attribute>;
       let isNA = false;
-      if (!formedAttrVal) {
+      if (formedAttrVal === null || formedAttrVal === undefined) {
         isNA = true;
       }
 
@@ -223,7 +237,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
 
   const handleFormChange = debounce(
     (_, allValues: Record<string, ValueOf<Attribute> | undefined>) => {
-      onSaveConfig(allValues);
+      form.validateFields().then(() => onSaveConfig(allValues));
     },
     500,
   );
@@ -252,7 +266,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
           onFinish={() => onFormFinished(form.getFieldsValue())}
           disabled={!isEditable}
           onValuesChange={handleFormChange}
-          validateMessages={{ required: '「${label}」是必选字段' }}
+          validateMessages={{ required: '「${label}」是必填字段' }}
         >
           {componentConfig.map((config, index) => {
             return (

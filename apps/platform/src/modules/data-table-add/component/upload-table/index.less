@@ -69,7 +69,7 @@
 
   .csvConfigBaseInfo {
     border-radius: 6px;
-    background-color: #f4f4f4;
+    background-color: rgb(0 0 0 / 2%);
   }
 
   .csvName {
@@ -90,7 +90,7 @@
     }
 
     .ant-descriptions-item {
-      padding: 8px 0 !important;
+      padding-bottom: 0 !important;
     }
 
     .ant-descriptions-item-content {
@@ -98,13 +98,31 @@
     }
 
     .ant-form-item {
-      margin-bottom: 5px;
+      margin-bottom: 8px;
     }
+  }
+
+  .label {
+    padding-bottom: 16px !important;
   }
 }
 
 .csvContentConfig {
   padding-top: 20px;
+
+  .tableHeader {
+    border-bottom: 1px solid #f0f0f0;
+
+    :global {
+      .ant-descriptions-item-content {
+        font-size: 12px;
+      }
+    }
+  }
+
+  :global(.ant-select-selector) {
+    font-size: 12px;
+  }
 }
 
 .uploadFileList {
@@ -150,7 +168,8 @@
 
 .tableColsTitle {
   display: flex;
-  margin-top: 17px;
+  padding-top: 16px;
+  margin-bottom: 8px;
 }
 
 .deleteIcon {

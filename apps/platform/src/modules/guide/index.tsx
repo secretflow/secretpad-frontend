@@ -32,11 +32,7 @@ export const GuidePageLayoutComponent = () => {
 };
 
 export class GuidePageLayoutView extends Model {
-  pageTitle = (
-    <p style={{ color: 'rgba(0,0,0,0.6)', fontWeight: 400, fontSize: '16px' }}>
-      科技护航数据安全 开源加速数据流通
-    </p>
-  );
+  pageTitle = 'Center';
 
   homeLayoutService = getModel(HomeLayoutService);
 }

@@ -13,7 +13,7 @@ export type AtomicParameterType =
   | 'AT_STRINGS'
   | 'AT_BOOLS'
   // Special types.
-  // | 'AT_UNDEFINED'
+  // | 'ATTR_TYPE_UNSPECIFIED'
   | 'AT_SF_TABLE_COL';
 
 // export const ColSelectionParameter = 'AT_SF_TABLE_COL';
@@ -77,8 +77,8 @@ export type AtomicParameterDef = {
 
   // Only valid when type is `AT_FLOAT \| AT_INT \| AT_FLOATS \| AT_INTS `.
   // If the attribute is a list, lower_bound is applied to each element.
-  has_lower_bound?: boolean;
-  has_upper_bound?: boolean;
+  lower_bound_enabled?: boolean;
+  upper_bound_enabled?: boolean;
   upper_bound_inclusive?: boolean;
   lower_bound_inclusive?: boolean;
   lower_bound?: Attribute;
@@ -120,7 +120,7 @@ type TableAttrDef = {
   col_max_cnt_inclusive?: number;
   col_min_cnt_inclusive?: number;
 
-  attrs?: ParameterNode[];
+  extra_attrs?: ParameterNode[];
 };
 
 type ParameterUnionDef = {
@@ -151,3 +151,5 @@ export type ComponentTreeItem = {
   children?: ComponentTreeItem[];
   docString: string;
 };
+
+export type ComputeMode = 'MPC' | 'TEE';

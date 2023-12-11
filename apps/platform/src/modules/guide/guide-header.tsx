@@ -1,4 +1,5 @@
-import { ExportOutlined } from '@ant-design/icons';
+import { ExportOutlined, PartitionOutlined } from '@ant-design/icons';
+import { Tag } from 'antd';
 import React from 'react';
 import { history } from 'umi';
 
@@ -26,10 +27,8 @@ export const GuideHeader: React.FC = () => {
         </div>
       </div>
       <div className={styles.create}>
-        <div className={styles.title}>Hi，欢迎来到隐语体验平台</div>
-        <div className={styles.titleDesc}>
-          已为你准备了体验所必需的节点数据，试着创建第一个项目吧
-        </div>
+        <div className={styles.title}>Hi，欢迎来到Secretpad-Center平台</div>
+        <div className={styles.titleDesc}>科技护航数据安全，开源加速数据流通</div>
         <div className={styles.nodeContent}>
           <GuideNode />
         </div>

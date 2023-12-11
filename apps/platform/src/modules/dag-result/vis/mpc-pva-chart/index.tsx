@@ -8,6 +8,7 @@ import { modifyDataStructure, parseData } from '../utils';
 import { Chart } from './chart';
 import './index.less';
 import { parsePVAData } from './utils';
+import { DownloadOutlined } from '@ant-design/icons';
 
 export interface PVAChartProps {
   data: ResultOriginData;
@@ -53,8 +54,14 @@ export const PVAChart: React.FunctionComponent<PVAChartProps> = ({
 
   return (
     <>
-      <Button type="primary" onClick={handleExportData}>
-        下载数据
+      <Button
+        type="link"
+        size="small"
+        icon={<DownloadOutlined />}
+        className="customBtn"
+        onClick={handleExportData}
+      >
+        导出数据
       </Button>
       <CSVLink filename="PVA.csv" data={downData} ref={csvRef} />
       <div className="dagComponentPvaChart">

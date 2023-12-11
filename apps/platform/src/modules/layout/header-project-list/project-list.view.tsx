@@ -1,8 +1,9 @@
 import { DownOutlined, LoadingOutlined } from '@ant-design/icons';
-import { Select } from 'antd';
+import { Select, Tag } from 'antd';
 import React from 'react';
 import { history, useSearchParams } from 'umi';
 
+import { ComputeModeType, computeModeText } from '@/modules/project-list';
 import { listProject } from '@/services/secretpad/ProjectController';
 import { Model, useModel } from '@/util/valtio-helper';
 
@@ -28,7 +29,6 @@ export const ProjectListComponent: React.FC = () => {
         popupClassName={styles.projectDropdown}
         placeholder="请选择"
         showSearch
-        optionLabelProp="label"
         optionFilterProp="label"
       >
         {viewInstance.projectList?.map((item) => (
@@ -37,7 +37,11 @@ export const ProjectListComponent: React.FC = () => {
             value={item.projectId}
             label={item.projectName}
           >
-            <div>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Tag style={{ background: '#fff', height: 22 }}>
+                {computeModeText[item.computeMode as keyof typeof computeModeText] ||
+                  computeModeText[ComputeModeType.MPC]}
+              </Tag>
               <div className={styles.fontBold}>{item.projectName}</div>
               {/* <div className={styles.rows}>
                 {item.nodes?.map((node, index) => {
@@ -75,7 +79,9 @@ export class HeaderProjectListView extends Model {
 
   getListProject = async () => {
     const { data } = await listProject();
-    this.projectList = data as ProjectVO[];
+    if (data) {
+      this.projectList = (data as ProjectVO[]) || [];
+    }
     return this.projectList.reverse();
   };
 
@@ -96,6 +102,9 @@ export class HeaderProjectListView extends Model {
       return;
     }
 
-    history.push({ pathname, search: `projectId=${value}` });
+    history.push({
+      pathname,
+      search: `projectId=${value}&mode=${project.computeMode || 'MPC'}`,
+    });
   };
 }

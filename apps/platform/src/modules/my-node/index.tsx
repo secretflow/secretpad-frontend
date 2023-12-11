@@ -10,6 +10,8 @@ import {
   Table,
   Divider,
   Spin,
+  Modal,
+  Form,
 } from 'antd';
 import type { InputRef } from 'antd';
 import { toNumber } from 'lodash';
@@ -46,6 +48,7 @@ enum DomainCertConfigEnum {
 export const MyNodeComponent: React.FC = () => {
   // const myNodeService = useModel(MyNodeService);
   const myNodeService = useModel(MyNodeService);
+  const [form] = Form.useForm();
 
   const { search } = useLocation();
   const { nodeId } = parse(search);
@@ -57,6 +60,8 @@ export const MyNodeComponent: React.FC = () => {
   const inputRef = useRef<InputRef>(null);
 
   const { nodeInstances, nodeInfo, enableInstance, allInstance } = myNodeService;
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     myNodeService.getNodeInfo(nodeId as string);
@@ -76,7 +81,7 @@ export const MyNodeComponent: React.FC = () => {
       title: 'HostName',
       dataIndex: 'name',
       key: 'name',
-      width: '22%',
+      width: '18%',
       ellipsis: true,
       render: (name: string) => <Typography.Text ellipsis>{name}</Typography.Text>,
     },
@@ -84,7 +89,7 @@ export const MyNodeComponent: React.FC = () => {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      width: '18%',
+      width: '16%',
       ellipsis: true,
       render: (status: NodeState) => {
         return (
@@ -99,14 +104,14 @@ export const MyNodeComponent: React.FC = () => {
       title: '实例系统版本',
       dataIndex: 'version',
       key: 'version',
-      width: '20%',
+      width: '16%',
       ellipsis: true,
     },
     {
       title: '创建时间',
       dataIndex: 'lastTransitionTime',
       key: 'lastTransitionTime',
-      width: '20%',
+      width: '16%',
       ellipsis: true,
       render: (lastTransitionTime: string) => (
         <Typography.Text
@@ -122,7 +127,7 @@ export const MyNodeComponent: React.FC = () => {
       title: '最后心跳时间',
       dataIndex: 'lastHeartbeatTime',
       key: 'lastHeartbeatTime',
-      width: '20%',
+      width: '16%',
       ellipsis: true,
       render: (lastHeartbeatTime: string) => (
         <Typography.Text
@@ -139,7 +144,7 @@ export const MyNodeComponent: React.FC = () => {
     //   dataIndex: 'options',
     //   key: 'options',
     //   render: (_text: string, record: { resources: ResourceType[] }) => {
-    //     const resources = record.resources;
+    //     const resources = record.resources || [];
     //     if (resources.length === 0) {
     //       return (
     //         <Tooltip title="当前节点暂无资源使用情况">
@@ -200,6 +205,28 @@ export const MyNodeComponent: React.FC = () => {
     //   },
     // },
   ];
+
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleOk = async () => {
+    await form.validateFields().then(async (value) => {
+      await myNodeService.resetEdgeNodePwd(
+        nodeId as string,
+        nodeId as string,
+        value.passwordHash,
+        value.newPassword,
+      );
+      setIsModalOpen(false);
+      form.resetFields();
+    });
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    form.resetFields();
+  };
 
   return (
     <div className={styles.myNode}>
@@ -324,6 +351,79 @@ export const MyNodeComponent: React.FC = () => {
                   }}
                 ></Paragraph> */}
               </Descriptions.Item>
+              {nodeInfo.type !== 'embedded' && (
+                <Descriptions.Item label="中心平台账号">
+                  <div style={{ marginRight: '8px' }}>{nodeId}</div>
+                  <Typography.Link onClick={showModal}>设置密码</Typography.Link>
+                  <Modal
+                    width={400}
+                    className={styles.passwordModel}
+                    title="设置密码"
+                    open={isModalOpen}
+                    onOk={handleOk}
+                    onCancel={handleCancel}
+                  >
+                    <Form
+                      form={form}
+                      layout="vertical"
+                      requiredMark="optional"
+                      autoComplete="off"
+                    >
+                      <Form.Item
+                        name="passwordHash"
+                        label="原密码"
+                        rules={[
+                          { required: isModalOpen, message: '请输入原密码' },
+                          {
+                            pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,20}$/,
+                            message: '需同时包含小写字母、大写字母、数字，8-20字符',
+                          },
+                        ]}
+                      >
+                        <Input.Password placeholder="请输入" />
+                      </Form.Item>
+                      <Form.Item
+                        name="newPassword"
+                        label="新密码"
+                        rules={[
+                          { required: isModalOpen, message: '请输入新密码' },
+                          {
+                            pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,20}$/,
+                            message: '需同时包含小写字母、大写字母、数字，8-20字符',
+                          },
+                        ]}
+                      >
+                        <Input.Password placeholder="请输入" />
+                      </Form.Item>
+                      <Form.Item
+                        name="verifiedNewPassword"
+                        label="新密码确认"
+                        dependencies={['newPassword']}
+                        rules={[
+                          { required: isModalOpen, message: '请再次确认' },
+                          {
+                            validator(_, value: string) {
+                              if (isModalOpen) {
+                                if (value) {
+                                  const newPassword = form.getFieldValue('newPassword');
+                                  if (value !== newPassword) {
+                                    return Promise.reject(
+                                      new Error('请与新密码保持一致'),
+                                    );
+                                  }
+                                }
+                              }
+                              return Promise.resolve();
+                            },
+                          },
+                        ]}
+                      >
+                        <Input.Password placeholder="请输入" />
+                      </Form.Item>
+                    </Form>
+                  </Modal>
+                </Descriptions.Item>
+              )}
             </Descriptions>
             <Divider className={styles.divider}>
               <div className={styles.bg}>
