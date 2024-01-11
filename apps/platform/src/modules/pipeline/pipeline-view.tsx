@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useSearchParams } from 'umi';
 
 import { Platform } from '@/components/platform-wrapper';
+import { ProjectEditService } from '@/modules/layout/header-project-list/project-edit.service';
 import { LoginService } from '@/modules/login/login.service';
 import { CommandRegistry } from '@/util/command';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
@@ -18,7 +19,6 @@ import { PipelineMenu } from './pipeline-menu';
 import type { Pipeline, PipelineTreeItem } from './pipeline-protocol';
 import { PipelineCommands } from './pipeline-protocol';
 import { DefaultPipelineService } from './pipeline-service';
-import { ProjectEditService } from '@/modules/layout/header-project-list/project-edit.service';
 
 const PipelineListNode = (props: { node: PipelineTreeItem }) => {
   const { node } = props;

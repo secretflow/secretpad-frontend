@@ -6,14 +6,13 @@ import { useLocation } from 'umi';
 
 import { DefaultComponentInterpreterService as ComponentInterpreterService } from '@/modules/component-interpreter/component-interpreter-service';
 import { ProjectEditService } from '@/modules/layout/header-project-list/project-edit.service';
+import { DefaultPipelineService } from '@/modules/pipeline/pipeline-service';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { ComponentIcons } from './component-icon';
 import type { ComputeMode } from './component-protocol';
 import type { ComponentTreeItem } from './component-tree-protocol';
 import { DefaultComponentTreeService as ComponentTreeService } from './component-tree-service';
-import { DefaultPipelineService } from '@/modules/pipeline/pipeline-service';
-
 import SearchInput from './components/search-input';
 import style from './index.less';
 

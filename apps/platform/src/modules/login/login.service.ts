@@ -2,8 +2,8 @@ import sha256 from 'crypto-js/sha256';
 
 import type { PadMode, Platform } from '@/components/platform-wrapper';
 import API from '@/services/secretpad';
-import { Model } from '@/util/valtio-helper';
 import { updatePwd } from '@/services/secretpad/UserController';
+import { Model } from '@/util/valtio-helper';
 
 // import Base64 from 'crypto-js/enc-base64';
 // import sha256 from 'crypto-js/256';

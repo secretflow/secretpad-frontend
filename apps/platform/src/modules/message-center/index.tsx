@@ -14,13 +14,14 @@ import {
   message,
   Typography,
 } from 'antd';
+import classNames from 'classnames';
 import { parse } from 'query-string';
 import type { ChangeEvent, ReactNode } from 'react';
 import { history } from 'umi';
 
 import { Platform, hasAccess, isP2PWorkbench } from '@/components/platform-wrapper';
-import { P2pProjectListService } from '@/modules/p2p-project-list/p2p-project-list.service';
 import { LoginService } from '@/modules/login/login.service';
+import { P2pProjectListService } from '@/modules/p2p-project-list/p2p-project-list.service';
 import { Model, getModel, useModel } from '@/util/valtio-helper';
 
 import { HomeLayoutService } from '../layout/home-layout/home-layout.service';
@@ -38,7 +39,6 @@ import {
   SelectOptionsValueEnum,
   StatusEnum,
 } from './message.service';
-import classNames from 'classnames';
 
 export const MessagBreadcrumb = ({ children }: { children: ReactNode }) => {
   const { nodeId } = parse(window.location.search);

@@ -26,6 +26,7 @@ import {
   ComputeModeType,
   computeModeText,
 } from '@/modules/p2p-project-list/components/common';
+import { P2pProjectListService } from '@/modules/p2p-project-list/p2p-project-list.service';
 import { ProjectListService } from '@/modules/project-list/project-list.service';
 import { getDatatable } from '@/services/secretpad/DatatableController';
 import {
@@ -36,7 +37,6 @@ import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { DatatableInfoService } from './data-table-auth.service';
 import styles from './index.less';
-import { P2pProjectListService } from '@/modules/p2p-project-list/p2p-project-list.service';
 
 const { Text } = Typography;
 

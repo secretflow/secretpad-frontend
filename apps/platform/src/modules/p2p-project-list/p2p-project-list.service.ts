@@ -1,11 +1,11 @@
 import { message } from 'antd';
 import { parse } from 'query-string';
 
+import { isP2PWorkbench } from '@/components/platform-wrapper';
 import API from '@/services/secretpad';
 import { Model } from '@/util/valtio-helper';
 
 import type { StatusEnum } from './components/auth-project-tag';
-import { isP2PWorkbench } from '@/components/platform-wrapper';
 
 export class P2pProjectListService extends Model {
   projectList: API.ProjectVO[] = [];

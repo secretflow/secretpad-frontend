@@ -73,13 +73,13 @@
   justify-content: center;
 
   .runAll {
+    display: flex;
     height: 28px;
+    align-items: center;
     border-radius: 4px;
     margin-right: 8px;
     background-color: #0068fa;
     color: white;
-    display: flex;
-    align-items: center;
 
     &:hover {
       background-color: #0068fa !important;
@@ -107,12 +107,12 @@
     :global {
       .ant-btn-text:disabled {
         display: flex;
-        align-items: center;
         height: 100%;
+        align-items: center;
       }
 
-      .ant-btn-icon svg>g>path:last-child {
-        fill: rgba(0, 0, 0, 0.15);
+      .ant-btn-icon svg > g > path:last-child {
+        fill: rgb(0 0 0 / 15%);
       }
     }
   }
