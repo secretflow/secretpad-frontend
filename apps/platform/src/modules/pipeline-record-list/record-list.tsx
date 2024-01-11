@@ -12,7 +12,9 @@ import type { ReactNode } from 'react';
 import React, { useState, useEffect } from 'react';
 import { history, useLocation } from 'umi';
 
+import { Platform, hasAccess } from '@/components/platform-wrapper';
 import { formatTimestamp } from '@/modules/dag-result/utils';
+import { ProjectEditService } from '@/modules/layout/header-project-list/project-edit.service';
 import { stopJob } from '@/services/secretpad/ProjectController';
 import { useModel } from '@/util/valtio-helper';
 
@@ -29,7 +31,7 @@ export const RecordListComponent = (props: {
   const { multiSelectEnabled, visible } = props;
   const recordService = useModel(DefaultRecordService);
   const [recordList, setRecordList] = useState<ExecutionRecord>();
-
+  const projectEditService = useModel(ProjectEditService);
   const [currentPage, setCurrentPage] = useState(
     (history.location.state as any)?.pageNum || 1,
   );
@@ -129,22 +131,25 @@ export const RecordListComponent = (props: {
           onClick={() => {
             setSelectedItem(item.jobId);
             const searchDagParams = window.location.search;
-            const { projectId: id, mode } = parse(searchDagParams);
+            const { projectId: id, mode, type } = parse(searchDagParams);
             const searchParams = {
               dagId: item.jobId,
               projectId: id,
               mode,
+              type: hasAccess({ type: [Platform.AUTONOMY] }) ? type : undefined,
             };
-            const { pipelineName, pipelineId } = history.location.state as {
-              pipelineName: string;
-              pipelineId: string;
-            };
+            const { pipelineName, pipelineId, origin } =
+              (history.location.state as {
+                pipelineName: string;
+                pipelineId: string;
+                origin: string;
+              }) || {};
             history.push(
               {
                 pathname: '/record',
                 search: stringify(searchParams),
               },
-              { pipelineName, pipelineId, pageNum: currentPage },
+              { pipelineName, pipelineId, pageNum: currentPage, origin },
             );
           }}
         >
@@ -192,31 +197,32 @@ export const RecordListComponent = (props: {
 
                 <div className={styles.itemText}>{formatTimestamp(item.gmtCreate)}</div>
                 <div className={styles.toolIcon} onClick={(e) => e.stopPropagation()}>
-                  {item.status === 'RUNNING' && (
-                    <Popconfirm
-                      title="你确定要停止任务吗？"
-                      onConfirm={async () => {
-                        try {
-                          const { status } = await stopJob({
-                            projectId,
-                            jobId: item.jobId,
-                          });
-                          if (status?.code === 0) {
-                            setIsRefreshed(!isRefreshed);
-                          } else {
-                            message.error(status?.msg || '操作失败');
+                  {item.status === 'RUNNING' &&
+                    !projectEditService.canEdit.recordStoptaskDisabled && (
+                      <Popconfirm
+                        title="你确定要停止任务吗？"
+                        onConfirm={async () => {
+                          try {
+                            const { status } = await stopJob({
+                              projectId,
+                              jobId: item.jobId,
+                            });
+                            if (status?.code === 0) {
+                              setIsRefreshed(!isRefreshed);
+                            } else {
+                              message.error(status?.msg || '操作失败');
+                            }
+                          } catch (e) {
+                            message.error('操作失败');
                           }
-                        } catch (e) {
-                          message.error('操作失败');
-                        }
-                      }}
-                      okText="停止"
-                      cancelText="取消"
-                      okType="danger"
-                    >
-                      <PoweroffOutlined />
-                    </Popconfirm>
-                  )}
+                        }}
+                        okText="停止"
+                        cancelText="取消"
+                        okType="danger"
+                      >
+                        <PoweroffOutlined />
+                      </Popconfirm>
+                    )}
                 </div>
               </div>
             }

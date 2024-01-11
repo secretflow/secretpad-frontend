@@ -44,7 +44,19 @@ declare namespace API {
     datasourceId?: string;
   }
 
-  type AuthErrorCode = 202011601 | 'USER_OR_PASSWORD_ERROR' | 202011602 | 'AUTH_FAILED';
+  interface ArchiveProjectRequest {
+    projectId?: string;
+  }
+
+  type AuthErrorCode =
+    | 202011600
+    | 'USER_NOT_FOUND'
+    | 202011601
+    | 'USER_PASSWORD_ERROR'
+    | 202011602
+    | 'AUTH_FAILED'
+    | 202011603
+    | 'USER_IS_LOCKED';
 
   interface AuthProjectVO {
     /** Project id */
@@ -67,21 +79,6 @@ declare namespace API {
     nodeID?: string;
     voteType?: string;
     voteConfig?: AbstractVoteConfig;
-  }
-
-  interface CreateDataByDataSourceRequest {
-    /** nodeId */
-    nodeId?: string;
-    /** name */
-    name?: string;
-    /** tablePath */
-    tablePath?: string;
-    /** datasourceId */
-    datasourceId?: string;
-    /** description */
-    description?: string;
-    /** datatableSchema */
-    datatableSchema?: Array<DatatableSchema>;
   }
 
   interface CreateDataRequest {
@@ -125,19 +122,6 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     mode: number;
   }
 
-  interface CreateNodeRouterRequest {
-    /** srcNodeId */
-    srcNodeId?: string;
-    /** dstNodeId */
-    dstNodeId?: string;
-    /** 本方通讯地址 */
-    srcNetAddress?: string;
-    /** dstNetAddress */
-    dstNetAddress?: string;
-    /** routeType： FullDuplex HalfDuplex */
-    routeType?: string;
-  }
-
   interface CreateProjectRequest {
     /** Project name */
     name?: string;
@@ -147,6 +131,7 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     computeMode?: string;
     /** tee node domainId */
     teeNodeId?: string;
+    computeFunc?: string;
   }
 
   interface CreateProjectVO {
@@ -168,14 +153,7 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     | 202011806
     | 'NAME_DUPLICATION_ERROR';
 
-  type DataResourceType = 'NODE_ID' | 'PROJECT_ID';
-
-  interface DataSourceVO {
-    /** datasource name */
-    name?: string;
-    /** path */
-    path?: string;
-  }
+  type DataResourceTypeEnum = 'NODE_ID' | 'PROJECT_ID';
 
   type DatatableErrorCode =
     | 202011301
@@ -238,6 +216,11 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
 
   type DbChangeAction = 'CREATE' | 'UPDATE' | 'REMOVE';
 
+  interface DbSyncRequest {
+    syncDataType?: string;
+    projectNodesInfo?: ProjectNodesInfo;
+  }
+
   interface DeleteDatatableRequest {
     /** Node id */
     nodeId?: string;
@@ -272,11 +255,6 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     nodeId?: string;
     /** Domain data id */
     domainDataId?: string;
-  }
-
-  interface EnvDTO {
-    plaformType?: PlaformType;
-    platformNodeId?: string;
   }
 
   type FileMeta = Record<string, any>;
@@ -428,6 +406,8 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     graphId?: string;
     /** Graph name */
     name?: string;
+    /** Graph owner id */
+    ownerId?: string;
   }
 
   interface GraphNode {
@@ -652,11 +632,6 @@ id here Filter by ID */
     passwordHash?: string;
   }
 
-  interface LogoutRequest {
-    /** User name */
-    name?: string;
-  }
-
   interface MessageDetailRequest {
     /** requester nodeID */
     nodeID?: string;
@@ -727,15 +702,6 @@ waiting approved
     voteID?: string;
   }
 
-  interface NodeBaseInfoVO {
-    /** id */
-    nodeId?: string;
-    /** nodeName */
-    nodeName?: string;
-    /** netAddress */
-    netAddress?: string;
-  }
-
   interface NodeDatatableVO {
     /** Datatable id */
     datatableId?: string;
@@ -759,7 +725,9 @@ waiting approved
     | 202011407
     | 'NODE_TOKEN_ERROR'
     | 202011408
-    | 'NODE_TOKEN_IS_EMPTY_ERROR';
+    | 'NODE_TOKEN_IS_EMPTY_ERROR'
+    | 202011409
+    | 'NODE_CERT_CONFIG_ERROR';
 
   interface NodeIdRequest {
     /** nodeId */
@@ -835,7 +803,9 @@ waiting approved
     | 202012904
     | 'NODE_ROUTE_DELETE_ERROR'
     | 202012905
-    | 'NODE_ROUTE_UPDATE_ERROR';
+    | 'NODE_ROUTE_UPDATE_ERROR'
+    | 202012906
+    | 'NODE_ROUTE_CONFIG_ERROR';
 
   interface NodeRouteVO {
     /** The node id of source */
@@ -873,6 +843,8 @@ waiting approved
     gmtCreate?: string;
     /** gmtModified */
     gmtModified?: string;
+    /** if running project job exists */
+    isProjectJobRunning?: boolean;
     /** routeType： :FullDuplex :HalfDuplex */
     routeType?: string;
   }
@@ -891,20 +863,6 @@ waiting approved
     lastTransitionTime?: string;
   }
 
-  interface NodeUserCreateRequest {
-    /** Node id */
-    nodeId?: string;
-    /** User name */
-    name?: string;
-    /** User password */
-    passwordHash?: string;
-  }
-
-  interface NodeUserListByNodeIdRequest {
-    /** Node id */
-    nodeId?: string;
-  }
-
   interface NodeVO {
     /** id */
     nodeId?: string;
@@ -912,12 +870,18 @@ waiting approved
     nodeName?: string;
     /** controlNodeId */
     controlNodeId?: string;
+    /** masterNodeId */
+    masterNodeId?: string;
     /** description */
     description?: string;
     /** netAddress */
     netAddress?: string;
     /** cert */
     cert?: string;
+    /** real cert, base64 */
+    certText?: string;
+    /** node authentication code */
+    nodeAuthenticationCode?: string;
     /** token */
     token?: string;
     /** tokenStatus used、unused */
@@ -948,6 +912,47 @@ result management list interface */
   type OneApiResult_object_ = Record<string, any>;
 
   type OneApiResult_string_ = Record<string, any>;
+
+  interface OrgSecretflowSecretpadCommonDtoSecretPadResponse {
+    status?: OrgSecretflowSecretpadCommonDtoSecretPadResponseSecretPadResponseStatus;
+    data?: Record<string, any>;
+  }
+
+  type OrgSecretflowSecretpadCommonDtoSecretPadResponseSecretPadResponseStatus = Record<
+    string,
+    any
+  >;
+
+  interface OrgSecretflowSecretpadCommonDtoSecretPadResponse_SyncDataDTO {
+    tableName?: string;
+    lastUpdateTime?: string;
+    action?: string;
+    data?: Record<string, any>;
+  }
+
+  interface OrgSecretflowSecretpadCommonDtoSecretPadResponse_SyncDataDTO_ {
+    status?: OrgSecretflowSecretpadCommonDtoSecretPadResponseSecretPadResponseStatus;
+    data?: OrgSecretflowSecretpadCommonDtoSecretPadResponse_SyncDataDTO;
+  }
+
+  type OrgSecretflowSecretpadServiceModelApprovalParticipantVoteInfo = Record<string, any>;
+
+  interface P2pCreateNodeRequest {
+    /** Node name, the value cannot be empty and can be the same */
+    name?: string;
+    /** node feature indicates by bit, bit0 - mpc | bit1 - tee | bit2 mpc&tee */
+    mode: number;
+    /** nodeId of master */
+    masterNodeId?: string;
+    /** cert text */
+    certText?: string;
+    /** nodeId of collaborative node */
+    dstNodeId?: string;
+    /** net address of platform nodeId */
+    srcNetAddress?: string;
+    /** net address of collaborative node */
+    dstNetAddress?: string;
+  }
 
   interface PageNodeRequest {
     /** page num default 1 */
@@ -1006,18 +1011,23 @@ result management list interface */
 <p>{@link org.secretflow.secretpad.service.enums.VoteStatusEnum} */
     status?: string;
     nodeName?: string;
-    voteInfos?: Array<ParticipantVoteInfo>;
+    voteInfos?: Array<OrgSecretflowSecretpadServiceModelApprovalParticipantVoteInfo>;
   }
 
   type Participant$VoteInfo = Record<string, any>;
 
-  type ParticipantVoteInfo = Record<string, any>;
+  interface PartyVoteInfoVO {
+    nodeId?: string;
+    nodeName?: string;
+    action?: string;
+    reason?: string;
+  }
 
-  type PermissionTargetType = 'ROLE';
+  type PermissionTargetTypeEnum = 'ROLE';
 
-  type PermissionUserType = 'USER' | 'EDGE_USER' | 'NODE';
+  type PermissionUserTypeEnum = 'USER' | 'EDGE_USER' | 'NODE';
 
-  type PlaformType = 'EDGE' | 'CENTER' | 'TEST';
+  type PlatformTypeEnum = 'EDGE' | 'CENTER' | 'TEST' | 'AUTONOMY';
 
   interface ProjectDatatableBaseVO {
     /** Datatable id */
@@ -1038,7 +1048,13 @@ result management list interface */
     | 202011505
     | 'PROJECT_RESULT_NOT_FOUND'
     | 202011506
-    | 'PROJECT_GRAPH_NOT_EMPTY';
+    | 'PROJECT_GRAPH_NOT_EMPTY'
+    | 202011507
+    | 'PROJECT_ARCHIVE_FAIL'
+    | 202011508
+    | 'PROJECT_UPDATE_FAIL'
+    | 202011509
+    | 'PROJECT_CAN_NOT_ARCHIVE';
 
   interface ProjectJobBaseVO {
     /** Job id */
@@ -1121,6 +1137,8 @@ result management list interface */
     refId?: string;
   }
 
+  type ProjectStatusEnum = 0 | 'REVIEWING' | 1 | 'APPROVED' | 2 | 'ARCHIVED';
+
   interface ProjectVO {
     /** Project id */
     projectId?: string;
@@ -1140,6 +1158,18 @@ result management list interface */
     computeMode?: string;
     /** tee node domainId */
     teeNodeId?: string;
+    /** project approval status {@link org.secretflow.secretpad.common.enums.ProjectStatusEnum} */
+    status?: string;
+    /** project initiator nodeId */
+    initiator?: string;
+    /** project initiator nodeName */
+    initiatorName?: string;
+    /** vote invite patties's vote information */
+    partyVoteInfos?: Array<PartyVoteInfoVO>;
+    /** computeFunc {@link org.secretflow.secretpad.common.constant.ProjectConstants.ComputeFuncEnum} */
+    computeFunc?: string;
+    /** project vote id */
+    voteId?: string;
   }
 
   interface PullStatusRequest {
@@ -1177,11 +1207,13 @@ result management list interface */
     nodeId?: string;
     /** User name */
     name?: string;
+    /** passwordHash */
+    passwordHash?: string;
     /** User password */
     newPasswordHash?: string;
   }
 
-  type ResourceType = 'INTERFACE' | 'NODE_ID';
+  type ResourceTypeEnum = 'API' | 'NODE_ID';
 
   type ResultKind = 'FedTable' | 'Model' | 'Rule' | 'Report';
 
@@ -1229,9 +1261,9 @@ result management list interface */
 
   type SecretPadResponseStatus = Record<string, any>;
 
-  interface SecretPadResponse_ {
+  interface SecretPadResponse_Boolean_ {
     status?: SecretPadResponseSecretPadResponseStatus;
-    data?: any;
+    data?: boolean;
   }
 
   interface SecretPadResponse_CreateGraphVO_ {
@@ -1254,11 +1286,6 @@ result management list interface */
     data?: DatatableVO;
   }
 
-  interface SecretPadResponse_EnvDTO_ {
-    status?: SecretPadResponseSecretPadResponseStatus;
-    data?: EnvDTO;
-  }
-
   interface SecretPadResponse_GraphDetailVO_ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: GraphDetailVO;
@@ -1279,19 +1306,9 @@ result management list interface */
     data?: GraphStatus;
   }
 
-  interface SecretPadResponse_List_DataSourceVO__ {
-    status?: SecretPadResponseSecretPadResponseStatus;
-    data?: Array<DataSourceVO>;
-  }
-
   interface SecretPadResponse_List_GraphMetaVO__ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: Array<GraphMetaVO>;
-  }
-
-  interface SecretPadResponse_List_NodeBaseInfoVO__ {
-    status?: SecretPadResponseSecretPadResponseStatus;
-    data?: Array<NodeBaseInfoVO>;
   }
 
   interface SecretPadResponse_List_NodeVO__ {
@@ -1302,11 +1319,6 @@ result management list interface */
   interface SecretPadResponse_List_ProjectVO__ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: Array<ProjectVO>;
-  }
-
-  interface SecretPadResponse_List_UserVO__ {
-    status?: SecretPadResponseSecretPadResponseStatus;
-    data?: Array<UserVO>;
   }
 
   interface SecretPadResponse_Long_ {
@@ -1446,6 +1458,13 @@ result management list interface */
     jobId?: string;
   }
 
+  interface SyncDataDTO {
+    tableName?: string;
+    lastUpdateTime?: string;
+    action?: string;
+    data?: Record<string, any>;
+  }
+
   type SystemErrorCode =
     | 202011100
     | 'VALIDATION_ERROR'
@@ -1465,9 +1484,13 @@ result management list interface */
     | 'ENCODE_ERROR'
     | 2020111107
     | 'SIGNATURE_ERROR'
-    | 202011108
-    | 'SSE_ERROR'
+    | 2020111108
+    | 'VERIFY_SIGNATURE_ERROR'
     | 202011109
+    | 'SSE_ERROR'
+    | 202011110
+    | 'SYNC_ERROR'
+    | 2020111011
     | 'REMOTE_CALL_ERROR';
 
   interface TableColumnConfigParam {
@@ -1550,35 +1573,37 @@ create operation */
   interface UserContextDTO {
     token?: string;
     name?: string;
-    platformType?: PlaformType;
+    platformType?: PlatformTypeEnum;
     platformNodeId?: string;
-    ownerType?: UserOwnerType;
+    ownerType?: UserOwnerTypeEnum;
     ownerId?: string;
     projectIds?: Array<string>;
-    interfaceResources?: Array<string>;
+    apiResources?: Array<string>;
     /** only for edge platform rpc. */
     virtualUserForNode?: boolean;
+    /** deploy-mode:${DEPLOY_MODE:MPC} # MPC TEE ALL-IN-ONE@see application.yaml secretpad:deploy-mode */
+    deployMode?: string;
   }
 
-  interface UserCreateRequest {
-    /** CENTER or EDGE */
-    ownerType?: UserOwnerType;
-    ownerId?: string;
+  type UserErrorCode =
+    | 202312601
+    | 'USER_UPDATE_PASSWORD_ERROR_INCONSISTENT'
+    | 202312602
+    | 'USER_UPDATE_PASSWORD_ERROR_SAME'
+    | 202312603
+    | 'USER_UPDATE_PASSWORD_ERROR_INCORRECT';
+
+  type UserOwnerTypeEnum = 'EDGE' | 'CENTER' | 'P2P';
+
+  interface UserUpdatePwdRequest {
     /** User name */
     name?: string;
-    /** User password */
-    passwordHash?: string;
-  }
-
-  type UserOwnerType = 'EDGE' | 'CENTER';
-
-  interface UserVO {
-    /** User name */
-    name?: string;
-    /** CENTER or EDGE */
-    ownerType?: UserOwnerType;
-    /** code or 'CENTER' */
-    ownerId?: string;
+    /** User old password */
+    oldPasswordHash?: string;
+    /** User new password */
+    newPasswordHash?: string;
+    /** User confirm password */
+    confirmPasswordHash?: string;
   }
 
   type VoteActionEnum = 'APPROVE' | 'REJECT';
@@ -1587,9 +1612,13 @@ create operation */
     | 202012201
     | 'VOTE_NOT_EXISTS'
     | 202012202
-    | 'VOTE_CHECK_FAIL'
+    | 'VOTE_CHECK_FAILED'
     | 202012203
-    | 'VOTE_SIGNATURE_SYNCHRONIZING';
+    | 'VOTE_SIGNATURE_SYNCHRONIZING'
+    | 202012204
+    | 'PROJECT_VOTE_NOT_EXISTS'
+    | 202012205
+    | 'PROJECT_ARCHIVE_VOTE_ALREADY_EXIST';
 
   type VoteExecuteEnum = 'EXECUTING' | 'COMMITTED' | 'SUCCESS' | 'OBSERVER' | 'FAILED';
 
@@ -1602,26 +1631,29 @@ create operation */
     voteParticipantID?: string;
   }
 
-  type VoteStatusEnum =
-    | 0
-    | 'REVIEWING'
-    | 1
-    | 'APPROVED'
-    | 2
-    | 'REJECTED'
-    | 3
-    | 'NOT_INITIATED';
+  type VoteStatusEnum = 0 | 'REVIEWING' | 1 | 'APPROVED' | 2 | 'REJECTED' | 3 | 'NOT_INITIATED';
 
   interface VoteSyncRequest {
-    syncDataType?: string;
-    projectNodesInfo?: ProjectNodesInfo;
+    /** vote request vote result
+
+<p>vote */
+    dbSyncRequests?: Array<DbSyncRequest>;
   }
 
   type VoteSyncTypeEnum =
     | 'VOTE_REQUEST'
     | 'VOTE_INVITE'
     | 'NODE_ROUTE'
-    | 'TEE_NODE_DATATABLE_MANAGEMENT';
+    | 'TEE_NODE_DATATABLE_MANAGEMENT'
+    | 'PROJECT_APPROVAL_CONFIG'
+    | 'PROJECT'
+    | 'PROJECT_NODE'
+    | 'PROJECT_INST';
 
-  type VoteTypeEnum = 'TEE_DOWNLOAD' | 'NODE_ROUTE';
+  type VoteTypeEnum =
+    | 'TEE_DOWNLOAD'
+    | 'NODE_ROUTE'
+    | 'PROJECT_CREATE'
+    | 'PROJECT_ARCHIVE'
+    | 'PROJECT_NODE_ADD';
 }

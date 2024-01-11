@@ -1,0 +1,54 @@
+.popoverCopy {
+  display: flex;
+  align-items: center;
+
+  :global(.ant-typography) {
+    margin-bottom: 0;
+  }
+}
+
+.publicKeyPopover {
+  :global(.ant-popover-inner) {
+    overflow: auto;
+    max-width: 512px;
+    max-height: 446px;
+  }
+
+  .publicTitle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    :global(.ant-typography) {
+      margin-bottom: 0;
+    }
+
+    span {
+      color: rgb(0 0 0 / 88%);
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 22px;
+    }
+
+    :global(.ant-typography-copy) {
+      color: #1677ff;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 22px;
+    }
+  }
+
+  .publicKey {
+    color: rgb(0 0 0 / 88%);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22px;
+    text-align: justify;
+    word-break: break-all;
+  }
+}
+
+.eyes {
+  margin-right: 8px;
+  color: rgb(22 119 255) !important;
+}

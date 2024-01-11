@@ -88,6 +88,7 @@ export const UploadTable: React.FC<IProps> = ({ setDisabled }) => {
               }}
               headers={{
                 'Node-Id': nodeService.currentNode?.nodeId || '',
+                'User-Token': localStorage.getItem('User-Token') || '',
               }}
               showUploadList={false}
               beforeUpload={async (file, fileList) => {
@@ -141,6 +142,7 @@ export const UploadTable: React.FC<IProps> = ({ setDisabled }) => {
                     }}
                     headers={{
                       'Node-Id': nodeService.currentNode?.nodeId || '',
+                      'User-Token': localStorage.getItem('User-Token') || '',
                     }}
                     showUploadList={false}
                     beforeUpload={async (file, fileList) => {
@@ -307,7 +309,10 @@ export const UploadTable: React.FC<IProps> = ({ setDisabled }) => {
                               },
                             ]}
                           >
-                            <Input placeholder="请输入" style={{ fontSize: 12 }} />
+                            <Input
+                              placeholder="请输入"
+                              style={{ fontSize: 12, height: 32 }}
+                            />
                           </Form.Item>
                           <Form.Item
                             {...restField}
@@ -331,7 +336,7 @@ export const UploadTable: React.FC<IProps> = ({ setDisabled }) => {
                           >
                             <Input
                               placeholder="请输入"
-                              style={{ width: 300, fontSize: 12 }}
+                              style={{ width: 300, fontSize: 12, height: 32 }}
                             />
                           </Form.Item>
                         </Space>
@@ -480,6 +485,9 @@ export class UploadTableView extends Model {
         body: formData,
         mode: 'cors',
         credentials: 'include',
+        headers: {
+          'User-Token': localStorage.getItem('User-Token') || '',
+        },
       },
       (e: any) => {
         this.fileInfo = {

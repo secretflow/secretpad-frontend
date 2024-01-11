@@ -1,11 +1,12 @@
 import { PushpinOutlined } from '@ant-design/icons';
 import { Popover, Badge, Table, Typography, Tooltip } from 'antd';
+import { parse } from 'query-string';
 import React, { useEffect, useState } from 'react';
+
 import { getProjectDatatable } from '@/services/secretpad/ProjectController';
 
 import styles from './datatable-preview.less';
 import { EdgeAuthWrapper } from './edge-wrapper-auth';
-import { parse } from 'query-string';
 
 interface DatatablePreviewInterface {
   // tableInfo: Record<string, any>;

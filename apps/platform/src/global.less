@@ -5,6 +5,24 @@ body {
   margin: 0;
 }
 
+// drawer 关闭按钮在右侧显示
+.ant-drawer {
+  .ant-drawer-content-wrapper {
+    .ant-drawer-content {
+      .ant-drawer-wrapper-body {
+        .ant-drawer-header-title {
+          flex-direction: row-reverse;
+
+          .ant-drawer-close {
+            font-size: 12px;
+            margin-inline-end: 0;
+          }
+        }
+      }
+    }
+  }
+}
+
 #root,
 #root-master {
   min-width: 1024px;

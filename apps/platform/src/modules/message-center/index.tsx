@@ -12,11 +12,15 @@ import {
   Button,
   Popconfirm,
   message,
+  Typography,
 } from 'antd';
 import { parse } from 'query-string';
 import type { ChangeEvent, ReactNode } from 'react';
 import { history } from 'umi';
 
+import { Platform, hasAccess, isP2PWorkbench } from '@/components/platform-wrapper';
+import { P2pProjectListService } from '@/modules/p2p-project-list/p2p-project-list.service';
+import { LoginService } from '@/modules/login/login.service';
 import { Model, getModel, useModel } from '@/util/valtio-helper';
 
 import { HomeLayoutService } from '../layout/home-layout/home-layout.service';
@@ -29,10 +33,12 @@ import {
   MessageService,
   MessageState,
   MessageStateObj,
+  P2PSelectMessageOptions,
   SelectMessageOptions,
   SelectOptionsValueEnum,
   StatusEnum,
 } from './message.service';
+import classNames from 'classnames';
 
 export const MessagBreadcrumb = ({ children }: { children: ReactNode }) => {
   const { nodeId } = parse(window.location.search);
@@ -44,10 +50,17 @@ export const MessagBreadcrumb = ({ children }: { children: ReactNode }) => {
             title: (
               <div
                 onClick={() => {
-                  history.push({
-                    pathname: '/node',
-                    search: `nodeId=${nodeId}&tab=data-management`,
-                  });
+                  if (hasAccess({ type: [Platform.AUTONOMY] })) {
+                    history.push({
+                      pathname: '/edge',
+                      search: `nodeId=${nodeId}&tab=workbench`,
+                    });
+                  } else {
+                    history.push({
+                      pathname: '/node',
+                      search: `nodeId=${nodeId}&tab=data-management`,
+                    });
+                  }
                 }}
                 style={{ cursor: 'pointer' }}
               >
@@ -75,7 +88,7 @@ export const MessagePageView = () => {
 
 export const MessageComponent: React.FC = () => {
   const viewInstance = useModel(MessageModel);
-  const { activeTab, changeTabs, messageService, filterState } = viewInstance;
+  const { activeTab, changeTabs, messageService, filterState, nodeId } = viewInstance;
   const items: TabsProps['items'] = [
     {
       key: MessageActiveTabType.PROCESS,
@@ -96,9 +109,58 @@ export const MessageComponent: React.FC = () => {
       ),
     },
   ];
+  const { Link } = Typography;
+
+  const loadMore = isP2PWorkbench() && (
+    <div className={styles.showAll}>
+      <Link
+        onClick={() => {
+          const a = document.createElement('a');
+          a.href = `/message?active=${activeTab}&nodeId=${nodeId}`;
+          a.click();
+        }}
+      >
+        查看全部
+      </Link>
+    </div>
+  );
+
+  const showEnterProjectButton = (item: Record<string, any>) => {
+    // 所有节点都同意的项目邀约则可以进入项目
+    if (
+      item.type === SelectOptionsValueEnum.PROJECT_NODE_ADD &&
+      item.initiatingTypeMessage.partyVoteStatuses?.every(
+        (i: Record<string, any>) => i.action === StatusEnum.AGREE,
+      )
+    ) {
+      return true;
+    }
+    // 项目归档则需要根据projectCreateVoteAction来判断当前项目的参与节点是否都同意创建项目
+    if (
+      item.type === SelectOptionsValueEnum.PROJECT_ARCHIVE &&
+      item.initiatingTypeMessage.partyVoteStatuses?.every(
+        (i: Record<string, any>) => i.projectCreateVoteAction === StatusEnum.AGREE,
+      )
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  const showAgree = (item: { status?: string }) => {
+    return (
+      activeTab === MessageActiveTabType.PROCESS &&
+      (filterState === MessageState.PENDING || filterState === MessageState.ALL) &&
+      item.status === StatusEnum.PROCESS
+    );
+  };
 
   return (
-    <div className={styles.messageContent}>
+    <div
+      className={classNames(styles.messageContent, {
+        [styles.p2pMessageContent]: isP2PWorkbench(),
+      })}
+    >
       <div className={styles.tabsHeader}>
         <Tabs
           defaultActiveKey={MessageActiveTabType.PROCESS}
@@ -111,65 +173,84 @@ export const MessageComponent: React.FC = () => {
           activeKey={activeTab}
           tabBarExtraContent={
             <div className={styles.tabContent}>
-              <Radio.Group
-                defaultValue={MessageState.PENDING}
-                style={{ marginBottom: 16 }}
-                onChange={(e: RadioChangeEvent) => {
-                  viewInstance.changefilterState(e.target.value);
-                  viewInstance.getList();
-                }}
-                value={viewInstance.filterState}
-              >
-                {activeTab === MessageActiveTabType.APPLY && (
+              {!isP2PWorkbench() && (
+                <Radio.Group
+                  defaultValue={MessageState.PENDING}
+                  style={{ marginBottom: 16 }}
+                  onChange={(e: RadioChangeEvent) => {
+                    viewInstance.changefilterState(e.target.value);
+                    viewInstance.getList();
+                  }}
+                  value={viewInstance.filterState}
+                >
+                  {/* {activeTab === MessageActiveTabType.APPLY && ( */}
                   <Radio.Button value={MessageState.ALL}>全部</Radio.Button>
-                )}
-                <Radio.Button value={MessageState.PENDING}>
-                  {activeTab === MessageActiveTabType.PROCESS
-                    ? `待处理(${messageService.processCount})`
-                    : '待处理'}
-                </Radio.Button>
-                <Radio.Button value={MessageState.PROCESS}>已处理</Radio.Button>
-              </Radio.Group>
-              <Select
-                defaultValue={SelectOptionsValueEnum.ALL}
-                style={{ width: 120 }}
-                onChange={(value) => {
-                  viewInstance.changeSelect(value);
-                  viewInstance.getList();
-                }}
-                options={SelectMessageOptions}
-              />
-              <Input
-                placeholder="搜索关键字"
-                onChange={(e) => viewInstance.searchNode(e)}
-                style={{ width: 200 }}
-                suffix={
-                  <SearchOutlined
-                    style={{
-                      color: '#aaa',
-                    }}
-                  />
-                }
-              />
+                  {/* )} */}
+                  <Radio.Button value={MessageState.PENDING}>
+                    {activeTab === MessageActiveTabType.PROCESS
+                      ? `待处理(${messageService.processCount})`
+                      : '待处理'}
+                  </Radio.Button>
+                  <Radio.Button value={MessageState.PROCESS}>已处理</Radio.Button>
+                </Radio.Group>
+              )}
+              {((isP2PWorkbench() && activeTab !== MessageActiveTabType.APPLY) ||
+                !isP2PWorkbench()) && (
+                <Select
+                  defaultValue={SelectOptionsValueEnum.ALL}
+                  style={{ width: 120 }}
+                  onChange={(value) => {
+                    viewInstance.changeSelect(value);
+                    viewInstance.getList();
+                  }}
+                  options={
+                    isP2PWorkbench() || hasAccess({ type: [Platform.AUTONOMY] })
+                      ? P2PSelectMessageOptions
+                      : SelectMessageOptions
+                  }
+                />
+              )}
+              {!isP2PWorkbench() && (
+                <Input
+                  placeholder="搜索关键字"
+                  onChange={(e) => viewInstance.searchNode(e)}
+                  style={{ width: 200 }}
+                  suffix={
+                    <SearchOutlined
+                      style={{
+                        color: '#aaa',
+                      }}
+                    />
+                  }
+                />
+              )}
             </div>
           }
         />
       </div>
-      <div className={styles.listContent}>
+      <div
+        className={classNames(styles.listContent, {
+          [styles.showPageListContent]: viewInstance.totalNum > 10,
+        })}
+      >
         <List
-          pagination={{
-            hideOnSinglePage: viewInstance.pageSize > 10 ? false : true,
-            showSizeChanger: true,
-            size: 'default',
-            total: viewInstance.totalNum || 1,
-            current: viewInstance.pageNumber,
-            pageSize: viewInstance.pageSize,
-            onChange: (page, pageSize) => {
-              viewInstance.pageNumber = page;
-              viewInstance.pageSize = pageSize;
-              viewInstance.getList();
-            },
-          }}
+          pagination={
+            isP2PWorkbench()
+              ? false
+              : {
+                  hideOnSinglePage: viewInstance.pageSize > 10 ? false : true,
+                  showSizeChanger: true,
+                  size: 'default',
+                  total: viewInstance.totalNum || 1,
+                  current: viewInstance.pageNumber,
+                  pageSize: viewInstance.pageSize,
+                  onChange: (page, pageSize) => {
+                    viewInstance.pageNumber = page;
+                    viewInstance.pageSize = pageSize;
+                    viewInstance.getList();
+                  },
+                }
+          }
           dataSource={messageService.messageList}
           renderItem={(item) => (
             <List.Item>
@@ -185,55 +266,80 @@ export const MessageComponent: React.FC = () => {
                   }
                   description={<ListItemDescRender item={item} activeTab={activeTab} />}
                 />
-                {activeTab === MessageActiveTabType.PROCESS &&
-                  filterState === MessageState.PENDING && (
-                    <Space>
-                      <Button
-                        type="primary"
-                        size="small"
-                        onClick={() =>
-                          viewInstance.processMessage(StatusEnum.AGREE, item.voteID!)
-                        }
-                      >
-                        同意
-                      </Button>
-                      <Popconfirm
-                        title="你确定要拒绝吗？"
-                        placement="left"
-                        destroyTooltipOnHide
-                        onOpenChange={(open) => {
-                          if (!open) {
-                            viewInstance.setComment('');
-                          }
-                        }}
-                        description={
-                          <Input.TextArea
-                            maxLength={50}
-                            placeholder="请输50字符以内的理由"
-                            allowClear
-                            onChange={(e) => viewInstance.setComment(e.target.value)}
-                          />
-                        }
-                        okText="拒绝"
-                        cancelText="取消"
-                        okButtonProps={{
-                          danger: true,
-                          ghost: true,
-                        }}
-                        onConfirm={async () => {
-                          viewInstance.processMessage(StatusEnum.REJECT, item.voteID!);
-                        }}
-                      >
-                        <Button type="default" size="small">
-                          拒绝
-                        </Button>
-                      </Popconfirm>
-                    </Space>
+                {hasAccess({ type: [Platform.AUTONOMY] }) &&
+                  showEnterProjectButton(item) && (
+                    <Button
+                      onClick={() =>
+                        history.push(
+                          {
+                            pathname: '/dag',
+                            search: `projectId=${
+                              item?.voteTypeMessage?.projectId
+                            }&mode=${
+                              item?.voteTypeMessage?.computeMode || 'MPC'
+                            }&type=${item?.voteTypeMessage?.computeFunc || 'DAG'}`,
+                          },
+                          {
+                            origin: isP2PWorkbench() ? 'workbench' : 'my-project',
+                          },
+                        )
+                      }
+                      type="link"
+                      size="small"
+                      style={{ marginRight: showAgree(item) ? 16 : 0, padding: 0 }}
+                    >
+                      进入项目
+                    </Button>
                   )}
+                {showAgree(item) && (
+                  <Space size={12}>
+                    <Button
+                      type="primary"
+                      size="small"
+                      onClick={() =>
+                        viewInstance.processMessage(StatusEnum.AGREE, item.voteID!)
+                      }
+                    >
+                      同意
+                    </Button>
+                    <Popconfirm
+                      title="你确定要拒绝吗？"
+                      placement="left"
+                      destroyTooltipOnHide
+                      onOpenChange={(open) => {
+                        if (!open) {
+                          viewInstance.setComment('');
+                        }
+                      }}
+                      description={
+                        <Input.TextArea
+                          maxLength={50}
+                          placeholder="请输50字符以内的理由"
+                          allowClear
+                          onChange={(e) => viewInstance.setComment(e.target.value)}
+                        />
+                      }
+                      okText="拒绝"
+                      cancelText="取消"
+                      okButtonProps={{
+                        danger: true,
+                        ghost: true,
+                      }}
+                      onConfirm={async () => {
+                        viewInstance.processMessage(StatusEnum.REJECT, item.voteID!);
+                      }}
+                    >
+                      <Button type="default" size="small">
+                        拒绝
+                      </Button>
+                    </Popconfirm>
+                  </Space>
+                )}
               </Skeleton>
             </List.Item>
           )}
         />
+        {loadMore}
         {viewInstance.chickMessageRecord && (
           <MessageInfoModal
             open={viewInstance.showMessageInfoDrawer}
@@ -251,20 +357,39 @@ export const MessageComponent: React.FC = () => {
 export class MessageModel extends Model {
   readonly messageService;
   readonly homeLayoutService;
+  readonly loginService;
+  readonly p2pProjectListService;
 
   constructor() {
     super();
     this.messageService = getModel(MessageService);
     this.homeLayoutService = getModel(HomeLayoutService);
+    this.loginService = getModel(LoginService);
+    this.p2pProjectListService = getModel(P2pProjectListService);
   }
 
-  onViewMount() {
+  async onViewMount() {
     const { active, nodeId } = parse(window.location.search);
     if (nodeId) {
       this.nodeId = nodeId as string;
     }
-    this.changeTabs((active as MessageActiveTabType) || MessageActiveTabType.PROCESS);
+    await this.changeTabs(
+      (active as MessageActiveTabType) || MessageActiveTabType.PROCESS,
+    );
+    // P2P 工作台要求如果我处理的数量为0,则默认跳转到我发起的页面
+    if (
+      isP2PWorkbench() &&
+      this.activeTab === MessageActiveTabType.PROCESS &&
+      this.filterState === MessageState.ALL &&
+      this.selectType === SelectOptionsValueEnum.ALL &&
+      this.totalNum === 0
+    ) {
+      this.changeTabs(MessageActiveTabType.APPLY);
+    }
+
     this.getProcessMessage();
+
+    this.p2pProjectListService.P2pProjectCallBack(this.getList);
   }
 
   onViewUnMount(): void {
@@ -281,9 +406,9 @@ export class MessageModel extends Model {
 
   pageNumber = 1;
 
-  pageSize = 10;
+  pageSize = isP2PWorkbench() ? 5 : 10;
 
-  totalNum = 1;
+  totalNum = 0;
 
   comment = '';
 
@@ -297,7 +422,7 @@ export class MessageModel extends Model {
 
   resetPagination = () => {
     this.pageNumber = 1;
-    this.pageSize = 10;
+    this.pageSize = isP2PWorkbench() ? 5 : 10;
   };
 
   changeSelect = (value: SelectOptionsValueEnum) => {
@@ -308,7 +433,7 @@ export class MessageModel extends Model {
     this.filterState = value;
   };
 
-  changeTabs = (key: MessageActiveTabType) => {
+  changeTabs = async (key: MessageActiveTabType) => {
     this.activeTab = key;
     const locationSearch = parse(window.location.search);
     const { pathname } = window.location;
@@ -319,17 +444,20 @@ export class MessageModel extends Model {
     const search = Object.entries(searchObj).reduce((pre, cur, index) => {
       return `${pre}${index === 0 ? '' : '&'}${cur[0]}=${cur[1]}`;
     }, '');
-    history.replace({
-      pathname,
-      search,
-    });
+    if (!isP2PWorkbench()) {
+      history.replace({
+        pathname,
+        search,
+      });
+    }
     if (key === MessageActiveTabType.APPLY) {
       this.changefilterState(MessageState.ALL);
     } else {
-      this.changefilterState(MessageState.PENDING);
+      // this.changefilterState(MessageState.PENDING);
+      this.changefilterState(MessageState.ALL);
     }
     this.resetPagination();
-    this.getList();
+    await this.getList();
   };
 
   setComment = (value: string) => {
@@ -344,7 +472,7 @@ export class MessageModel extends Model {
     }, 300) as unknown as number;
   };
 
-  async getList(getProcessMessage = true) {
+  getList = async (getProcessMessage = true) => {
     const data = await this.messageService.getMessageList({
       page: this.pageNumber,
       size: this.pageSize,
@@ -362,7 +490,7 @@ export class MessageModel extends Model {
         this.getProcessMessage();
       }
     }
-  }
+  };
 
   refreshList = () => {
     this.getList(false);
@@ -381,6 +509,9 @@ export class MessageModel extends Model {
     } else {
       message.success('处理成功');
       this.refreshList();
+      if (isP2PWorkbench()) {
+        this.p2pProjectListService.getListProject();
+      }
     }
   };
 

@@ -156,12 +156,20 @@ export const StatusTextObj = {
 export enum SelectOptionsValueEnum {
   TEE_DOWNLOAD = 'TEE_DOWNLOAD',
   NODE_ROUTE = 'NODE_ROUTE',
+  PROJECT_ARCHIVE = 'PROJECT_ARCHIVE',
+  PROJECT_NODE_ADD = 'PROJECT_CREATE',
   ALL = 'ALL',
 }
 
 export const SelectMessageOptions = [
   { value: SelectOptionsValueEnum.TEE_DOWNLOAD, label: '结果下载' },
   { value: SelectOptionsValueEnum.NODE_ROUTE, label: '节点合作' },
+  { value: SelectOptionsValueEnum.ALL, label: '全部类型' },
+];
+
+export const P2PSelectMessageOptions = [
+  { value: SelectOptionsValueEnum.PROJECT_ARCHIVE, label: '项目归档' },
+  { value: SelectOptionsValueEnum.PROJECT_NODE_ADD, label: '项目邀约' },
   { value: SelectOptionsValueEnum.ALL, label: '全部类型' },
 ];
 

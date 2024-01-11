@@ -1,27 +1,35 @@
-import { DownloadOutlined, HddOutlined } from '@ant-design/icons';
+import Icon, {
+  DownloadOutlined,
+  HddOutlined,
+  PoweroffOutlined,
+} from '@ant-design/icons';
 import { Tag } from 'antd';
+import classNames from 'classnames';
 import { parse } from 'query-string';
+
+import { ReactComponent as projectManager } from '@/assets/project-manager.svg';
+import { EllipsisText } from '@/components/text-ellipsis.tsx';
 
 import { StatusTextObj } from '../message.service';
 import type { StatusEnum } from '../message.service';
 
 import styles from './index.less';
-import classNames from 'classnames';
-import { EllipsisText } from '@/components/text-ellipsis.tsx';
 
 export enum MessageItemType {
   // TEE结果下载
   TEE_DOWNLOAD = 'TEE_DOWNLOAD',
   // 节点授权邀约
   NODE_ROUTE = 'NODE_ROUTE',
-  // project
-  PROJECT = 'project',
+  // 项目归档
+  PROJECT_ARCHIVE = 'PROJECT_ARCHIVE',
+  // 项目邀约
+  PROJECT_NODE_ADD = 'PROJECT_CREATE',
 }
 
 export const ListItemTitleMap = {
   [MessageItemType.TEE_DOWNLOAD]: {
     tagColor: 'orange',
-    tagIcon: <DownloadOutlined />,
+    tagIcon: <DownloadOutlined style={{ color: '#FF4D4F' }} />,
     tagText: '结果下载',
     suffix: '下载申请',
     style: {
@@ -30,20 +38,29 @@ export const ListItemTitleMap = {
   },
   [MessageItemType.NODE_ROUTE]: {
     tagColor: 'cyan',
-    tagIcon: <HddOutlined />,
+    tagIcon: <HddOutlined style={{ color: '#13A8A8' }} />,
     tagText: '节点合作',
     suffix: '授权邀约',
     style: {
       backgroundImage: 'linear-gradient(180deg, #FDFFFF 0%, #E6FFFB 100%)',
     },
   },
-  [MessageItemType.PROJECT]: {
+  [MessageItemType.PROJECT_NODE_ADD]: {
     tagColor: 'orange',
-    tagIcon: <DownloadOutlined />,
+    tagIcon: <Icon component={projectManager} style={{ color: '#1677ff' }} />,
     tagText: '项目邀约',
     suffix: '邀约',
     style: {
       backgroundImage: 'linear-gradient(180deg, #FCFEFF 0%, #E6F4FF 100%)',
+    },
+  },
+  [MessageItemType.PROJECT_ARCHIVE]: {
+    tagColor: 'orange',
+    tagIcon: <PoweroffOutlined style={{ color: '#FF4D4F' }} />,
+    tagText: '项目归档',
+    suffix: '归档',
+    style: {
+      backgroundImage: 'linear-gradient(180deg, #FFFFFF 0%, #FFF1F0 100%)',
     },
   },
 };
@@ -80,7 +97,7 @@ export const MessageStateTag = ({
       <Tag className={styles.label} style={labelStyle}>
         {label}
       </Tag>
-      <Tag className={styles.text} style={textStyle}>
+      <Tag className={styles.statusText} style={textStyle}>
         {text}
       </Tag>
     </div>

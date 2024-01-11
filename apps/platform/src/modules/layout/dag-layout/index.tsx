@@ -2,8 +2,11 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import type { TabsProps } from 'antd';
 import { Divider, Tabs } from 'antd';
 import classnames from 'classnames';
+import { parse } from 'query-string';
+import { useEffect } from 'react';
 import { history } from 'umi';
 
+import { AccessWrapper, Platform } from '@/components/platform-wrapper';
 import {
   componentConfigDrawer,
   ComponentConfigDrawer,
@@ -18,6 +21,7 @@ import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import { ModalWidth } from '@/modules/dag-modal-manager/modal-manger-protocol';
 import { ResultDrawer } from '@/modules/dag-result/result-modal';
 import { DatatableTreeComponent } from '@/modules/data-table-tree/datatable-tree.view';
+import { LoginService } from '@/modules/login/login.service';
 import { GraphComponents } from '@/modules/main-dag/graph';
 import { RecordComponent } from '@/modules/main-dag/record';
 import { ToolbarComponent } from '@/modules/main-dag/toolbar';
@@ -51,9 +55,44 @@ const tabItems: TabsProps['items'] = [
 
 export const DagLayout = () => {
   const viewInstance = useModel(DagLayoutView);
-  const goBack = () => {
-    history.push('/home?tab=project-management');
+  const loginService = useModel(LoginService);
+
+  const { type = 'DAG' } = parse(window.location.search);
+
+  const goBack = async () => {
+    const userInfo = await loginService.getUserInfo();
+    if (userInfo.platformType === Platform.AUTONOMY) {
+      const { origin } = (history.location.state as { origin: string }) || {};
+      history.push(`/edge?nodeId=${userInfo.ownerId}&tab=${origin || 'my-project'}`);
+    } else {
+      history.push('/home?tab=project-management');
+    }
   };
+
+  const P2pMenuList = {
+    DAG: [
+      {
+        key: 'DAG-项目数据',
+        label: '项目数据',
+        callBack: () => viewInstance.setActiveKey('datatable'),
+        isInit: false,
+      },
+      {
+        key: 'DAG-模型训练',
+        label: '模型训练',
+        callBack: () => viewInstance.setActiveKey('pipeline'),
+        isInit: true,
+      },
+    ],
+    PSI: [],
+    ALL: [],
+  };
+
+  useEffect(() => {
+    viewInstance.setActiveMenu(
+      P2pMenuList[type as keyof typeof P2pMenuList]?.findIndex((item) => item.isInit),
+    );
+  }, []);
 
   return (
     <div className={styles.wrap}>
@@ -66,6 +105,28 @@ export const DagLayout = () => {
         <span className={styles.slot}>
           <ProjectListComponent />
         </span>
+        <AccessWrapper accessType={{ type: [Platform.AUTONOMY] }}>
+          <div className={styles.p2pMenuHeader}>
+            {P2pMenuList[type as keyof typeof P2pMenuList].map(
+              (item, index: number) => {
+                return (
+                  <div
+                    key={item.key}
+                    className={classnames(styles.divMenu, {
+                      [styles.active]: index === viewInstance.activeMenu,
+                    })}
+                    onClick={() => {
+                      viewInstance.setActiveMenu(index);
+                      item?.callBack && item.callBack();
+                    }}
+                  >
+                    {item.label}
+                  </div>
+                );
+              },
+            )}
+          </div>
+        </AccessWrapper>
       </div>
       <div className={styles.content}>
         <div
@@ -74,7 +135,12 @@ export const DagLayout = () => {
           })}
         >
           <div className={styles.leftTop}>
-            <Tabs destroyInactiveTabPane={true} items={tabItems} />
+            <Tabs
+              destroyInactiveTabPane={true}
+              items={tabItems}
+              activeKey={viewInstance.activeKey}
+              onChange={(key) => viewInstance.setActiveKey(key)}
+            />
           </div>
           <div className={styles.leftBottom}>
             <PipelineCreationComponent />
@@ -161,6 +227,18 @@ export class DagLayoutView extends Model {
   leftPanelShow = true;
 
   rightModalSize = RIGHT_DIST;
+
+  activeKey = 'pipeline';
+
+  activeMenu = 0;
+
+  setActiveKey = (key: string) => {
+    this.activeKey = key;
+  };
+
+  setActiveMenu = (key: number) => {
+    this.activeMenu = key;
+  };
 
   toggleLeftPanel() {
     this.leftPanelShow = !this.leftPanelShow;

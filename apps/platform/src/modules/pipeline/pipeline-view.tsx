@@ -1,23 +1,30 @@
-import { NodeIndexOutlined, EditOutlined } from '@ant-design/icons';
+import { NodeIndexOutlined, EditOutlined, LockOutlined } from '@ant-design/icons';
 import { Input, Tooltip, Tree, message } from 'antd';
 import { App } from 'antd';
 import classnames from 'classnames';
 import { parse } from 'query-string';
 import { useState, useEffect } from 'react';
-import { useLocation } from 'umi';
+import { useLocation, useSearchParams } from 'umi';
 
+import { Platform } from '@/components/platform-wrapper';
+import { LoginService } from '@/modules/login/login.service';
 import { CommandRegistry } from '@/util/command';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
+
+import { HeaderProjectListView } from '../layout/header-project-list/project-list.view';
 
 import style from './index.less';
 import { PipelineMenu } from './pipeline-menu';
 import type { Pipeline, PipelineTreeItem } from './pipeline-protocol';
 import { PipelineCommands } from './pipeline-protocol';
 import { DefaultPipelineService } from './pipeline-service';
+import { ProjectEditService } from '@/modules/layout/header-project-list/project-edit.service';
 
 const PipelineListNode = (props: { node: PipelineTreeItem }) => {
   const { node } = props;
   const viewInstance = useModel(PipelineView);
+  const projectEditService = useModel(ProjectEditService);
+
   const [isEditing, setIsEditing] = useState(false);
 
   return isEditing ? (
@@ -45,23 +52,38 @@ const PipelineListNode = (props: { node: PipelineTreeItem }) => {
         </div>
         {node.title}
       </div>
-      <div className={style.pipelineItemIcons}>
-        <div className={classnames(style.treeIcon, style.commandIcon)}>
-          <Tooltip title="编辑" placement="top">
-            <EditOutlined
-              onClick={() => {
-                setIsEditing(true);
-              }}
-            />
-          </Tooltip>
-        </div>
-        <div className={classnames(style.treeIcon, style.commandIcon)}>
-          <PipelineMenu
-            pipeline={node}
-            commandCallback={() => viewInstance.refresh()}
-          />
-        </div>
-      </div>
+      {!projectEditService.canEdit.pipelineEditDisabled ? (
+        <>
+          {node.isDisabled ? (
+            <Tooltip
+              placement="right"
+              title={node.isDisabled ? '非我方节点创建，仅可查看' : ''}
+            >
+              <LockOutlined />
+            </Tooltip>
+          ) : (
+            <div className={style.pipelineItemIcons}>
+              <div className={classnames(style.treeIcon, style.commandIcon)}>
+                <Tooltip title="编辑" placement="top">
+                  <EditOutlined
+                    onClick={() => {
+                      setIsEditing(true);
+                    }}
+                  />
+                </Tooltip>
+              </div>
+              <div className={classnames(style.treeIcon, style.commandIcon)}>
+                <PipelineMenu
+                  pipeline={node}
+                  commandCallback={() => viewInstance.refresh()}
+                />
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <></>
+      )}
     </div>
   );
 };
@@ -71,9 +93,10 @@ export const PipelineViewComponent = () => {
   const { projectId, dagId } = parse(search);
   const { message: messageApi } = App.useApp();
   const viewInstance = useModel(PipelineView);
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    viewInstance.setCurrentPipeline(dagId);
+    viewInstance.setCurrentPipeline(dagId as string);
   }, [dagId]);
 
   useEffect(() => {
@@ -98,9 +121,24 @@ export const PipelineViewComponent = () => {
         }
       }
     };
-
     update();
-  }, [projectId]);
+  }, [projectId, dagId]);
+
+  /**
+   * P2P模式下，判断当前训练流和项目能否编辑
+   * 归档项目不可编辑。
+   * 非本方创建的训练流不可编辑
+   */
+  useEffect(() => {
+    viewInstance.pipelineService.changePipelineCanEdit(dagId as string);
+  }, [
+    projectId,
+    dagId,
+    searchParams,
+    viewInstance.projectListService.projectList,
+    viewInstance.pipelineService.pipelines,
+  ]);
+
   return (
     <div className={style.treeContainer}>
       <Tree
@@ -126,6 +164,9 @@ export const PipelineViewComponent = () => {
 
 export class PipelineView extends Model {
   pipelineService = getModel(DefaultPipelineService);
+  loginService = getModel(LoginService);
+  projectListService = getModel(HeaderProjectListView);
+
   commands = CommandRegistry;
   constructor() {
     super();
@@ -137,41 +178,25 @@ export class PipelineView extends Model {
 
   currentPipelineId = '';
 
-  onViewMount = async () => {
-    this.convert(await this.pipelineService.getPipelines());
-    if (this.pipelineService.pipelines.length > 0) {
-      const { search } = window.location;
-
-      const { projectId, dagId } = parse(search);
-      const currentPipeline = this.pipelineService.pipelines.find(
-        (item) => item.projectId === projectId && item.graphId === dagId,
-      ) as { projectId: string; graphId: string; name: string } | undefined;
-      if (currentPipeline) {
-        this.pipelineService.setCurrentPipeline(
-          currentPipeline.graphId,
-          currentPipeline.name,
-        );
-        this.currentPipelineId = currentPipeline.graphId;
-      } else {
-        this.pipelineService.setCurrentPipeline(
-          this.pipelines[0].key,
-          this.pipelines[0].title,
-        );
-        this.currentPipelineId = this.pipelines[0].key as string;
-      }
-    }
-  };
-
   async refresh() {
     this.convert(await this.pipelineService.getPipelines());
   }
 
   convert(pipelines: Pipeline[]) {
-    const pipelineData = pipelines.map((i) => ({
-      title: i.name,
-      key: i.graphId,
-    }));
-
+    const pipelineData = (pipelines || []).map((i) => {
+      if (this.loginService.userInfo?.platformType === Platform.AUTONOMY) {
+        const currentNodeId = this.loginService.userInfo.ownerId;
+        return {
+          title: i.name,
+          key: i.graphId,
+          isDisabled: i.ownerId !== currentNodeId,
+        };
+      }
+      return {
+        title: i.name,
+        key: i.graphId,
+      };
+    });
     this.pipelines = pipelineData;
   }
 

@@ -1,7 +1,9 @@
 import sha256 from 'crypto-js/sha256';
 
+import type { PadMode, Platform } from '@/components/platform-wrapper';
 import API from '@/services/secretpad';
 import { Model } from '@/util/valtio-helper';
+import { updatePwd } from '@/services/secretpad/UserController';
 
 // import Base64 from 'crypto-js/enc-base64';
 // import sha256 from 'crypto-js/256';
@@ -28,15 +30,30 @@ export class LoginService extends Model {
     }
     return this.userInfo;
   };
+
+  resetUserPwd = async (
+    name: string,
+    currentPwd: string,
+    newPwd: string,
+    verifiedNewPwd: string,
+  ) => {
+    const res = await updatePwd({
+      name: name,
+      oldPasswordHash: sha256(currentPwd).toString(),
+      newPasswordHash: sha256(newPwd).toString(),
+      confirmPasswordHash: sha256(verifiedNewPwd).toString(),
+    });
+    return res?.status;
+  };
 }
 
 export interface User {
   token: string;
-  platformType: 'EDGE' | 'CENTER';
+  platformType: Platform; // 'EDGE' | 'CENTER' | 'AUTONOMY';
   name: string;
   ownerType: 'CENTER' | 'EDGE'; // 宿主类型
   ownerId: string; // 	NODE的话这里存nodeId
-  deployMode: 'ALL-IN-ONE' | 'MPC' | 'TEE';
+  deployMode: PadMode; // 'ALL-IN-ONE' | 'MPC' | 'TEE';
 }
 export interface UserInfo {
   user: User | null;

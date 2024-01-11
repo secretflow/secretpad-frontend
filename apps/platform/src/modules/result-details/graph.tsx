@@ -91,6 +91,7 @@ export const PreviewGraphComponents: React.FC<{
         <div
           ref={containerRef}
           className={classnames(styles.graph, 'x6-graph')}
+          style={{ cursor: 'zoom-in' }}
           onClick={zoomIn}
         />
       </div>

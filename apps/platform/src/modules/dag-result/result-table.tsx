@@ -17,7 +17,11 @@ import type { Key } from 'react';
 import { useState, useRef } from 'react';
 import { CSVLink } from 'react-csv';
 
+import { Platform, hasAccess } from '@/components/platform-wrapper';
 import { Download } from '@/modules/dag-result/apply-download';
+import { getModel } from '@/util/valtio-helper';
+
+import { ResultManagerService } from '../result-manager/result-manager.service';
 
 import styles from './index.less';
 import type { DataType, ResultComponentProps } from './types';
@@ -42,6 +46,7 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
   const { data, id } = props;
   const { gmtCreate, meta, jobId, taskId, type: resultType } = data;
   const { rows } = meta;
+  const resultManagerService = getModel(ResultManagerService);
 
   const handleSearch = (
     selectedKeys: string[],
@@ -220,18 +225,35 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
                     </Button>
                   )}
                 {/* no download for readtable */}
-                {mode === 'TEE' && props.codeName !== 'read_data/datatable' && (
-                  <Download
-                    params={{
-                      nodeID: nodeId,
-                      taskID: taskId,
-                      jobID: jobId,
-                      projectID: projectId as string,
-                      resourceType: resultType,
-                      resourceID: tableId,
-                    }}
-                  />
-                )}
+                {!hasAccess({ type: [Platform.AUTONOMY] }) &&
+                  mode === 'TEE' &&
+                  props.codeName !== 'read_data/datatable' && (
+                    <Download
+                      params={{
+                        nodeID: nodeId,
+                        taskID: taskId,
+                        jobID: jobId,
+                        projectID: projectId as string,
+                        resourceType: resultType,
+                        resourceID: tableId,
+                      }}
+                    />
+                  )}
+                {/* p2p 模式下不用申请，直接下载 */}
+                {hasAccess({ type: [Platform.AUTONOMY] }) &&
+                  props.codeName !== 'read_data/datatable' && (
+                    <Button
+                      type="link"
+                      style={{ paddingLeft: 8, fontSize: 12 }}
+                      onClick={() =>
+                        resultManagerService.download(nodeId || '', {
+                          domainDataId: path,
+                        })
+                      }
+                    >
+                      下载
+                    </Button>
+                  )}
               </div>
             </div>
           );
@@ -239,7 +261,7 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
       </div>
       <div className={styles.tableHeader}>
         <div>表字段</div>
-        <Space size={12}>
+        <Space size={12} className={styles.right}>
           <Space
             onClick={downloadData}
             className={classnames(styles.fullScreenText, styles.actionIcon)}

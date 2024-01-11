@@ -6,6 +6,8 @@ import { useLocation } from 'umi';
 
 import { DatatablePreview } from '@/components/datatable-preview';
 import { EdgeAuthWrapper } from '@/components/edge-wrapper-auth';
+import { AccessWrapper, Platform, hasAccess } from '@/components/platform-wrapper';
+import { LoginService } from '@/modules/login/login.service';
 import { getProjectDatatable } from '@/services/secretpad/ProjectController';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
@@ -19,7 +21,7 @@ export const DatatableTreeComponent = () => {
   const ref1 = useRef(null);
   const { pathname, search } = useLocation();
   const { projectId } = parse(search);
-
+  const currentLoginNodeId = viewInstance.loginService.userInfo?.ownerId;
   useEffect(() => {
     viewInstance.getDatatables();
   }, [projectId]);
@@ -75,7 +77,7 @@ export const DatatableTreeComponent = () => {
       </DatatablePreview>
     ) : (
       <div className={styles.treeRootNode}>
-        <span style={{ flex: 1, width: 150 }}>
+        <span style={{ flex: 1, width: 140 }}>
           <Space>
             {/* 需要服务端增加type字段 */}
             {node?.nodeType === 'embedded' && (
@@ -168,6 +170,19 @@ export const DatatableTreeComponent = () => {
                         </a>
                       </EdgeAuthWrapper>
                     )}
+                    {item.nodeId === currentLoginNodeId &&
+                      hasAccess({ type: [Platform.AUTONOMY] }) && (
+                        <a
+                          href={`/edge?nodeId=${item.nodeId}&tab=data-management`}
+                          rel="noreferrer"
+                          style={{
+                            fontSize: 12,
+                            color: '#0068fa',
+                          }}
+                        >
+                          去数据管理添加
+                        </a>
+                      )}
                   </div>
                 }
               />
@@ -176,32 +191,38 @@ export const DatatableTreeComponent = () => {
         }
         return components;
       })}
-      <Tour
-        open={viewInstance.tourInited && viewInstance.showTour}
-        onClose={() => (viewInstance.showTour = false)}
-        mask={false}
-        type="primary"
-        placement="right"
-        prefixCls="data-tree"
-        steps={[
-          {
-            title: '去这里添加节点数据授权',
-            description: '空白画布暂无节点数据',
-            nextButtonProps: {
-              children: '知道了',
-            },
-            target: () => {
-              if (ref1.current) {
-                if (!viewInstance.tourInited) {
-                  viewInstance.showTour = true;
+      <AccessWrapper
+        accessType={{
+          type: [Platform.CENTER, Platform.EDGE],
+        }}
+      >
+        <Tour
+          open={viewInstance.tourInited && viewInstance.showTour}
+          onClose={() => (viewInstance.showTour = false)}
+          mask={false}
+          type="primary"
+          placement="right"
+          prefixCls="data-tree"
+          steps={[
+            {
+              title: '去这里添加节点数据授权',
+              description: '空白画布暂无节点数据',
+              nextButtonProps: {
+                children: '知道了',
+              },
+              target: () => {
+                if (ref1.current) {
+                  if (!viewInstance.tourInited) {
+                    viewInstance.showTour = true;
+                  }
+                  viewInstance.tourInited = true;
                 }
-                viewInstance.tourInited = true;
-              }
-              return ref1.current;
+                return ref1.current;
+              },
             },
-          },
-        ]}
-      />
+          ]}
+        />
+      </AccessWrapper>
     </div>
   );
 };
@@ -224,15 +245,15 @@ export class DatatableTreeView extends Model {
   projectInfo?: API.ProjectVO;
 
   datatableTreeService = getModel(DatatableTreeService);
-
-  onViewMount() {
-    this.getDatatables();
-  }
+  loginService = getModel(LoginService);
 
   gotoNodeCenter(nodeId: string) {
     // history.push(`node?nodeId=${nodeId}`);
+    const isP2p = this.loginService.userInfo?.platformType === Platform.AUTONOMY;
     const a = document.createElement('a');
-    a.href = `/node?nodeId=${nodeId}&tab=data-management`;
+    a.href = isP2p
+      ? `/edge?tab=data-management&nodeId=${nodeId}`
+      : `/node?nodeId=${nodeId}&tab=data-management`;
     a.target = '_blank';
     a.click();
   }

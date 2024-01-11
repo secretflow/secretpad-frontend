@@ -2,6 +2,8 @@ import { Emitter } from '@secretflow/utils';
 import { parse } from 'query-string';
 import { history } from 'umi';
 
+import { ProjectEditService } from '@/modules/layout/header-project-list/project-edit.service';
+import { LoginService } from '@/modules/login/login.service';
 import {
   createGraph,
   deleteGraph,
@@ -11,7 +13,10 @@ import {
   updateGraphMeta,
 } from '@/services/secretpad/GraphController';
 import { CommandRegistry } from '@/util/command';
-import { Model } from '@/util/valtio-helper';
+import { Model, getModel } from '@/util/valtio-helper';
+
+import { HeaderProjectListView } from '../layout/header-project-list/project-list.view';
+import { ProjectStatus } from '../p2p-project-list/components/common';
 
 import type { Pipeline } from './pipeline-protocol';
 import type { PipelineTemplateContribution } from './pipeline-protocol';
@@ -47,6 +52,10 @@ export class DefaultPipelineService extends Model {
   protected readonly onPipelineCreatedEmitter = new Emitter<string>();
   readonly onPipelineCreated = this.onPipelineCreatedEmitter.on;
 
+  projectEditService = getModel(ProjectEditService);
+  loginService = getModel(LoginService);
+  projectListService = getModel(HeaderProjectListView);
+
   constructor() {
     super();
     this.pipelineTemplates = getPipelineTemplates();
@@ -64,12 +73,19 @@ export class DefaultPipelineService extends Model {
   }
 
   setCurrentPipeline = (pipelineId: string, pipelineName?: string) => {
+    // origin 标识是从工作台点击进入项目还是项目列表点击进入项目
+    const { origin } = (history.location.state as { origin: string }) || {};
     if (!pipelineId) {
-      const { projectId, mode } = parse(window.location.search);
-      history.replace({
-        pathname: '/dag',
-        search: `projectId=${projectId}&mode=${mode}`,
-      });
+      const { projectId, mode, type } = parse(window.location.search);
+      history.replace(
+        {
+          pathname: '/dag',
+          search: this.projectEditService.isP2pMode()
+            ? `projectId=${projectId}&mode=${mode}&type=${type}`
+            : `projectId=${projectId}&mode=${mode}`,
+        },
+        { origin },
+      );
       return;
     }
     const pipeline = this.pipelines.find((p) => p.id === pipelineId);
@@ -83,10 +99,59 @@ export class DefaultPipelineService extends Model {
         pathname: '/dag',
         search: searchParams.toString(),
       },
-      pipelineName ? { pipelineName, pipelineId } : { pipelineId },
+      pipelineName ? { pipelineName, pipelineId, origin } : { pipelineId, origin },
     );
     if (pipelineId !== currentDagId) {
       this.onPipelineChangedEmitter.fire(pipelineId);
+    }
+  };
+
+  /**
+   * P2P模式下，判断当前训练流和项目能否编辑
+   * 归档项目不可编辑。
+   * 非本方创建的训练流不可编辑
+   */
+  changePipelineCanEdit = (pipelineId?: string) => {
+    const { projectId } = parse(window.location.search);
+    if (this.projectEditService.isP2pMode()) {
+      const project = this.projectListService.projectList?.find(
+        (item) => item.projectId === projectId,
+      );
+      // 如果是归档项目直接置灰 如果 url 上的 projectId 不在项目列表中，则置灰
+
+      if (!project || project.status === ProjectStatus.ARCHIVED) {
+        this.projectEditService.changeCanEditTrue();
+        this.projectEditService.changeCanEdit({
+          runAllToolTip: '',
+        });
+      } else {
+        if (project.status !== ProjectStatus.ARCHIVED) {
+          this.projectEditService.changeCanEdit({
+            pipelineEditDisabled: false,
+          });
+        }
+        const pipeline = this.pipelines.find((p) => p.graphId === pipelineId);
+        // pipelinen不存在，统一置灰画布的toolbar。
+        if (!pipeline) {
+          this.projectEditService.changeCanEditFalse();
+          this.projectEditService.changeCanEdit({
+            toolbarDisabled: true,
+          });
+          return;
+        }
+        const currentNodeId = this.loginService.userInfo?.ownerId;
+        // 当前训练流不属于当前Owner
+        if (pipeline && pipeline.ownerId !== currentNodeId) {
+          this.projectEditService.changeCanEditTrue();
+          this.projectEditService.changeCanEdit({
+            createPipelineDisabled: false,
+            pipelineEditDisabled: false,
+            runAllToolTip: '非我方节点创建，仅可查看',
+          });
+        } else {
+          this.projectEditService.changeCanEditFalse();
+        }
+      }
     }
   };
 

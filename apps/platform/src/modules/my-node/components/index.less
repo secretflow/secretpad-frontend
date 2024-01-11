@@ -1,0 +1,41 @@
+.nodeFuncContent {
+  display: grid;
+  margin: 16px 0;
+  gap: 24px;
+  grid-template-columns: 1fr 1fr 1fr;
+
+  .item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background-color: #f4f4f6;
+
+    .left {
+      flex: 1;
+
+      .title {
+        color: rgb(0 0 0 / 85%);
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0;
+        line-height: 22px;
+      }
+
+      .desc {
+        color: rgb(0 0 0 / 88%);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 20px;
+      }
+    }
+
+    .status {
+      flex-basis: 40px;
+      color: rgb(0 0 0 / 45%);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 22px;
+    }
+  }
+}

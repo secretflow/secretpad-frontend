@@ -13,8 +13,7 @@ import type { Cell } from '@secretflow/dag';
 import { ActionType } from '@secretflow/dag';
 import { Button, Divider, Popover, Tooltip, message } from 'antd';
 import classnames from 'classnames';
-import { parse } from 'query-string';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { ReactComponent as RunAllIcon } from '@/assets/run-all.icon.svg';
 import runAllImg from '@/assets/run-all.png';
@@ -24,6 +23,7 @@ import runUpImg from '@/assets/run-up.png';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { DefaultModalManager } from '../dag-modal-manager';
+import { ProjectEditService } from '../layout/header-project-list/project-edit.service';
 
 import mainDag from './dag';
 import { GraphService } from './graph-service';
@@ -135,18 +135,29 @@ export const ToolbarComponent: React.FC = () => {
             </div>
           }
         >
-          <Button
-            type="text"
-            icon={tool.icon}
-            onClick={() => viewInstance.exec(tool.type)}
-            disabled={!viewInstance.isToolBarEnabled(tool.type)}
-            className={classnames(styles.toolBarButton, {
-              [styles.runAll]: tool.type === ActionType.runAll,
-              [styles.notRunAll]: tool.type !== ActionType.runAll,
-            })}
+          <Tooltip
+            title={
+              tool.type === ActionType.runAll
+                ? viewInstance.projectEditService.canEdit.runAllToolTip
+                : ''
+            }
           >
-            {tool.label}
-          </Button>
+            <Button
+              type="text"
+              icon={tool.icon}
+              onClick={() => viewInstance.exec(tool.type)}
+              disabled={!viewInstance.isToolBarEnabled(tool.type)}
+              className={classnames(styles.toolBarButton, {
+                [styles.runAll]: tool.type === ActionType.runAll,
+                [styles.runAllDisabled]:
+                  tool.type === ActionType.runAll &&
+                  viewInstance.projectEditService.canEdit.toolbarDisabled,
+                [styles.notRunAll]: tool.type !== ActionType.runAll,
+              })}
+            >
+              {tool.label}
+            </Button>
+          </Tooltip>
         </Popover>
       ))}
       <Divider type="vertical" />
@@ -215,6 +226,8 @@ export class ToolbarView extends Model {
 
   modalManager = getModel(DefaultModalManager);
 
+  projectEditService = getModel(ProjectEditService);
+
   constructor() {
     super();
     this.graphService.onNodeRunningEvent((isRunning: boolean) => {
@@ -225,6 +238,10 @@ export class ToolbarView extends Model {
   }
 
   isToolBarEnabled(type: ActionType) {
+    //  p2p 模式判断项目和训练流不可编辑
+    if (this.projectEditService.canEdit.toolbarDisabled) {
+      return false;
+    }
     const selectOneTypes = [ActionType.runDown, ActionType.runSingle, ActionType.runUp];
     const selectManyTypes = [ActionType.copy, ActionType.removeCell];
     if (selectOneTypes.includes(type)) {

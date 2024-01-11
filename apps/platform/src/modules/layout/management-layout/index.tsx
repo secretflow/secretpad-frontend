@@ -102,7 +102,11 @@ export const ManagementLayoutComponent = (props: ManagementLayoutComponentProps)
         </div>
       </div>
 
-      <div className={styles.contentContainer}>
+      <div
+        className={classnames(styles.contentContainer, {
+          [styles.workbenchContentContainer]: tabKey === 'workbench',
+        })}
+      >
         {menuItems.find(({ key }) => key === tabKey)?.component}
       </div>
     </div>

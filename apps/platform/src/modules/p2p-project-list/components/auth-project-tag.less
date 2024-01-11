@@ -1,0 +1,59 @@
+.content {
+  .nodeName {
+    display: flex;
+    overflow: hidden;
+    height: 22px;
+    align-items: center;
+    color: rgb(0 0 0 / 85%);
+    font-size: 12px;
+    font-weight: 400;
+    gap: 4px;
+    letter-spacing: 0;
+    line-height: 22px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :global(.ant-tag) {
+    line-height: 18px;
+    padding-inline: 3px;
+  }
+
+  .tagApply {
+    width: 28px;
+    height: 20px;
+    border: 1px solid rgb(0 0 0 / 6%);
+    border-radius: 4px;
+    background-image: linear-gradient(180deg, #fafdff 0%, #e6f4ff 100%);
+    font-size: 10px;
+  }
+
+  .applyContent {
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+
+  .processContent {
+    margin-bottom: 8px;
+    font-size: 12px;
+
+    .agree {
+      color: rgb(0 104 250 / 100%);
+      cursor: pointer;
+    }
+
+    .reject {
+      color: red;
+      cursor: pointer;
+    }
+
+    .tagProcess {
+      width: 28px;
+      height: 20px;
+      border: 1px solid rgb(0 0 0 / 6%);
+      border-radius: 4px;
+      background-image: linear-gradient(180deg, #fff 0%, #eee 100%);
+      font-size: 10px;
+    }
+  }
+}

@@ -36,12 +36,16 @@ export class MyNodeService extends Model {
 
   changeCommonNetAddress = async (value: string, nodeId: string) => {
     if (!nodeId) return;
-    await update({
+    const res = await update({
       netAddress: value,
       nodeId,
     });
-    this.getNodeInfo(nodeId);
-    message.success('通讯地址更改成功');
+    if (res.status?.code == 0) {
+      this.getNodeInfo(nodeId);
+      message.success('通讯地址更改成功');
+    } else {
+      message.error(res.status?.msg);
+    }
   };
 
   resetEdgeNodePwd = async (
@@ -58,8 +62,12 @@ export class MyNodeService extends Model {
     });
     if (res.status?.code == 0) {
       message.success('密码设置成功');
+      return true;
+    } else if (res.status?.code === 202011100) {
+      message.error('原密码错误');
     } else {
       message.error(res.status?.msg);
     }
+    return false;
   };
 }

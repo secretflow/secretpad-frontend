@@ -9,6 +9,7 @@ import type { FilterValue } from 'antd/es/table/interface';
 import { parse } from 'query-string';
 import type { ChangeEvent } from 'react';
 
+import { AccessWrapper, Platform } from '@/components/platform-wrapper';
 import { page as requestList } from '@/services/secretpad/NodeRouteController';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
@@ -26,7 +27,6 @@ import styles from './index.less';
 export const CooperativeNodeListComponent = () => {
   const viewInstance = useModel(CooperativeNodeView);
   const service = useModel(CooperativeNodeService);
-
   const columns: ColumnsType<API.NodeRouterVO> = [
     {
       title: '合作节点',
@@ -182,15 +182,35 @@ export const CooperativeNodeListComponent = () => {
                 >
                   编辑
                 </Button>
-                <Button
-                  type="link"
-                  onClick={() => {
-                    viewInstance.showDeleteModal = true;
-                    viewInstance.clickedCooperativeNode = record;
-                  }}
-                >
-                  删除
-                </Button>
+                <AccessWrapper accessType={{ type: [Platform.AUTONOMY] }}>
+                  <Tooltip
+                    title={
+                      record.isProjectJobRunning ? '有正在运行中的任务,不可删除' : ''
+                    }
+                  >
+                    <Button
+                      type="link"
+                      onClick={() => {
+                        viewInstance.showDeleteModal = true;
+                        viewInstance.clickedCooperativeNode = record;
+                      }}
+                      disabled={record.isProjectJobRunning}
+                    >
+                      删除
+                    </Button>
+                  </Tooltip>
+                </AccessWrapper>
+                <AccessWrapper accessType={{ type: [Platform.CENTER, Platform.EDGE] }}>
+                  <Button
+                    type="link"
+                    onClick={() => {
+                      viewInstance.showDeleteModal = true;
+                      viewInstance.clickedCooperativeNode = record;
+                    }}
+                  >
+                    删除
+                  </Button>
+                </AccessWrapper>
               </Space>
             )}
           </div>

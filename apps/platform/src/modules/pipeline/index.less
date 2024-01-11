@@ -62,6 +62,14 @@
       color: rgb(0 104 250 / 100%);
     }
   }
+
+  .pipelineCreationDisableBtn {
+    color: rgb(0 0 0 / 25%);
+
+    &:hover {
+      color: rgb(0 0 0 / 25%);
+    }
+  }
 }
 
 .pipelineTree {
@@ -114,4 +122,81 @@
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+.templates {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+
+  .item {
+    position: relative;
+    display: flex;
+    height: 80px;
+    padding: 16px;
+    border: 1px solid rgb(0 10 26 / 16%);
+    border-radius: 8px;
+    margin-bottom: 16px;
+
+    &.checked {
+      border-color: #0068fa;
+
+      .icon {
+        display: block;
+        color: #0068fa;
+      }
+    }
+
+    .templateIcon {
+      width: 48px;
+      height: 48px;
+
+      :global {
+        .anticon svg {
+          width: 48px;
+          height: 48px;
+        }
+      }
+    }
+
+    .text {
+      width: 160px;
+      flex-basis: 160px;
+      margin-left: 8px;
+
+      .title {
+        margin: 0;
+        font-size: 14px;
+      }
+
+      .description {
+        width: 100%;
+        font-size: 12px;
+      }
+    }
+
+    .icon {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: none;
+      font-size: 21px;
+    }
+  }
+
+  .showDisable {
+    .title {
+      color: rgb(0 0 0 / 25%);
+    }
+
+    .description {
+      color: rgb(0 0 0 / 25%);
+    }
+  }
+}
+
+.buttonDisable {
+  cursor: not-allowed !important;
+  opacity: 0.4;
+  pointer-events: none;
 }

@@ -3,6 +3,8 @@ import React from 'react';
 import { history } from 'umi';
 
 import { ReactComponent as Logo } from '@/assets/logo1.svg';
+import { Platform } from '@/components/platform-wrapper';
+import { DefaultComponentInterpreterService } from '@/modules/component-interpreter/component-interpreter-service';
 import platformConfig from '@/platform.config';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
@@ -11,7 +13,6 @@ import type { UserInfo } from './component/login-form';
 import styles from './index.less';
 import type { User } from './login.service';
 import { LoginService } from './login.service';
-import { DefaultComponentInterpreterService } from '@/modules/component-interpreter/component-interpreter-service';
 
 export const LoginComponent: React.FC = () => {
   const loginModel = useModel(LoginModel);
@@ -42,6 +43,20 @@ export class LoginModel extends Model {
     this.token = data?.token || '';
     this.loginService.userInfo = data as User;
     if (status?.code === 0) {
+      localStorage.setItem('User-Token', this.token);
+      // P2P 模式跳转
+      if (this.loginService.userInfo.platformType === Platform.AUTONOMY) {
+        if (this.loginService.userInfo.ownerId) {
+          localStorage.setItem('neverLogined', 'true');
+          history.push(`/edge?nodeId=${this.loginService.userInfo.ownerId}`);
+          message.success('登录成功');
+          // 防止token失效后,直接刷新页面，重新登陆接口未重新调用
+          this.interpreterService.getComponentI18n();
+          return;
+        }
+      }
+
+      // CENTER 和 EDGE 模式跳转
       if (this.loginService.userInfo.platformType === 'EDGE') {
         if (this.loginService.userInfo.ownerId) {
           localStorage.setItem('neverLogined', 'true');
@@ -68,7 +83,7 @@ export class LoginModel extends Model {
       // 防止token失效后,直接刷新页面，重新登陆接口未重新调用
       this.interpreterService.getComponentI18n();
     } else {
-      message.error('登录失败，请检查用户名或密码');
+      message.error(status?.msg || '登录失败，请检查用户名或密码');
     }
   };
 }

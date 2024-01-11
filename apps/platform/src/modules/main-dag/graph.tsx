@@ -8,6 +8,7 @@ import React from 'react';
 import { useLocation } from 'umi';
 
 import templateImg from '@/assets/dag-background.svg';
+import { ProjectEditService } from '@/modules/layout/header-project-list/project-edit.service';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { DefaultComponentInterpreterService } from '../component-interpreter/component-interpreter-service';
@@ -32,6 +33,8 @@ export const GraphComponents: React.FC<{
   const viewInstance = props?.viewInstance || useModel(GraphView);
   const dagInstatnce = props?.dagInstatnce || mainDag;
   const modalManager = useModel(DefaultModalManager);
+  const projectEditService = useModel(ProjectEditService);
+
   const { search, pathname } = useLocation();
   const { dagId, mode } = parse(search);
 
@@ -46,6 +49,7 @@ export const GraphComponents: React.FC<{
         dagId as string,
         containerRef.current,
         mode as ComputeMode,
+        projectEditService.canEdit.graphHotKeyDisabled ? 'LITE' : 'FULL',
       );
     }
   }, [dagId, mode]);
@@ -67,7 +71,9 @@ export const GraphComponents: React.FC<{
           />
         </div>
       )}
-      <ShowMenuContext.Provider value={pathname === '/dag'}>
+      <ShowMenuContext.Provider
+        value={pathname === '/dag' && !projectEditService.canEdit.menuContextDisabled}
+      >
         <X6ReactPortalProvider />
       </ShowMenuContext.Provider>
       <div ref={containerRef} className={classnames(styles.graph, 'x6-graph')} />
@@ -95,7 +101,12 @@ export class GraphView extends Model {
     mainDag.dispose();
   }
 
-  initGraph(dagId: string, container: HTMLDivElement, mode: ComputeMode) {
+  initGraph(
+    dagId: string,
+    container: HTMLDivElement,
+    mode: ComputeMode,
+    menuContext: 'FULL' | 'LITE',
+  ) {
     if (container) {
       const { clientWidth, clientHeight } = container;
       mainDag.init(
@@ -136,7 +147,7 @@ export class GraphView extends Model {
             }
           },
         },
-        'FULL',
+        menuContext,
       );
     }
   }

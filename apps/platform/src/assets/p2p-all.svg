@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="176px" height="130px" viewBox="0 0 176 130" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>全家桶</title>
+    <g id="全部设计稿" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="新建项目" transform="translate(-516, -433)">
+            <g id="5.反馈/8.Drawer抽屉/亮色/默认" transform="translate(48, 135.5)">
+                <g id="编组-7备份-11" transform="translate(456, 286)">
+                    <g id="全家桶" transform="translate(12, 12)">
+                        <rect id="矩形" fill="#FFFFFF" x="0" y="0" width="176" height="129"></rect>
+                        <rect id="矩形备份-20" fill="#ECF4FF" x="18" y="34.5" width="140" height="78" rx="2"></rect>
+                        <rect id="矩形备份-24" fill="#ECF4FF" x="18" y="16.5" width="140" height="14" rx="2"></rect>
+                        <rect id="矩形" fill="#72ADFF" x="68" y="20.5" width="16" height="6" rx="1"></rect>
+                        <rect id="矩形备份-25" fill="#FFFFFF" x="92" y="20.5" width="16" height="6" rx="1"></rect>
+                        <g id="编组-37" transform="translate(32, 42.5)">
+                            <g id="连线-normal备份" transform="translate(71.5, 19) scale(-1, 1) translate(-71.5, -19)translate(56, 11.5)" fill-rule="nonzero" stroke="#72ADFF">
+                                <path d="M31,1.77635684e-15 C31,0.456360561 31,0.684540841 31,0.684540841 C30.97031,7.33703655 0,7.66296345 0,14.3407835 C0,14.3407835 0,14.5605223 0,15" id="路径-2备份-3" transform="translate(15.5, 7.5) scale(-1, -1) rotate(-180) translate(-15.5, -7.5)"></path>
+                            </g>
+                            <g id="连线-normal备份-16" transform="translate(25, 11.5)" fill-rule="nonzero" stroke="#72ADFF">
+                                <path d="M31,1.77635684e-15 C31,0.456360561 31,0.684540841 31,0.684540841 C30.97031,7.33703655 0,7.66296345 0,14.3407835 C0,14.3407835 0,14.5605223 0,15" id="路径-2备份-3" transform="translate(15.5, 7.5) scale(-1, -1) rotate(-180) translate(-15.5, -7.5)"></path>
+                            </g>
+                            <g id="连线-normal备份-17" transform="translate(56, 39.5)" fill-rule="nonzero" stroke="#72ADFF">
+                                <path d="M31,0 C31,0.334664411 31,0.501996617 31,0.501996617 C30.97031,5.38049347 0,5.61950653 0,10.5165746 C0,10.5165746 0,10.6777164 0,11" id="路径-2备份-3" transform="translate(15.5, 5.5) scale(-1, -1) rotate(-180) translate(-15.5, -5.5)"></path>
+                            </g>
+                            <rect id="矩形" fill="#CCE1FF" x="31" y="0" width="50" height="12" rx="2"></rect>
+                            <rect id="矩形备份-7" fill="#CCE1FF" x="0" y="26" width="50" height="12" rx="2"></rect>
+                            <rect id="矩形备份-9" fill="#CCE1FF" x="62" y="26" width="50" height="12" rx="2"></rect>
+                            <rect id="矩形备份-10" fill="#CCE1FF" x="31" y="52" width="50" height="12" rx="2"></rect>
+                            <rect id="矩形" fill="#72ADFF" x="54" y="10" width="4" height="4" rx="2"></rect>
+                            <rect id="矩形备份-16" fill="#72ADFF" x="23" y="24" width="4" height="4" rx="2"></rect>
+                            <rect id="矩形备份-17" fill="#72ADFF" x="85" y="24" width="4" height="4" rx="2"></rect>
+                            <rect id="矩形备份-18" fill="#72ADFF" x="85" y="36" width="4" height="4" rx="2"></rect>
+                            <rect id="矩形备份-19" fill="#72ADFF" x="54" y="50" width="4" height="4" rx="2"></rect>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,4 +1,8 @@
-import { FullscreenExitOutlined, FullscreenOutlined } from '@ant-design/icons';
+import {
+  CloseOutlined,
+  FullscreenExitOutlined,
+  FullscreenOutlined,
+} from '@ant-design/icons';
 import { useFullscreen } from 'ahooks';
 import {
   Typography,
@@ -7,10 +11,8 @@ import {
   Drawer,
   Button,
   Tabs,
-  Tooltip,
   Space,
   Badge,
-  Progress,
 } from 'antd';
 import classNames from 'classnames';
 import React, { useEffect } from 'react';
@@ -39,20 +41,15 @@ export const ResultDetailsDrawer: React.FC = () => {
   const viewInstance = useModel(ResultDetailsView);
 
   const modalManager = useModel(DefaultModalManager);
-  const nodeService = getModel(NodeService);
   const modal = modalManager.modals[resultDetailsDrawer.id];
   const fullScreenRef = React.useRef(null);
   const [isFullscreen, { enterFullscreen, exitFullscreen }] =
     useFullscreen(fullScreenRef);
   const { data, visible, close } = modal || {};
 
-  const { Paragraph, Link } = Typography;
+  const { Paragraph } = Typography;
 
-  const {
-    nodeResultsVO = {},
-    graphDetailVO = {},
-    datasource,
-  } = viewInstance.resultDetail;
+  const { nodeResultsVO = {} } = viewInstance.resultDetail;
 
   useEffect(() => {
     visible && viewInstance.getResultDetail(data?.id);
@@ -96,15 +93,11 @@ export const ResultDetailsDrawer: React.FC = () => {
             <div>{`「${nodeResultsVO.productName}」详情`}</div>
             <div style={{ width: 120 }}>{getBadge()}</div>
           </Space>
-          <div className={style.close} onClick={close}>
-            X
-          </div>
         </div>
       }
       width={700}
       open={visible}
       onClose={close}
-      closable={false}
       footer={
         nodeResultsVO?.datatableType !== 'report' &&
         viewInstance.nodeService?.currentNode?.nodeId !== 'tee' ? (

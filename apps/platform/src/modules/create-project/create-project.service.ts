@@ -17,7 +17,7 @@ import {
 } from '@/services/secretpad/ProjectController';
 import { Model, getModel } from '@/util/valtio-helper';
 
-import { ComputeModeType } from '../project-list';
+import { ComputeModeType } from '../p2p-project-list/components/common';
 
 export type Datatable = API.DatatableVO;
 export type TeeNode = API.NodeVO;
@@ -211,10 +211,15 @@ export class CreateProjectService extends Model {
         : `${template.name}模板`;
     this.pipelineService.createPipeline(name, templateId, data?.projectId);
 
-    history.push({
-      pathname: '/dag',
-      search: `projectId=${data?.projectId}&mode=${computeMode}`,
-    });
+    history.push(
+      {
+        pathname: '/dag',
+        search: `projectId=${data?.projectId}&mode=${computeMode}`,
+      },
+      {
+        origin: 'project-management',
+      },
+    );
   };
 
   getTeeNodeList = async () => {

@@ -1,10 +1,11 @@
 import { SearchOutlined } from '@ant-design/icons';
-import { Input, Table, Typography, Button, Badge } from 'antd';
+import { Input, Table, Typography, Button, Badge, Space } from 'antd';
 import type { FilterValue, SorterResult } from 'antd/es/table/interface';
 import { parse } from 'query-string';
 import { useEffect, type ChangeEvent } from 'react';
 import { history } from 'umi';
 
+import { hasAccess, Platform } from '@/components/platform-wrapper';
 import type { ComputeMode } from '@/modules/component-tree/component-protocol';
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import { formatTimestamp } from '@/modules/dag-result/utils';
@@ -15,6 +16,7 @@ import {
 } from '@/modules/result-details/result-details-drawer';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
+import { BatchDeleteModal } from './batch-delete/batch-delete.view';
 import styles from './index.less';
 import type { TableType } from './result-manager.protocol';
 import {
@@ -23,10 +25,78 @@ import {
   TableTypeMap,
 } from './result-manager.service';
 
+const { Link } = Typography;
+
 export const ResultManagerComponent = () => {
   const viewInstance = useModel(ResultManagerView);
+  const isP2P = hasAccess({ type: [Platform.AUTONOMY] });
 
-  const { Link } = Typography;
+  const renderButtons = (record: API.NodeResultsVO) => {
+    if (record.datatableType === 'report') {
+      return '-';
+    } else if (isP2P) {
+      return (
+        <Space>
+          {/* 暂时注释 */}
+          {/* {record.datatableType === 'report' && (
+            <Popconfirm
+              title="确定要复制到数据管理吗？"
+              onConfirm={() => viewInstance.copy(record)}
+              okText="复制"
+              cancelText="取消"
+            >
+              <Button type="link" style={{ paddingLeft: 0 }}>
+                复制
+              </Button>
+            </Popconfirm>
+          )} */}
+          <Button
+            type="link"
+            style={{ paddingLeft: 0 }}
+            onClick={() => viewInstance.download(record)}
+          >
+            下载
+          </Button>
+          {/* <Button
+            type="link"
+            style={{ paddingLeft: 0 }}
+            onClick={() => viewInstance.delete(record)}
+          >
+            删除
+          </Button> */}
+        </Space>
+      );
+    } else if (
+      record?.pullFromTeeStatus === ResultTableState.SUCCESS ||
+      record?.pullFromTeeStatus === ''
+    ) {
+      return (
+        <Button
+          type="link"
+          style={{ paddingLeft: 0 }}
+          onClick={() => viewInstance.download(record)}
+        >
+          下载
+        </Button>
+      );
+    } else if (record?.pullFromTeeStatus === ResultTableState.FAILED) {
+      return (
+        <Button
+          type="link"
+          style={{ paddingLeft: 0 }}
+          onClick={() => viewInstance.download(record)}
+        >
+          重新获取
+        </Button>
+      );
+    } else if (record?.pullFromTeeStatus === ResultTableState.RUNNING) {
+      return (
+        <Button type="link" disabled>
+          -
+        </Button>
+      );
+    }
+  };
 
   const columns = [
     {
@@ -35,6 +105,8 @@ export const ResultManagerComponent = () => {
       key: 'domainDataId',
       width: '20%',
       ellipsis: true,
+      // todo 待补充隐藏条件
+      hide: true,
       render: (text: string, record: API.NodeResultsVO) => {
         return (
           <Link
@@ -111,6 +183,8 @@ export const ResultManagerComponent = () => {
       title: '状态',
       dataIndex: 'pullFromTeeStatus',
       width: '10%',
+      // todo 待补充隐藏条件
+      hide: true,
       render: (status: string, record: API.NodeResultsVO) => {
         if (record.computeMode === 'MPC' || status === '') {
           return '-';
@@ -126,43 +200,25 @@ export const ResultManagerComponent = () => {
     {
       title: '操作',
       dataIndex: 'action',
-      width: '10%',
-      render: (_: string, record: API.NodeResultsVO) => {
-        if (record.datatableType === 'report') {
-          return '-';
-        } else if (
-          record?.pullFromTeeStatus === ResultTableState.SUCCESS ||
-          record?.pullFromTeeStatus === ''
-        ) {
-          return (
-            <Button
-              type="link"
-              style={{ paddingLeft: 0 }}
-              onClick={() => viewInstance.download(record)}
-            >
-              下载
-            </Button>
-          );
-        } else if (record?.pullFromTeeStatus === ResultTableState.FAILED) {
-          return (
-            <Button
-              type="link"
-              style={{ paddingLeft: 0 }}
-              onClick={() => viewInstance.download(record)}
-            >
-              重新获取
-            </Button>
-          );
-        } else if (record?.pullFromTeeStatus === ResultTableState.RUNNING) {
-          return (
-            <Button type="link" disabled>
-              -
-            </Button>
-          );
-        }
-      },
+      width: '15%',
+      render: (_: string, record: API.NodeResultsVO) => renderButtons(record),
     },
   ];
+
+  const renderColumns = () => {
+    if (
+      viewInstance.nodeService.currentNode &&
+      viewInstance.nodeService.currentNode.nodeId === 'tee'
+    ) {
+      return columns.filter(
+        (item) => item.dataIndex !== 'action' && item.dataIndex !== 'pullFromTeeStatus',
+      );
+    }
+    if (isP2P) {
+      return columns.filter((item) => item.dataIndex !== 'pullFromTeeStatus');
+    }
+    return columns;
+  };
 
   useEffect(() => {
     const flag = viewInstance.resultTableList.filter(
@@ -196,22 +252,15 @@ export const ResultManagerComponent = () => {
             }
           />
         </div>
+        {/* TODO 暂时隐藏  */}
+        {/* <Button onClick={viewInstance.showModalDrawer}>批量删除</Button> */}
       </div>
       <div className={styles.content}>
         <Table
           loading={viewInstance.loading}
           dataSource={viewInstance.resultTableList}
           sortDirections={['descend', 'ascend']}
-          columns={
-            viewInstance.nodeService.currentNode &&
-            viewInstance.nodeService.currentNode.nodeId === 'tee'
-              ? columns.filter(
-                  (item) =>
-                    item.dataIndex !== 'action' &&
-                    item.dataIndex !== 'pullFromTeeStatus',
-                )
-              : columns
-          }
+          columns={renderColumns()}
           onChange={(
             pagination,
             filters: Record<string, FilterValue | null>,
@@ -232,6 +281,10 @@ export const ResultManagerComponent = () => {
         />
       </div>
       <ResultDetailsDrawer />
+      <BatchDeleteModal
+        open={viewInstance.showModal}
+        onClose={viewInstance.closeModalDrawer}
+      />
     </div>
   );
 };
@@ -264,6 +317,8 @@ export class ResultManagerView extends Model {
   modalManager = getModel(DefaultModalManager);
 
   resultListTimer: ReturnType<typeof setTimeout> | undefined;
+
+  showModal = false;
 
   onViewMount() {
     const { search } = window.location;
@@ -312,7 +367,7 @@ export class ResultManagerView extends Model {
 
   searchResult = (e: ChangeEvent<HTMLInputElement>) => {
     history.replace({
-      pathname: '/node',
+      pathname: hasAccess({ type: [Platform.AUTONOMY] }) ? '/edge' : '/node',
       search: `nodeId=${parse(window.location.search)?.nodeId}&tab=result`,
     });
     this.search = e.target.value;
@@ -341,5 +396,41 @@ export class ResultManagerView extends Model {
       this.nodeService.currentNode?.nodeId || '',
       tableInfo,
     );
+  };
+
+  copy = async (tableInfo: API.NodeResultsVO) => {
+    console.log(tableInfo);
+    //  补充接口
+    // const {data} = await copy({
+    //   nodeId,
+    //   domainDataId: tableInfo.domainDataId,
+    // })
+    // if (data) {
+    //   message.success(
+    //     <>
+    //       复制成功，可以到<Link to="/edge?tab=data-management">数据管理</Link >查看
+    //     </>
+    //   );
+    // }
+  };
+
+  delete = async (tableInfo: API.NodeResultsVO) => {
+    console.log(tableInfo);
+    //  补充接口
+    // const {data} = await copy({
+    //   nodeId,
+    //   domainDataId: tableInfo.domainDataId,
+    // })
+    // if (data) {
+    //   message.success('删除结果成功');
+    // }
+  };
+
+  showModalDrawer = () => {
+    this.showModal = true;
+  };
+
+  closeModalDrawer = () => {
+    this.showModal = false;
   };
 }

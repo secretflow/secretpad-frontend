@@ -78,6 +78,8 @@
     margin-right: 8px;
     background-color: #0068fa;
     color: white;
+    display: flex;
+    align-items: center;
 
     &:hover {
       background-color: #0068fa !important;
@@ -89,6 +91,29 @@
     &:hover {
       background-color: #f6f8fa !important;
       color: #1664ff !important;
+    }
+  }
+
+  .runAllDisabled {
+    border: 1px solid rgb(0 0 0 / 15%);
+    border-radius: 4px;
+    background-color: #f6f8fa !important;
+    color: rgb(0 0 0 / 88%) !important;
+
+    &:hover {
+      background-color: #f6f8fa !important;
+    }
+
+    :global {
+      .ant-btn-text:disabled {
+        display: flex;
+        align-items: center;
+        height: 100%;
+      }
+
+      .ant-btn-icon svg>g>path:last-child {
+        fill: rgba(0, 0, 0, 0.15);
+      }
     }
   }
 

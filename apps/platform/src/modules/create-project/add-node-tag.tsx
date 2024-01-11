@@ -5,8 +5,8 @@ import classNames from 'classnames';
 import { difference } from 'lodash';
 import type { ChangeEvent } from 'react';
 import React, { useEffect, useState } from 'react';
-import { LoginService } from '@/modules/login/login.service';
 
+import { LoginService } from '@/modules/login/login.service';
 import { useModel } from '@/util/valtio-helper';
 
 import styles from './add-node-tag.less';
@@ -17,8 +17,10 @@ export const AddNodeTag: React.FC<{
   nodeList: API.NodeVO[];
   value?: CheckboxValueType[];
   onChange?: (type: CheckboxValueType[]) => void;
+  className?: string;
+  max?: number;
 }> = (props) => {
-  const { nodeList, value, onChange } = props;
+  const { nodeList, value, onChange, className, max = 10 } = props;
   const [searchValue, setSearchValue] = useState('');
   const loginService = useModel(LoginService);
 
@@ -36,6 +38,10 @@ export const AddNodeTag: React.FC<{
   const [tags, setTags] = React.useState<CheckboxValueType[]>(value || []);
 
   const [nodes, setNodes] = React.useState<API.NodeVO[]>(nodeList);
+
+  useEffect(() => {
+    setNodes(nodeList);
+  }, [nodeList]);
 
   const handleClose = (removedTag: CheckboxValueType) => {
     if (
@@ -84,7 +90,7 @@ export const AddNodeTag: React.FC<{
 
   return (
     <div
-      className={classNames(styles.addNodeTagContent, {
+      className={classNames(styles.addNodeTagContent, className, {
         [styles.addNodePosition]: tags.length === 0,
       })}
     >
@@ -138,7 +144,8 @@ export const AddNodeTag: React.FC<{
               }
             >
               {nodes.map((item) => {
-                const disabled = tags.length >= 10 && !tags.includes(item.nodeId || '');
+                const disabled =
+                  tags.length >= max && !tags.includes(item.nodeId || '');
                 let isEdgeNode = false;
                 if (
                   loginService.userInfo?.platformType === 'CENTER' &&

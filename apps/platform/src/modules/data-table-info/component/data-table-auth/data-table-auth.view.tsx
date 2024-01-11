@@ -14,9 +14,18 @@ import {
 } from 'antd';
 import React, { useEffect } from 'react';
 
+import {
+  AccessWrapper,
+  PadMode,
+  Platform,
+  hasAccess,
+} from '@/components/platform-wrapper';
 import { formatTimestamp } from '@/modules/dag-result/utils';
 import { NodeService } from '@/modules/node';
-import { ComputeModeType, computeModeText } from '@/modules/project-list';
+import {
+  ComputeModeType,
+  computeModeText,
+} from '@/modules/p2p-project-list/components/common';
 import { ProjectListService } from '@/modules/project-list/project-list.service';
 import { getDatatable } from '@/services/secretpad/DatatableController';
 import {
@@ -27,7 +36,7 @@ import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { DatatableInfoService } from './data-table-auth.service';
 import styles from './index.less';
-import { PadModeWrapper } from '@/components/PadModeWrapper';
+import { P2pProjectListService } from '@/modules/p2p-project-list/p2p-project-list.service';
 
 const { Text } = Typography;
 
@@ -130,19 +139,18 @@ export const DataTableAuthComponent: React.FC<IProps> = (props: IProps) => {
                   size={size}
                   popupClassName={styles.popup}
                   optionFilterProp="children"
-                  dropdownRender={(menu) => (
-                    <>
-                      <PadModeWrapper type={['ALL-IN-ONE', 'TEE']}>
-                        <Alert
-                          message="授权到枢纽类型项目，数据表会自动加密上传到TEE存储中"
-                          type="warning"
-                          showIcon
-                        />
-                      </PadModeWrapper>
-                      {menu}
-                    </>
-                  )}
                 >
+                  {hasAccess({
+                    mode: [PadMode.TEE, PadMode['ALL-IN-ONE']],
+                  }) && (
+                    <Select.Option disabled className={styles.padModeWrapper}>
+                      <Alert
+                        message="授权到枢纽类型项目，数据表会自动加密上传到TEE存储中"
+                        type="warning"
+                        showIcon
+                      />
+                    </Select.Option>
+                  )}
                   {viewInstance.projectList?.map((i) => {
                     return (
                       <Select.Option key={i.projectId} value={i.projectId}>
@@ -297,6 +305,7 @@ export class DataTableAuth extends Model {
   projectListService = getModel(ProjectListService);
   nodeService = getModel(NodeService);
   datatableInfoService = getModel(DatatableInfoService);
+  p2pProjectListService = getModel(P2pProjectListService);
 
   newAuthList: AuthInfo[] = [];
 
@@ -307,7 +316,13 @@ export class DataTableAuth extends Model {
   tableInfo: Datatable = {};
 
   async getProjectList() {
-    this.projectList = await this.projectListService.getListProject();
+    if (hasAccess({ type: [Platform.AUTONOMY] })) {
+      this.projectList = (await this.p2pProjectListService.getListProject()).filter(
+        (item) => item.status === 'APPROVED',
+      );
+    } else {
+      this.projectList = await this.projectListService.getListProject();
+    }
   }
 
   addNewAuth() {

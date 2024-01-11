@@ -1,3 +1,4 @@
+import { message } from 'antd';
 import { parse } from 'query-string';
 
 import { NodeService } from '@/modules/node';
@@ -6,13 +7,12 @@ import { get as getSelfNodeInfo } from '@/services/secretpad/NodeController';
 import {
   deleteUsingPOST,
   refresh,
-  create,
   update,
   listNode,
   get,
 } from '@/services/secretpad/NodeRouteController';
+import { createP2pNode, deleteNode } from '@/services/secretpad/P2pNodeController';
 import { Model, getModel } from '@/util/valtio-helper';
-import { message } from 'antd';
 
 export class CooperativeNodeService extends Model {
   nodeService = getModel(NodeService);
@@ -60,9 +60,9 @@ export class CooperativeNodeService extends Model {
     this.cooperativeNodeLoading = false;
   };
 
-  addCooperativeNode = async (info: API.CreateNodeRouterRequest) => {
-    return await create(info);
-  };
+  // addCooperativeNode = async (info: API.CreateNodeRouterRequest) => {
+  //   return await create(info);
+  // };
 
   addApprovalAudit = async (params: API.CreateApprovalRequest) => {
     return await createAudit(params);
@@ -85,5 +85,23 @@ export class CooperativeNodeService extends Model {
     if (list.data) {
       this.computeNodeList = list.data;
     }
+  };
+
+  /**
+   *
+   * @param p2p 模式下删除路由
+   * @returns
+   */
+  p2pDeleteCooperativeNode = async (routerId: string) => {
+    return await deleteNode({ routerId });
+  };
+
+  /**
+   *
+   * @param info p2p 模式下创建路由
+   * @returns
+   */
+  addCooperativeNode = async (info: API.P2pCreateNodeRequest) => {
+    return await createP2pNode(info);
   };
 }

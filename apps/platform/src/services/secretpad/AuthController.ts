@@ -33,29 +33,29 @@ export async function login(
 
 /** User logout api
 @param request http servlet request
-@param logoutRequest logout request
-@return successful SecretPadResponse with user name
+@param response
+@return {@link SecretPadResponse }<{@link String }>
+@author lihaixin
+@date 2023/12/15
  POST /api/logout */
 export async function logout(
   params: {
     // query
     /** http servlet request */
     request?: API.HttpServletRequest;
+    response?: API.HttpServletResponse;
   },
-  body?: API.LogoutRequest,
   options?: { [key: string]: any },
 ) {
   return request<API.SecretPadResponse_String_>('/api/logout', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     params: {
       ...params,
       request: undefined,
       ...params['request'],
+      response: undefined,
+      ...params['response'],
     },
-    data: body,
     ...(options || {}),
   });
 }

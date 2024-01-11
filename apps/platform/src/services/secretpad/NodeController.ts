@@ -20,7 +20,10 @@ export async function createNode(
   });
 }
 
-/** 此处后端没有提供注释 POST /api/v1alpha1/node/delete */
+/** delete node by node id
+@param request node id
+@return void
+ POST /api/v1alpha1/node/delete */
 export async function deleteNode(
   body?: API.NodeIdRequest,
   options?: { [key: string]: any },
@@ -35,7 +38,10 @@ export async function deleteNode(
   });
 }
 
-/** 此处后端没有提供注释 POST /api/v1alpha1/node/get */
+/** get node info by nodeId
+@param request nodeId
+@return node info
+ POST /api/v1alpha1/node/get */
 export async function get(body?: API.NodeIdRequest, options?: { [key: string]: any }) {
   return request<API.SecretPadResponse_NodeVO_>('/api/v1alpha1/node/get', {
     method: 'POST',
@@ -98,7 +104,10 @@ export async function listResults(
   );
 }
 
-/** 此处后端没有提供注释 POST /api/v1alpha1/node/newToken */
+/** get new token unused
+@param request node id
+@return token
+ POST /api/v1alpha1/node/newToken */
 export async function newToken(
   body?: API.NodeTokenRequest,
   options?: { [key: string]: any },
@@ -113,7 +122,10 @@ export async function newToken(
   });
 }
 
-/** 此处后端没有提供注释 POST /api/v1alpha1/node/page */
+/** page node info
+@param request page params
+@return page of node
+ POST /api/v1alpha1/node/page */
 export async function page(
   body?: API.PageNodeRequest,
   options?: { [key: string]: any },
@@ -131,7 +143,10 @@ export async function page(
   );
 }
 
-/** 此处后端没有提供注释 POST /api/v1alpha1/node/refresh */
+/** get now node stats
+@param request node id
+@return node info
+ POST /api/v1alpha1/node/refresh */
 export async function refresh(
   body?: API.NodeIdRequest,
   options?: { [key: string]: any },
@@ -146,7 +161,10 @@ export async function refresh(
   });
 }
 
-/** 此处后端没有提供注释 POST /api/v1alpha1/node/token */
+/** get exist token maybe used or unused
+@param request node id
+@return token
+ POST /api/v1alpha1/node/token */
 export async function token(
   body?: API.NodeTokenRequest,
   options?: { [key: string]: any },
@@ -161,7 +179,10 @@ export async function token(
   });
 }
 
-/** 此处后端没有提供注释 POST /api/v1alpha1/node/update */
+/** update node info only address
+@param request update node info
+@return nodeId
+ POST /api/v1alpha1/node/update */
 export async function update(
   body?: API.UpdateNodeRequest,
   options?: { [key: string]: any },

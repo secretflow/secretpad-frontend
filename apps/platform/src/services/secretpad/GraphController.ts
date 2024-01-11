@@ -74,24 +74,6 @@ export async function fullUpdateGraph(
   });
 }
 
-/** Query component detail api
-@param request get component request
-@return successful SecretPadResponse with component detail
- POST /api/v1alpha1/component/get */
-export async function getComponent(
-  body?: API.GetComponentRequest,
-  options?: { [key: string]: any },
-) {
-  return request<API.SecretPadResponse_Object_>('/api/v1alpha1/component/get', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: body,
-    ...(options || {}),
-  });
-}
-
 /** Query graph detail api
 @param request get graph detail request
 @return successful SecretPadResponse with graph detail view object

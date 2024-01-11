@@ -122,6 +122,7 @@ export const ResultDrawer = () => {
               codeName={codeName}
             />
           )}
+          {!resultData?.type && <span>非数据参与方，无计算结果</span>}
         </div>
       </div>
     </Drawer>

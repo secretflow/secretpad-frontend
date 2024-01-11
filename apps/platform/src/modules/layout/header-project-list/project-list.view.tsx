@@ -3,21 +3,27 @@ import { Select, Tag } from 'antd';
 import React from 'react';
 import { history, useSearchParams } from 'umi';
 
-import { ComputeModeType, computeModeText } from '@/modules/project-list';
+import { DagLayoutView } from '@/modules/layout/dag-layout';
+import { StatusEnum } from '@/modules/p2p-project-list/components/auth-project-tag';
+import {
+  ComputeModeType,
+  computeModeText,
+} from '@/modules/p2p-project-list/components/common';
+import { listP2PProject } from '@/services/secretpad/P2PProjectController';
 import { listProject } from '@/services/secretpad/ProjectController';
-import { Model, useModel } from '@/util/valtio-helper';
+import { Model, getModel, useModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
+import { ProjectEditService } from './project-edit.service';
 
 export type ProjectVO = API.ProjectVO;
 
 export const ProjectListComponent: React.FC = () => {
   const viewInstance = useModel(HeaderProjectListView);
   const [searchParams] = useSearchParams();
-
   React.useEffect(() => {
     viewInstance.selectValue = searchParams.get('projectId') || '';
-  }, [searchParams, viewInstance]);
+  }, [searchParams, viewInstance.projectList]);
 
   return (
     <div className={styles.projectWrapper}>
@@ -71,6 +77,9 @@ export const ProjectListComponent: React.FC = () => {
 };
 
 export class HeaderProjectListView extends Model {
+  projectEditService = getModel(ProjectEditService);
+  dagLayoutView = getModel(DagLayoutView);
+
   projectList: ProjectVO[] = [];
 
   selectValue = '';
@@ -78,11 +87,21 @@ export class HeaderProjectListView extends Model {
   loading = false;
 
   getListProject = async () => {
-    const { data } = await listProject();
+    const { data } = await (this.projectEditService.isP2pMode()
+      ? listP2PProject()
+      : listProject());
     if (data) {
-      this.projectList = (data as ProjectVO[]) || [];
+      this.projectList = this.projectEditService.isP2pMode()
+        ? (data || []).filter((item) => this.checkProjectIsApproved(item))
+        : (data as ProjectVO[]) || [];
     }
     return this.projectList.reverse();
+  };
+
+  checkProjectIsApproved = (project: API.ProjectVO) => {
+    // 所有受邀方通过才可以进入项目
+    const { partyVoteInfos = [] } = project;
+    return (partyVoteInfos || []).every((node) => node.action === StatusEnum.AGREE);
   };
 
   onViewMount = async () => {
@@ -94,17 +113,25 @@ export class HeaderProjectListView extends Model {
   changeProjectList = (value: string) => {
     this.selectValue = value;
     const pathname = window.location.pathname;
-
     const project = this.projectList?.find((item) => item.projectId === value);
 
     if (!project) {
       history.push('/');
       return;
     }
+    const { origin } = (history.location.state as { origin: string }) || {};
+    history.push(
+      {
+        pathname,
+        search: this.projectEditService.isP2pMode()
+          ? `projectId=${value}&mode=${project.computeMode || 'MPC'}&type=${
+              project.computeFunc || 'DAG'
+            }`
+          : `projectId=${value}&mode=${project.computeMode || 'MPC'}`,
+      },
+      { origin },
+    );
 
-    history.push({
-      pathname,
-      search: `projectId=${value}&mode=${project.computeMode || 'MPC'}`,
-    });
+    this.dagLayoutView.setActiveKey('pipeline');
   };
 }
