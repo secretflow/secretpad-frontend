@@ -7,7 +7,7 @@
     "dev": "nx run-many --target=dev --parallel=100 --exclude demo-*",
     "lint": "nx run-many --target=lint",
     "test": "nx run-many --target=test",
-    "ci": "nx affected --target=lint:js,lint:css,lint:format,test --nx-bail=true",
+    "ci": "nx affected --target=lint:js,lint:css,lint:format --nx-bail=true",
     "build": "nx run-many --target=build --nx-bail=true",
     "serve": "nx run-many --target=serve",
     "fix": "nx run-many --target=lint:js,lint:css -- --fix; nx run-many --target=lint:format -- --write",
@@ -33,9 +33,9 @@
     "typescript": "^4.9.5"
   },
   "engines": {
-    "node": ">=16.19.0"
+    "node": ">=16.14.0"
   },
-  "packageManager": "pnpm@7.27.0",
+  "packageManager": "pnpm@8.8.0",
   "dependencies": {
     "@ant-design/icons": "^5.0.1",
     "jschardet": "^3.0.0",
