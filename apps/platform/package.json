@@ -8,7 +8,7 @@
     "start": "npm run dev",
     "lint:js": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
     "lint:css": "stylelint --allow-empty-input 'src/**/*.{css,less}'",
-    "lint:format": "prettier --check *.json 'src/**/*.{js,jsx,ts,tsx,css,less,md,json}'",
+    "lint:format": "prettier --check *.json 'src/[^.umi]**/*.{js,jsx,ts,tsx,css,less,md,json}'",
     "lint:typing": "tsc --noEmit",
     "test": "jest --coverage",
     "preview": "umi preview",
