@@ -9,18 +9,18 @@ mobile: false
 
 ## 环境准备
 
-确保正确安装 [Node.js](https://nodejs.org/en/) 且版本为 14+ 即可。
+确保正确安装 [Node.js](https://nodejs.org/en/) 且版本为 16+ 即可。
 
 ```bash
 $ node -v
-v14.19.1
+v16.14.2
 ```
 
 确保已安装[pnpm](https://pnpm.io/installation#using-npm)
 
 ```bash
 $ pnpm -v
-7.29.1
+8.8.0
 ```
 
 ## 初始化项目

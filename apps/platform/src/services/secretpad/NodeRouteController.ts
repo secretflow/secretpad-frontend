@@ -2,22 +2,10 @@
 // 该文件由 OneAPI 自动生成，请勿手动修改！
 import request from 'umi-request';
 
-/** 此处后端没有提供注释 POST /api/v1alpha1/nodeRoute/create */
-export async function create(
-  body?: API.CreateNodeRouterRequest,
-  options?: { [key: string]: any },
-) {
-  return request<API.SecretPadResponse_String_>('/api/v1alpha1/nodeRoute/create', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: body,
-    ...(options || {}),
-  });
-}
-
-/** delete POST /api/v1alpha1/nodeRoute/delete */
+/** delete delete domainRoute only for this routeId
+@param request routeId
+@return void
+ POST /api/v1alpha1/nodeRoute/delete */
 export async function deleteUsingPOST(
   body?: API.RouterIdRequest,
   options?: { [key: string]: any },
@@ -32,7 +20,10 @@ export async function deleteUsingPOST(
   });
 }
 
-/** 此处后端没有提供注释 POST /api/v1alpha1/nodeRoute/get */
+/** get domainRoute info by routeId
+@param request domainRouteId
+@return domainRoute info
+ POST /api/v1alpha1/nodeRoute/get */
 export async function get(
   body?: API.RouterIdRequest,
   options?: { [key: string]: any },
@@ -47,7 +38,9 @@ export async function get(
   });
 }
 
-/** 此处后端没有提供注释 POST /api/v1alpha1/nodeRoute/listNode */
+/** select list domain for dst create dst domainRoute
+@return list of domain info
+ POST /api/v1alpha1/nodeRoute/listNode */
 export async function listNode(options?: { [key: string]: any }) {
   return request<API.SecretPadResponse_List_NodeVO__>(
     '/api/v1alpha1/nodeRoute/listNode',
@@ -58,7 +51,10 @@ export async function listNode(options?: { [key: string]: any }) {
   );
 }
 
-/** 此处后端没有提供注释 POST /api/v1alpha1/nodeRoute/page */
+/** page request for query domain route
+@param query dst domain name id address
+@return page of domainRoute
+ POST /api/v1alpha1/nodeRoute/page */
 export async function page(
   body?: API.PageNodeRouteRequest,
   options?: { [key: string]: any },
@@ -76,7 +72,10 @@ export async function page(
   );
 }
 
-/** 此处后端没有提供注释 POST /api/v1alpha1/nodeRoute/refresh */
+/** get domainRoute now stats
+@param request routeId
+@return RouteInfo
+ POST /api/v1alpha1/nodeRoute/refresh */
 export async function refresh(
   body?: API.RouterIdRequest,
   options?: { [key: string]: any },
@@ -94,7 +93,10 @@ export async function refresh(
   );
 }
 
-/** 此处后端没有提供注释 POST /api/v1alpha1/nodeRoute/update */
+/** update domainRoute info by routeId
+@param request dst domainRoute address and domainRouteId
+@return domainRouteId
+ POST /api/v1alpha1/nodeRoute/update */
 export async function update(
   body?: API.UpdateNodeRouterRequest,
   options?: { [key: string]: any },

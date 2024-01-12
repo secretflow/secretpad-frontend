@@ -4,7 +4,8 @@ import { DefaultRequestService } from '@secretflow/dag';
 import { message, Image as AntdImage } from 'antd';
 import { parse } from 'query-string';
 
-import dagSuccessLocalLink from '@/assets/dag-success.png';
+import localDagSuccessLink from '@/assets/dag-success.png';
+import { Platform } from '@/components/platform-wrapper';
 import type {
   AtomicConfigNode,
   StructConfigNode,
@@ -23,11 +24,39 @@ import {
   startGraph,
   stopGraphNode,
 } from '@/services/secretpad/GraphController';
-import { getImgLink } from '@/util/platform';
+import { getImgLink } from '@/util/tracert-helper';
 import { getModel } from '@/util/valtio-helper';
+
+import type { User } from '../login/login.service';
+import { LoginService } from '../login/login.service';
 
 import type { IGraphEdgeType, IGraphNodeType } from './graph.protocol';
 import { nodeStatus } from './util';
+
+type IDagSuccessMapping = Record<
+  Platform,
+  {
+    onlineLink: string;
+    localLink: string;
+    localStorageKey: string;
+  }
+>;
+
+// EDGE 不会有 dag 任务
+const dagSuccessTracertMapping: Omit<IDagSuccessMapping, 'EDGE'> = {
+  [Platform.CENTER]: {
+    onlineLink:
+      'https://secretflow-public.oss-cn-hangzhou.aliyuncs.com/dag-success.png',
+    localLink: localDagSuccessLink,
+    localStorageKey: 'dag-task_success',
+  },
+  [Platform.AUTONOMY]: {
+    onlineLink:
+      'https://secretflow-public.oss-cn-hangzhou.aliyuncs.com/autonomy_dag-success.png',
+    localLink: localDagSuccessLink,
+    localStorageKey: 'autonomy_dag-success',
+  },
+};
 
 export class GraphRequestService extends DefaultRequestService {
   // 只有画布更新了，queryDag才会去重新请求接口
@@ -35,6 +64,7 @@ export class GraphRequestService extends DefaultRequestService {
 
   graphData = {};
 
+  loginService = getModel(LoginService);
   componentTreeService = getModel(DefaultComponentTreeService);
   componentConfigRegistry = getModel(ComponentConfigRegistry);
   componentConfigService = getModel(DefaultComponentConfigService);
@@ -69,26 +99,30 @@ export class GraphRequestService extends DefaultRequestService {
   }
 
   logDagSuccess() {
-    const imgLink = getImgLink({
-      onlineLink: 'https://mianyang-test.oss-cn-shanghai.aliyuncs.com/dag-success.png',
-      localLink: dagSuccessLocalLink,
-      offlineLink: dagSuccessLocalLink,
-      localStorageTag: 'dag-task_success',
-    });
+    const platformType = this.loginService?.userInfo?.platformType as Exclude<
+      User['platformType'],
+      'EDGE'
+    >;
 
-    message.info({
-      icon: (
-        <span style={{ marginRight: 6, display: 'inline-block' }}>
-          <AntdImage
-            width={20}
-            preview={false}
-            src={imgLink}
-            fallback={dagSuccessLocalLink}
-          />
-        </span>
-      ),
-      content: '任务执行成功',
-    });
+    if (platformType) {
+      const dagSuccessInfo = dagSuccessTracertMapping[platformType];
+
+      const imgLink = getImgLink(dagSuccessInfo);
+
+      message.info({
+        icon: (
+          <span style={{ marginRight: 6, display: 'inline-block' }}>
+            <AntdImage
+              width={20}
+              preview={false}
+              src={imgLink}
+              fallback={dagSuccessInfo.localLink}
+            />
+          </span>
+        ),
+        content: '任务执行成功',
+      });
+    }
   }
 
   async queryDag(dagId: string) {

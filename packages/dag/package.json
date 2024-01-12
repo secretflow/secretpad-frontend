@@ -24,7 +24,7 @@
     "lint:css": "stylelint --allow-empty-input 'src/**/*.{css,less}'",
     "lint:format": "prettier --check *.md *.json 'src/**/*.{js,jsx,ts,tsx,css,less,md,json}'",
     "lint:typing": "tsc --noEmit",
-    "test": "jest --coverage --passWithNoTests"
+    "test": "jest --coverage"
   },
   "dependencies": {
     "@secretflow/utils": "workspace:^",

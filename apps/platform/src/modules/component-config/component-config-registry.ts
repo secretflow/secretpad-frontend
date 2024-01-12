@@ -127,7 +127,7 @@ export class ComponentConfigRegistry extends Model {
           docString,
         };
       default:
-        isRequired = (param as AtomicParameterNode).atomic.is_optional !== true;
+        isRequired = (param as AtomicParameterNode).atomic?.is_optional !== true;
         return {
           type,
           prefixes,

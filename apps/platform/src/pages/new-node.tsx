@@ -11,10 +11,10 @@ import { DataManagerComponent } from '@/modules/data-manager/data-manager.view';
 import { HomeLayout } from '@/modules/layout/home-layout';
 import { HomeLayoutService } from '@/modules/layout/home-layout/home-layout.service';
 import { ManagementLayoutComponent } from '@/modules/layout/management-layout';
+import { MessageService } from '@/modules/message-center/message.service';
 import { NodeService } from '@/modules/node';
 import { ResultManagerComponent } from '@/modules/result-manager/result-manager.view';
 import { useModel } from '@/util/valtio-helper';
-import { MessageService } from '@/modules/message-center/message.service';
 
 const menuItems: {
   label: string;

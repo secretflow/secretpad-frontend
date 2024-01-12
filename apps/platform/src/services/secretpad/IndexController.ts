@@ -22,6 +22,26 @@ export async function indexUsingGET(options?: { [key: string]: any }) {
   });
 }
 
+/** index_10 All page requests are returned to this index, and the front end handles page routing
+@return the string
+ GET /edge/ */
+export async function index10(options?: { [key: string]: any }) {
+  return request<API.OneApiResult_string_>('/edge/', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+/** index_11 All page requests are returned to this index, and the front end handles page routing
+@return the string
+ GET /edge */
+export async function index11(options?: { [key: string]: any }) {
+  return request<API.OneApiResult_string_>('/edge', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
 /** index_2 All page requests are returned to this index, and the front end handles page routing
 @return the string
  GET /home/ */

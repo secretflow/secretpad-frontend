@@ -23,8 +23,12 @@ export enum ResultTableState {
 }
 
 export class ResultManagerService extends Model {
+  list = [];
+  loading = false;
+
   download = async (nodeId: string, tableInfo: API.NodeResultsVO) => {
     message.info('开始下载,请稍等...');
+    const token = localStorage.getItem('User-Token') || '';
     fetch(`/api/v1alpha1/data/download`, {
       method: 'POST',
       mode: 'cors',
@@ -32,6 +36,7 @@ export class ResultManagerService extends Model {
       credentials: 'include',
       headers: {
         'content-type': 'application/json',
+        'User-Token': token,
       },
       body: JSON.stringify({
         nodeId,
@@ -76,5 +81,12 @@ export class ResultManagerService extends Model {
       timeSortingRule: sortRule,
     });
     return result.data;
+  }
+
+  async getList() {
+    this.loading = true;
+    // const result = await listResults({});
+    // this.list = result.data;
+    this.loading = false;
   }
 }

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>展开</title>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="20" height="20"></rect>
+    </defs>
+    <g id="全部设计稿" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" opacity="0.85">
+        <g id="工作台-老用户" transform="translate(-1334, -93)">
+            <g id="编组-9" transform="translate(208, 67)">
+                <g id="标题+收起+背景备份-7" transform="translate(367, 1)">
+                    <g id="收起备份-3" transform="translate(759, 24)">
+                        <g id="编组" transform="translate(10, 11) rotate(180) translate(-10, -11)translate(0, 3)">
+                            <mask id="mask-2" fill="white">
+                                <use xlink:href="#path-1"></use>
+                            </mask>
+                            <g id="蒙版"></g>
+                            <polyline id="路径" stroke="#002066" opacity="0.65" stroke-linecap="round" fill-rule="nonzero"
+                                mask="url(#mask-2)" transform="translate(10, 8.9844) rotate(45) translate(-10, -8.9844)"
+                                points="12.5 6.484375 12.5 11.484375 7.5 11.484375"></polyline>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

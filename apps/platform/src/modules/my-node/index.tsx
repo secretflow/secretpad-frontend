@@ -1,4 +1,4 @@
-import { EditOutlined } from '@ant-design/icons';
+import { EditOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import {
   Badge,
   Breadcrumb,
@@ -12,6 +12,8 @@ import {
   Spin,
   Modal,
   Form,
+  Tooltip,
+  Space,
 } from 'antd';
 import type { InputRef } from 'antd';
 import { toNumber } from 'lodash';
@@ -23,11 +25,14 @@ import { useLocation } from 'umi';
 import { ReactComponent as CanUseNodeImg } from '@/assets/enable-node-instance.svg';
 import GuideGirlBg from '@/assets/guide-girl.png';
 import { ReactComponent as MyNodeImg } from '@/assets/my-node.svg';
+import { AccessWrapper, Platform, hasAccess } from '@/components/platform-wrapper';
+import { PopoverCopy } from '@/components/popover-copy';
 import { Model, getModel, useModel } from '@/util/valtio-helper';
 
 import { formatTimestamp } from '../dag-result/utils';
 import { NodeState, NodeStateText } from '../managed-node-list';
 
+import { NodeFunc } from './components/node-func';
 import styles from './index.less';
 import { MyNodeService } from './my-node.service';
 
@@ -49,6 +54,7 @@ export const MyNodeComponent: React.FC = () => {
   // const myNodeService = useModel(MyNodeService);
   const myNodeService = useModel(MyNodeService);
   const [form] = Form.useForm();
+  const values = Form.useWatch([], form);
 
   const { search } = useLocation();
   const { nodeId } = parse(search);
@@ -62,10 +68,24 @@ export const MyNodeComponent: React.FC = () => {
   const { nodeInstances, nodeInfo, enableInstance, allInstance } = myNodeService;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [disabled, setDisabled] = useState(true);
 
   useEffect(() => {
     myNodeService.getNodeInfo(nodeId as string);
   }, [nodeId]);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      form.validateFields({ validateOnly: true }).then(
+        () => {
+          setDisabled(false);
+        },
+        () => {
+          setDisabled(true);
+        },
+      );
+    }
+  }, [values]);
 
   useEffect(() => {
     if (isEdit) {
@@ -212,14 +232,16 @@ export const MyNodeComponent: React.FC = () => {
 
   const handleOk = async () => {
     await form.validateFields().then(async (value) => {
-      await myNodeService.resetEdgeNodePwd(
+      const res = await myNodeService.resetEdgeNodePwd(
         nodeId as string,
         nodeId as string,
         value.passwordHash,
         value.newPassword,
       );
-      setIsModalOpen(false);
-      form.resetFields();
+      if (res) {
+        setIsModalOpen(false);
+        form.resetFields();
+      }
     });
   };
 
@@ -227,6 +249,11 @@ export const MyNodeComponent: React.FC = () => {
     setIsModalOpen(false);
     form.resetFields();
   };
+
+  const NodeReadyList = [NodeState.READY, NodeState.SUCCEEDED];
+  const TooltipOpen = !NodeReadyList.includes(
+    (nodeInfo?.nodeStatus as NodeState) || NodeState.UNKNOWN,
+  );
 
   return (
     <div className={styles.myNode}>
@@ -257,37 +284,60 @@ export const MyNodeComponent: React.FC = () => {
                 <Title className={styles.title} level={4}>
                   {nodeInfo?.nodeName}
                 </Title>
-                <Tag
-                  icon={
-                    <Badge
-                      status={
-                        NodeStateText[
-                          (nodeInfo?.nodeStatus as NodeState) || NodeState.UNKNOWN
-                        ].icon
-                      }
-                    />
-                  }
-                  color={
-                    NodeStateText[
-                      (nodeInfo?.nodeStatus as NodeState) || NodeState.UNKNOWN
-                    ].icon
-                  }
+                <Tooltip
+                  placement="right"
+                  defaultOpen={false}
+                  open={TooltipOpen}
+                  title="节点不可用，建议检查节点容器是否正常"
                 >
-                  <span className={styles.statusText}>
-                    {
+                  <Tag
+                    icon={
+                      <Badge
+                        status={
+                          NodeStateText[
+                            (nodeInfo?.nodeStatus as NodeState) || NodeState.UNKNOWN
+                          ].icon
+                        }
+                      />
+                    }
+                    color={
                       NodeStateText[
                         (nodeInfo?.nodeStatus as NodeState) || NodeState.UNKNOWN
-                      ].text
+                      ].icon
                     }
-                  </span>
-                </Tag>
+                  >
+                    <span className={styles.statusText}>
+                      {
+                        NodeStateText[
+                          (nodeInfo?.nodeStatus as NodeState) || NodeState.UNKNOWN
+                        ].text
+                      }
+                    </span>
+                  </Tag>
+                </Tooltip>
               </div>
             }
             bordered={false}
           >
             <Descriptions column={2}>
               <Descriptions.Item label="节点ID">{nodeInfo?.nodeId}</Descriptions.Item>
-              <Descriptions.Item label="通讯地址">
+              {hasAccess({ type: [Platform.AUTONOMY] }) && (
+                <Descriptions.Item label="中心管控节点ID">
+                  {nodeInfo?.masterNodeId}
+                </Descriptions.Item>
+              )}
+              <Descriptions.Item
+                label={
+                  <Space>
+                    通讯地址
+                    {hasAccess({ type: [Platform.AUTONOMY] }) && (
+                      <Tooltip title="通讯地址改变,节点认证码也会改变" placement="top">
+                        <QuestionCircleOutlined />
+                      </Tooltip>
+                    )}
+                  </Space>
+                }
+              >
                 {isEdit ? (
                   <Input
                     ref={inputRef}
@@ -317,112 +367,140 @@ export const MyNodeComponent: React.FC = () => {
                   </div>
                 )}
               </Descriptions.Item>
-              <Descriptions.Item label="节点证书">
-                {nodeInfo.cert && nodeInfo.cert === DomainCertConfigEnum.configured
-                  ? '已配置'
-                  : '待配置'}
-                {/* <Popover
-                  placement="left"
-                  title={
-                    <div className={styles.publicTitle}>
-                      <span>节点公钥</span>
-                      <Paragraph
-                        copyable={{
-                          icon: '复制公钥',
-                          text: `${nodeInfo?.cert || '暂无数据'}`,
-                        }}
-                        style={{ color: '#1677FF' }}
-                      ></Paragraph>
-                    </div>
-                  }
-                  overlayClassName={styles.publicKeyPopover}
-                  content={
-                    <div className={styles.publicKey}>
-                      {nodeInfo?.cert || '暂无数据'}
-                    </div>
-                  }
-                  trigger="click"
-                >
-                  <EyeOutlined className={styles.eyes} />
-                </Popover>
-                <Paragraph
-                  copyable={{
-                    text: nodeInfo?.cert || '暂无数据',
-                  }}
-                ></Paragraph> */}
-              </Descriptions.Item>
-              {nodeInfo.type !== 'embedded' && (
-                <Descriptions.Item label="中心平台账号">
-                  <div style={{ marginRight: '8px' }}>{nodeId}</div>
-                  <Typography.Link onClick={showModal}>设置密码</Typography.Link>
-                  <Modal
-                    width={400}
-                    className={styles.passwordModel}
-                    title="设置密码"
-                    open={isModalOpen}
-                    onOk={handleOk}
-                    onCancel={handleCancel}
-                  >
-                    <Form
-                      form={form}
-                      layout="vertical"
-                      requiredMark="optional"
-                      autoComplete="off"
-                    >
-                      <Form.Item
-                        name="passwordHash"
-                        label="原密码"
-                        rules={[
-                          { required: isModalOpen, message: '请输入原密码' },
-                          {
-                            pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,20}$/,
-                            message: '需同时包含小写字母、大写字母、数字，8-20字符',
-                          },
-                        ]}
-                      >
-                        <Input.Password placeholder="请输入" />
-                      </Form.Item>
-                      <Form.Item
-                        name="newPassword"
-                        label="新密码"
-                        rules={[
-                          { required: isModalOpen, message: '请输入新密码' },
-                          {
-                            pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,20}$/,
-                            message: '需同时包含小写字母、大写字母、数字，8-20字符',
-                          },
-                        ]}
-                      >
-                        <Input.Password placeholder="请输入" />
-                      </Form.Item>
-                      <Form.Item
-                        name="verifiedNewPassword"
-                        label="新密码确认"
-                        dependencies={['newPassword']}
-                        rules={[
-                          { required: isModalOpen, message: '请再次确认' },
-                          {
-                            validator(_, value: string) {
-                              if (isModalOpen) {
-                                if (value) {
-                                  const newPassword = form.getFieldValue('newPassword');
-                                  if (value !== newPassword) {
-                                    return Promise.reject(
-                                      new Error('请与新密码保持一致'),
-                                    );
-                                  }
-                                }
-                              }
-                              return Promise.resolve();
-                            },
-                          },
-                        ]}
-                      >
-                        <Input.Password placeholder="请输入" />
-                      </Form.Item>
-                    </Form>
-                  </Modal>
+              {hasAccess({ type: [Platform.CENTER] }) && (
+                <Descriptions.Item label="节点证书">
+                  {nodeInfo.cert && nodeInfo.cert === DomainCertConfigEnum.configured
+                    ? '已配置'
+                    : '待配置'}
                 </Descriptions.Item>
+              )}
+              {hasAccess({ type: [Platform.AUTONOMY] }) && (
+                <>
+                  <Descriptions.Item label="公钥">
+                    <PopoverCopy
+                      title="节点公钥"
+                      icon="复制公钥"
+                      copyText={nodeInfo?.certText}
+                    />
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <Space>
+                        节点认证码
+                        <Tooltip
+                          title="通过认证码可快速进行节点授权合作"
+                          placement="top"
+                        >
+                          <QuestionCircleOutlined />
+                        </Tooltip>
+                      </Space>
+                    }
+                  >
+                    <PopoverCopy
+                      title="节点认证码"
+                      icon="复制认证码"
+                      copyText={nodeInfo?.nodeAuthenticationCode}
+                    />
+                  </Descriptions.Item>
+                </>
+              )}
+              {hasAccess({ type: [Platform.CENTER, Platform.EDGE] }) && (
+                <>
+                  {nodeInfo.type !== 'embedded' && (
+                    <Descriptions.Item
+                      label={
+                        <Space>
+                          中心平台账号
+                          <Tooltip
+                            title={`初始化密码是: ${nodeId}12#$qwER`}
+                            placement="top"
+                          >
+                            <QuestionCircleOutlined />
+                          </Tooltip>
+                        </Space>
+                      }
+                    >
+                      <div style={{ marginRight: '8px' }}>{nodeId}</div>
+                      <Typography.Link onClick={showModal}>设置密码</Typography.Link>
+                      <Modal
+                        className={styles.passwordModel}
+                        title="设置密码"
+                        open={isModalOpen}
+                        onOk={handleOk}
+                        okButtonProps={{ disabled }}
+                        onCancel={handleCancel}
+                      >
+                        <div className={styles.name}>账号名：{nodeId}</div>
+                        <Form
+                          form={form}
+                          layout="vertical"
+                          requiredMark="optional"
+                          autoComplete="off"
+                        >
+                          <Form.Item
+                            name="passwordHash"
+                            label="原密码"
+                            rules={[
+                              { required: isModalOpen, message: '请输入原密码' },
+                              {
+                                pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,20}$/,
+                                message: '需同时包含小写字母、大写字母、数字，8-20字符',
+                              },
+                            ]}
+                          >
+                            <Input.Password placeholder="请输入" />
+                          </Form.Item>
+                          <Form.Item
+                            name="newPassword"
+                            label="新密码"
+                            rules={[
+                              { required: isModalOpen, message: '请输入新密码' },
+                              {
+                                pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,20}$/,
+                                message: '需同时包含小写字母、大写字母、数字，8-20字符',
+                              },
+                            ]}
+                          >
+                            <Input.Password placeholder="请输入" />
+                          </Form.Item>
+                          <Form.Item
+                            name="verifiedNewPassword"
+                            label="新密码确认"
+                            dependencies={['newPassword', 'passwordHash']}
+                            rules={[
+                              { required: isModalOpen, message: '请再次确认' },
+                              {
+                                validator(_, value: string) {
+                                  if (isModalOpen) {
+                                    if (value) {
+                                      const passwordHash =
+                                        form.getFieldValue('passwordHash');
+                                      const newPassword =
+                                        form.getFieldValue('newPassword');
+                                      if (value === passwordHash) {
+                                        return Promise.reject(
+                                          new Error('新密码与当前密码不能一致'),
+                                        );
+                                      }
+                                      if (value !== newPassword) {
+                                        return Promise.reject(
+                                          new Error('请与新密码保持一致'),
+                                        );
+                                      }
+                                    }
+                                  }
+                                  return Promise.resolve();
+                                },
+                              },
+                            ]}
+                          >
+                            <Input.Password placeholder="请输入" />
+                          </Form.Item>
+                        </Form>
+                      </Modal>
+                    </Descriptions.Item>
+                  )}
+                </>
               )}
             </Descriptions>
             <Divider className={styles.divider}>
@@ -430,6 +508,16 @@ export const MyNodeComponent: React.FC = () => {
                 <img src={GuideGirlBg} />
               </div>
             </Divider>
+            <AccessWrapper
+              accessType={{
+                type: [Platform.AUTONOMY],
+              }}
+            >
+              <div className={styles.nodefunc}>
+                <Typography.Title level={5}>节点能力</Typography.Title>
+                <NodeFunc />
+              </div>
+            </AccessWrapper>
             <div className={styles.titleinstance}>
               <Typography.Title level={5}>节点实例</Typography.Title>
               <span>
@@ -462,6 +550,7 @@ export const MyNodeComponent: React.FC = () => {
           </Card>
         </div>
       </Spin>
+      <div className={styles.cardBottom}></div>
     </div>
   );
 };

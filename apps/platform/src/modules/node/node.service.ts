@@ -40,7 +40,7 @@ export class NodeService extends Model {
    * @return {Promise<API.NodeVO[]>} the list of edge nodes
    */
   async edgeListNode(nodeId: string): Promise<API.NodeVO[]> {
-    const result = await API.EdgeNodeController.listCooperatingNode({ nodeId });
+    const result = await API.NodeController.listNode();
     const nodeList = result?.data || [];
     return nodeList;
   }

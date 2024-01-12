@@ -1,0 +1,63 @@
+.cardContent {
+  display: flex;
+  gap: 20px;
+
+  .card {
+    position: relative;
+    width: 200px;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    padding-bottom: 0;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background-color: #f7f8fa;
+
+    .cardChecked {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      color: #1677ff;
+      font-size: 20px;
+    }
+  }
+
+  .card:hover,
+  .checked {
+    border: 1px solid #0068fa;
+  }
+
+  .cardTitle {
+    margin-top: 12px;
+    color: rgb(0 0 0 / 85%);
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 22px;
+  }
+
+  .cardDesc {
+    margin-top: 4px;
+    color: rgb(0 0 0 / 45%);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 20px;
+  }
+
+  .cardImg {
+    width: 176px;
+    height: 129px;
+    background-color: #fff;
+    -webkit-user-drag: none;
+    user-select: none;
+
+    .imgContent {
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      border: none;
+      -webkit-user-drag: none;
+      user-select: none;
+    }
+  }
+}

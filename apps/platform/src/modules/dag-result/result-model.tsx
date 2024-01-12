@@ -1,6 +1,11 @@
 import { Button, Tag, Typography } from 'antd';
 import { parse } from 'query-string';
 
+import { Platform, hasAccess } from '@/components/platform-wrapper';
+import { getModel } from '@/util/valtio-helper';
+
+import { ResultManagerService } from '../result-manager/result-manager.service';
+
 import { Download } from './apply-download';
 import styles from './index.less';
 import type { ResultComponentProps } from './types';
@@ -13,6 +18,7 @@ export const ResultModelComponent = (props: ResultComponentProps<'model'>) => {
   const { mode, projectId } = parse(window.location.search);
   const { gmtCreate, meta, jobId, taskId, type } = data;
   const { rows } = meta;
+  const resultManagerService = getModel(ResultManagerService);
 
   return (
     <div className={styles.report}>
@@ -58,7 +64,7 @@ export const ResultModelComponent = (props: ResultComponentProps<'model'>) => {
                 )}
               </div>
             </Paragraph>
-            {mode === 'TEE' && (
+            {!hasAccess({ type: [Platform.AUTONOMY] }) && mode === 'TEE' && (
               <Download
                 params={{
                   nodeID: nodeId,
@@ -69,6 +75,18 @@ export const ResultModelComponent = (props: ResultComponentProps<'model'>) => {
                   resourceID: tableId,
                 }}
               />
+            )}
+            {/* p2p 模式下不用申请，直接下载 */}
+            {hasAccess({ type: [Platform.AUTONOMY] }) && (
+              <Button
+                type="link"
+                style={{ paddingLeft: 8, fontSize: 12 }}
+                onClick={() =>
+                  resultManagerService.download(nodeId || '', { domainDataId: path })
+                }
+              >
+                下载
+              </Button>
             )}
           </div>
         );

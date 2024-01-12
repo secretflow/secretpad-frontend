@@ -5,6 +5,7 @@ import { parse } from 'query-string';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'umi';
 
+import { ProjectEditService } from '@/modules/layout/header-project-list/project-edit.service';
 import { useModel } from '@/util/valtio-helper';
 
 import { DefaultComponentInterpreterService } from '../component-interpreter/component-interpreter-service';
@@ -76,6 +77,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
   const interpreter = useModel(DefaultComponentInterpreterService);
   const configRegistry = useModel(ComponentConfigRegistry);
   const componentConfigService = useModel(DefaultComponentConfigService);
+  const projectEditService = useModel(ProjectEditService);
 
   useEffect(() => {
     const fetchConfig = () => {
@@ -105,7 +107,12 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
 
   useEffect(() => {
     if (pathname !== '/dag') setIsEditable(false);
-  }, [pathname]);
+    if (projectEditService.canEdit.configFormDisabled) {
+      setIsEditable(false);
+    } else {
+      setIsEditable(true);
+    }
+  }, [pathname, projectEditService.canEdit.configFormDisabled]);
   useEffect(() => {
     const fetchGraphNode = async () => {
       const { nodeDef } = graphNode || {};

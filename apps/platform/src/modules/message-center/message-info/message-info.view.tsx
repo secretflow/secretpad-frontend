@@ -3,6 +3,7 @@ import { Button, Drawer, Input, Popconfirm, Space, Spin, message } from 'antd';
 import { parse } from 'query-string';
 import React from 'react';
 
+import { EllipsisText } from '@/components/text-ellipsis.tsx';
 import { useModel } from '@/util/valtio-helper';
 
 import {
@@ -13,8 +14,7 @@ import {
 import { MessageActiveTabType, MessageService, StatusEnum } from '../message.service';
 
 import styles from './index.less';
-import { ConfigUpdateInfo, NodeAuthInfo, TeeDownloadInfo } from './info-content';
-import { EllipsisText } from '@/components/text-ellipsis.tsx';
+import { NodeAuthInfo, ProjectInviteInfo, TeeDownloadInfo } from './info-content';
 
 export const InfoContentRender = (props: { item: any }) => {
   const { item } = props;
@@ -23,7 +23,8 @@ export const InfoContentRender = (props: { item: any }) => {
     () => ({
       [MessageItemType.NODE_ROUTE]: <NodeAuthInfo info={item} />,
       [MessageItemType.TEE_DOWNLOAD]: <TeeDownloadInfo info={item} />,
-      [MessageItemType.PROJECT]: <ConfigUpdateInfo />,
+      [MessageItemType.PROJECT_ARCHIVE]: <ProjectInviteInfo info={item} />,
+      [MessageItemType.PROJECT_NODE_ADD]: <ProjectInviteInfo info={item} />,
     }),
     [item],
   );

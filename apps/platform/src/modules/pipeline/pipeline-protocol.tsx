@@ -1,5 +1,8 @@
 import { CopyOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
+import { ReactComponent as Blank } from '@/assets/template_type_blank.svg';
+import { ReactComponent as Psi } from '@/assets/template_type_psi.svg';
+
 export enum PipelineTemplateType {
   BLANK = 'blank',
   RISK = 'risk', // 金融风控
@@ -57,4 +60,10 @@ export const PipelineCommands = {
     id: 'pipeline.create',
     label: '创建',
   },
+};
+
+export const TemplateIcon = {
+  [PipelineTemplateType.BLANK]: Blank,
+  [PipelineTemplateType.RISK]: Psi,
+  [PipelineTemplateType.PSI]: Psi,
 };

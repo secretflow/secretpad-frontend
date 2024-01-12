@@ -33,7 +33,7 @@ jobs:
       - name: Use pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: ^7.29
+          version: ^8.8.0
           run_install: false
 
       - name: Get pnpm store directory
@@ -57,4 +57,4 @@ jobs:
         # https://nx.dev/recipes/ci/monorepo-ci-github-actions
 
       - name: Run linters and tests
-        run: pnpm ci
+        run: pnpm run ci

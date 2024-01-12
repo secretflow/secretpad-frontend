@@ -6,45 +6,61 @@ import {
   LogoutOutlined,
   DatabaseOutlined,
 } from '@ant-design/icons';
-import { Badge, Button, Dropdown, Image as AntdImage, Space } from 'antd';
+import { Avatar, Badge, Button, Dropdown, Space } from 'antd';
+import classNames from 'classnames';
 import { parse } from 'query-string';
 import { useEffect, useState } from 'react';
 import { history, useLocation } from 'umi';
 
 import centerOfflineImgLink from '@/assets/center-offline.png';
-import centerLocalImgLink from '@/assets/center.png';
+import centerImgLink from '@/assets/center.png';
 import edgeOfflineImgLink from '@/assets/edge-offline.png';
-import edgeLocalImgLink from '@/assets/edge.png';
+import edgeImgLink from '@/assets/edge.png';
 import Logo from '@/assets/logo.svg';
 import fallbackLink from '@/assets/offline-user.png';
 import { EdgeAuthWrapper } from '@/components/edge-wrapper-auth';
+import { hasAccess, Platform } from '@/components/platform-wrapper';
 import { GuideTourService } from '@/modules/guide-tour/guide-tour-service';
-import type { User } from '@/modules/login/login.service';
+import { ChangePasswordModal } from '@/modules/login/component/change-password';
 import { LoginService } from '@/modules/login/login.service';
 import platformConfig from '@/platform.config';
 import { logout } from '@/services/secretpad/AuthController';
 import { get } from '@/services/secretpad/NodeController';
-import type { AvatarInfo } from '@/util/platform';
-import { getImgLink } from '@/util/platform';
+import { getImgLink } from '@/util/tracert-helper';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { HomeLayoutService } from './home-layout.service';
 import styles from './index.less';
 
-type IAvatarMapping = Record<User['platformType'], AvatarInfo>;
+type IAvatarMapping = Record<
+  Platform,
+  {
+    onlineLink: string;
+    localLink: string;
+    offlineLink: string;
+    localStorageKey: string;
+  }
+>;
 
 const avatarMapping: IAvatarMapping = {
-  CENTER: {
-    onlineLink: 'https://mianyang-test.oss-cn-shanghai.aliyuncs.com/center.png',
-    localLink: centerLocalImgLink,
+  [Platform.CENTER]: {
+    onlineLink: 'https://secretflow-public.oss-cn-hangzhou.aliyuncs.com/center.png',
+    localLink: centerImgLink,
     offlineLink: centerOfflineImgLink,
-    localStorageTag: 'secretpad-center',
+    localStorageKey: 'secretpad-center',
   },
-  EDGE: {
-    onlineLink: 'https://mianyang-test.oss-cn-shanghai.aliyuncs.com/edge.png',
-    localLink: edgeLocalImgLink,
+  [Platform.EDGE]: {
+    onlineLink: 'https://secretflow-public.oss-cn-hangzhou.aliyuncs.com/edge.png',
+    localLink: edgeImgLink,
     offlineLink: edgeOfflineImgLink,
-    localStorageTag: 'secretpad-edge',
+    localStorageKey: 'secretpad-edge',
+  },
+  [Platform.AUTONOMY]: {
+    onlineLink: 'https://secretflow-public.oss-cn-hangzhou.aliyuncs.com/autonomy.png',
+    // autonomy 和 edge 头像相同
+    localLink: edgeImgLink,
+    offlineLink: edgeOfflineImgLink,
+    localStorageKey: 'secretpad-autonomy',
   },
 };
 
@@ -69,6 +85,10 @@ export const HeaderComponent = () => {
   };
 
   const items = [
+    {
+      key: 'changePassword',
+      label: <div onClick={viewInstance.showChangePassword}>修改密码</div>,
+    },
     {
       key: 'logout',
       icon: <LogoutOutlined onClick={onLogout} />,
@@ -100,7 +120,6 @@ export const HeaderComponent = () => {
       const avatarInfo = avatarMapping[platformType];
       setAvatarOfflineLink(avatarInfo.offlineLink);
 
-      // get online or local img
       const imgLink = getImgLink(avatarInfo);
       setAvatarLink(imgLink);
     }
@@ -137,7 +156,20 @@ export const HeaderComponent = () => {
   return (
     <div className={styles['header-items']}>
       <div className={styles.left}>
-        {platformConfig.header.logo ? platformConfig.header.logo : <Logo />}
+        {
+          <div
+            className={classNames({
+              [styles.logo]: hasAccess({ type: [Platform.AUTONOMY] }),
+            })}
+            onClick={() => {
+              if (hasAccess({ type: [Platform.AUTONOMY] })) {
+                history.push(`/edge?nodeId=${nodeId}&tab=workbench`);
+              }
+            }}
+          >
+            {platformConfig.header.logo ? platformConfig.header.logo : <Logo />}
+          </div>
+        }
         <span className={styles.subTitle}>{layoutService.subTitle}</span>
         {viewInstance.showMyNode() && (
           <>
@@ -245,19 +277,22 @@ export const HeaderComponent = () => {
         >
           <div style={{ cursor: 'pointer' }} onClick={(e) => e.preventDefault()}>
             <Space>
-              <AntdImage
-                width={28}
-                preview={false}
-                src={avatarLink || fallbackLink}
-                // 一般只有在请求在线图片链接失败的时候会用到 avatarOfflineLink
-                // fallbackLink 是本地调试断网的时候，兜底用的
-                fallback={avatarOfflineLink || fallbackLink}
+              <Avatar
+                size={28}
+                // 用 icon 代替 Image 的 fallback
+                // Antd: Avatar 组件中，可以设置 icon 或 children 作为图片加载失败的默认 fallback 行为.
+                icon={<img width={'100%'} src={avatarOfflineLink || fallbackLink} />}
+                src={avatarLink || null}
               />
               {loginService?.userInfo?.name}
               <CaretDownOutlined />
             </Space>
           </div>
         </Dropdown>
+        <ChangePasswordModal
+          visible={viewInstance.showChangePasswordModel}
+          close={() => (viewInstance.showChangePasswordModel = false)}
+        />
       </div>
     </div>
   );
@@ -268,6 +303,8 @@ export class HeaderModel extends Model {
   guideTourService = getModel(GuideTourService);
 
   nodeName = '';
+
+  showChangePasswordModel = false;
 
   goto(url: string) {
     const a = document.createElement('a');
@@ -281,18 +318,22 @@ export class HeaderModel extends Model {
   };
 
   showMyNode = () => {
-    const pathnameToShowNode = ['/node', '/message'];
+    const pathnameToShowNode = ['/node', '/message', '/edge'];
     return pathnameToShowNode.indexOf(window.location.pathname) > -1;
   };
 
   showMessage = () => {
-    const pathnameToShowNode = ['/node', '/message'];
+    const pathnameToShowNode = ['/node', '/message', '/edge'];
     return pathnameToShowNode.indexOf(window.location.pathname) > -1;
   };
 
   showGuide = () => {
     const pathnameToShowGuide = ['/', '/home'];
     return pathnameToShowGuide.indexOf(window.location.pathname) > -1;
+  };
+
+  showChangePassword = () => {
+    this.showChangePasswordModel = true;
   };
 
   reExperience = () => {

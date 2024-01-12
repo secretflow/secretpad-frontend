@@ -8,38 +8,47 @@
     width: 100%;
     height: calc(100vh - 124px);
   }
+}
 
-  .messageContent {
-    overflow: auto;
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-    padding: 24px;
-    border-radius: 8px;
-    margin-top: 8px;
-    background: #fff;
+.messageContent {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 24px;
+  border-radius: 8px;
+  margin-top: 8px;
+  background: #fff;
 
-    .tabsHeader {
-      :global {
-        .ant-tabs-top > .ant-tabs-nav {
-          margin-bottom: 20px;
+  .tabsHeader {
+    :global {
+      .ant-tabs-top > .ant-tabs-nav {
+        margin-bottom: 20px;
 
-          &::before {
-            border-bottom: none;
-          }
+        &::before {
+          border-bottom: none;
+        }
+      }
+
+      .ant-tabs-nav-wrap {
+        margin-left: -16px;
+      }
+
+      div.ant-tabs-tab {
+        display: flex;
+        align-items: center;
+        border: 0;
+        background-color: #fff;
+        font-size: 16px;
+
+        &:hover,
+        &:visited,
+        &:focus,
+        &:focus-within,
+        &:active {
+          color: rgb(0 0 0 / 85%);
         }
 
-        .ant-tabs-nav-wrap {
-          margin-left: -16px;
-        }
-
-        div.ant-tabs-tab {
-          display: flex;
-          align-items: center;
-          border: 0;
-          background-color: #fff;
-          font-size: 16px;
-
+        .ant-tabs-tab-btn {
           &:hover,
           &:visited,
           &:focus,
@@ -47,49 +56,107 @@
           &:active {
             color: rgb(0 0 0 / 85%);
           }
-
-          .ant-tabs-tab-btn {
-            &:hover,
-            &:visited,
-            &:focus,
-            &:focus-within,
-            &:active {
-              color: rgb(0 0 0 / 85%);
-            }
-          }
-
-          .ant-badge-count {
-            width: 100%;
-            height: 20px;
-            margin-top: -4px;
-            margin-left: 4px;
-            background: #e5e7ea;
-            box-shadow: none;
-            color: #868789;
-          }
         }
 
-        .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
-          color: #000;
-        }
-
-        .ant-tabs-ink-bar {
-          display: none;
-        }
-
-        .ant-empty-description {
-          color: #000;
+        .ant-badge-count {
+          width: 100%;
+          height: 20px;
+          margin-top: -4px;
+          margin-left: 4px;
+          background: #e5e7ea;
+          box-shadow: none;
+          color: #868789;
         }
       }
 
-      .tabContent {
-        display: flex;
-        align-items: center;
-        gap: 20px;
+      .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+        color: #000;
+      }
 
-        :global(.ant-radio-group) {
-          margin-bottom: 0 !important;
-        }
+      .ant-tabs-ink-bar {
+        display: none;
+      }
+
+      .ant-empty-description {
+        color: #000;
+      }
+    }
+
+    .tabContent {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+
+      :global(.ant-radio-group) {
+        margin-bottom: 0 !important;
+      }
+    }
+  }
+
+  .tabsHeaderWorkBench {
+    :global {
+      .ant-tabs-top > .ant-tabs-nav {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .listContent {
+    height: calc(100% - 62px);
+    overflow-y: auto;
+
+    :global {
+      .ant-list-split .ant-list-item:last-child {
+        border-block-end: 1px solid rgb(5 5 5 / 6%);
+      }
+
+      .ant-list .ant-list-pagination {
+        margin-block-start: 0;
+      }
+    }
+  }
+
+  .showAll {
+    padding-top: 16px;
+    text-align: center;
+
+    :global {
+      .ant-typography {
+        color: rgb(0 0 0 / 45%);
+      }
+    }
+  }
+
+  .showPageListContent {
+    :global {
+      .ant-list-pagination {
+        position: sticky;
+        bottom: 0;
+        padding-top: 24px;
+        margin: 0 !important;
+        background: #fff;
+      }
+    }
+  }
+}
+
+// p2p工作台消息中心样式
+.p2pMessageContent {
+  padding-bottom: 16px;
+  margin-top: 20px;
+
+  .tabsHeader {
+    :global {
+      .ant-tabs-top > .ant-tabs-nav {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .listContent {
+    :global {
+      .ant-list-split .ant-list-item:last-child {
+        border-block-end: 1px solid rgb(5 5 5 / 6%);
       }
     }
   }

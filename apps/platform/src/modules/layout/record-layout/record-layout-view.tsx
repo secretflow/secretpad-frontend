@@ -2,6 +2,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Divider } from 'antd';
 import { history } from 'umi';
 
+import { Platform } from '@/components/platform-wrapper';
 import { ComponentConfigDrawer } from '@/modules/component-config/config-modal';
 import { Log } from '@/modules/dag-log/log-viewer.view';
 import { DagLogDrawer } from '@/modules/dag-log/log.drawer.layout';
@@ -11,8 +12,9 @@ import { PipelineTitleComponent } from '@/modules/dag-record/pipeline-title-view
 import { RecordResultComponent } from '@/modules/dag-record/record-result-view';
 import { RecordGuideTourComponent } from '@/modules/dag-record-guide-tour/record-guide-tour.view';
 import { ResultDrawer } from '@/modules/dag-result/result-modal';
+import { LoginService } from '@/modules/login/login.service';
 import { RecordComponent } from '@/modules/main-dag/record';
-import { Model } from '@/util/valtio-helper';
+import { Model, useModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
 
@@ -27,8 +29,15 @@ export enum RecordArea {
 }
 
 export const RecordLayout = () => {
-  const goBack = () => {
-    history.push('/home?tab=project-management');
+  const loginService = useModel(LoginService);
+
+  const goBack = async () => {
+    const userInfo = await loginService.getUserInfo();
+    if (userInfo.platformType === Platform.AUTONOMY) {
+      history.push(`/edge?nodeId=${userInfo.ownerId}`);
+    } else {
+      history.push('/home?tab=project-management');
+    }
   };
 
   return (

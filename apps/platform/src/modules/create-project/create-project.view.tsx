@@ -4,6 +4,7 @@ import type { InputRef } from 'antd';
 import classnames from 'classnames';
 import React from 'react';
 
+import { AccessWrapper, PadMode, hasAccess } from '@/components/platform-wrapper';
 import { LoginService } from '@/modules/login/login.service';
 import { Model, getModel, useModel } from '@/util/valtio-helper';
 
@@ -16,7 +17,6 @@ import { CreateProjectService } from './create-project.service';
 import { EmbeddedNodePreview } from './embedded-node.view';
 import styles from './index.less';
 import { TemplateSwitch } from './template-switch';
-import { PadModeWrapper, getPadMode } from '@/components/PadModeWrapper';
 
 interface ICreateProjectModal {
   visible: boolean;
@@ -151,10 +151,14 @@ export const CreateProjectModal = ({ visible, data, close }: ICreateProjectModal
           required
           className={styles.formLabelItem}
           name="computeMode"
-          initialValue={getPadMode() === 'TEE' ? 'TEE' : 'MPC'}
+          initialValue={hasAccess({ mode: [PadMode.TEE] }) ? 'TEE' : 'MPC'}
         >
           <Radio.Group>
-            <PadModeWrapper type={['MPC', 'ALL-IN-ONE']}>
+            <AccessWrapper
+              accessType={{
+                mode: [PadMode.MPC, PadMode['ALL-IN-ONE']],
+              }}
+            >
               <Radio value={'MPC'}>
                 <Space>
                   管道模式
@@ -163,8 +167,12 @@ export const CreateProjectModal = ({ visible, data, close }: ICreateProjectModal
                   </Tooltip>
                 </Space>
               </Radio>
-            </PadModeWrapper>
-            <PadModeWrapper type={['TEE', 'ALL-IN-ONE']}>
+            </AccessWrapper>
+            <AccessWrapper
+              accessType={{
+                mode: [PadMode.TEE, PadMode['ALL-IN-ONE']],
+              }}
+            >
               <Radio value={'TEE'}>
                 <Space>
                   枢纽模式
@@ -173,7 +181,7 @@ export const CreateProjectModal = ({ visible, data, close }: ICreateProjectModal
                   </Tooltip>
                 </Space>
               </Radio>
-            </PadModeWrapper>
+            </AccessWrapper>
           </Radio.Group>
         </Form.Item>
         <Form.Item
@@ -191,7 +199,7 @@ export const CreateProjectModal = ({ visible, data, close }: ICreateProjectModal
           />
         </Form.Item>
         <Form.Item
-          className={styles.formLabelItem}
+          className={styles.formBoldLabelItem}
           label="参与节点"
           name="nodes"
           initialValue={data.showBlank ? [] : ['alice', 'bob']}

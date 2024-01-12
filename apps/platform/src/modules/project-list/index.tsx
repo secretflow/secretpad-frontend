@@ -1,23 +1,18 @@
 import {
   EditOutlined,
-  HddOutlined,
-  LoadingOutlined,
   ExclamationCircleFilled,
   SearchOutlined,
 } from '@ant-design/icons';
 import type { TourProps } from 'antd';
-import { Form, Tag } from 'antd';
 import { Select } from 'antd';
-import { Empty } from 'antd';
 import {
   Button,
+  Tag,
   Typography,
   Tooltip,
   Modal,
   Input,
-  Popover,
   Space,
-  Badge,
   message,
   Tour,
 } from 'antd';
@@ -28,6 +23,7 @@ import React, { useRef } from 'react';
 import { history } from 'umi';
 
 import { EdgeAuthWrapper } from '@/components/edge-wrapper-auth';
+import { getPadMode } from '@/components/platform-wrapper';
 import { CreateProjectModal } from '@/modules/create-project/create-project.view';
 import { formatTimestamp } from '@/modules/dag-result/utils';
 import {
@@ -36,10 +32,15 @@ import {
 } from '@/modules/guide-tour/guide-tour-service';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
+import { EditProjectModal } from './components/edit-project';
+import {
+  ProjectNodePopover,
+  ProjectPipeLinePopover,
+  ProjectTaskPopover,
+} from './components/popover';
 import styles from './index.less';
 import type { ProjectVO } from './project-list.service';
 import { ProjectListService } from './project-list.service';
-import { getPadMode } from '@/components/PadModeWrapper';
 
 export enum ComputeModeType {
   'ALL' = 'all',
@@ -55,38 +56,19 @@ export const ProjectListComponent: React.FC = () => {
   const projectListModel = useModel(ProjectListModel);
   const projectListService = useModel(ProjectListService);
 
-  const [form] = Form.useForm();
-
   const { handleCreateProject } = projectListModel;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const [listProjectId, setListProjectId] = useState('');
 
   const { displayProjectList: projectList } = projectListModel;
 
   const { Title, Paragraph } = Typography;
 
-  const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
+  const [editProjectData, setEditProjectData] = useState({});
 
   useEffect(() => {
     projectListModel.getProjectList();
   }, []);
-
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleOk = () => {
-    form.validateFields().then(async (value) => {
-      setIsModalOpen(false);
-      await projectListModel.endEdit(value, listProjectId);
-    });
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
 
   // 新手引导
   const ref1 = useRef(null);
@@ -239,10 +221,8 @@ export const ProjectListComponent: React.FC = () => {
                     <EditOutlined
                       className={styles.editButton}
                       onClick={() => {
-                        showModal();
-                        setListProjectId(item.projectId as string);
-                        form.setFieldValue('projectName', item.projectName);
-                        form.setFieldValue('description', item.description);
+                        setIsModalOpen(true);
+                        setEditProjectData(item);
                       }}
                     />
                   </div>
@@ -253,129 +233,20 @@ export const ProjectListComponent: React.FC = () => {
                 <div className={styles.projects}>
                   <div className={styles.task}>
                     <div className={styles.titleName}>参与节点</div>
-
                     <div className={styles.count}>
-                      <Popover
-                        title={`参与节点 (${item.nodes?.length || 0})`}
-                        overlayClassName={styles.popover}
-                        placement="right"
-                        content={
-                          <>
-                            {item.nodes && item.nodes.length > 0
-                              ? item.nodes.map((node, nodeIndex: number) => {
-                                  return (
-                                    <div
-                                      key={`node-${nodeIndex}`}
-                                      className={styles.joinNode}
-                                    >
-                                      <Space>
-                                        <HddOutlined />
-                                        {node.nodeName}服务节点
-                                      </Space>
-                                    </div>
-                                  );
-                                })
-                              : '暂无参与节点'}
-                          </>
-                        }
-                      >
-                        {item.nodes?.length || 0}
-                      </Popover>
+                      <ProjectNodePopover project={item} />
                     </div>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                     <div className={styles.titleName}>训练流</div>
                     <span className={styles.count}>
-                      <Popover
-                        title="训练流"
-                        overlayClassName={styles.popover}
-                        placement="right"
-                        onOpenChange={(visible) => {
-                          if (visible) {
-                            projectListModel.getPipelines(item);
-                          } else {
-                            projectListModel.pipelines = [];
-                          }
-                        }}
-                        content={
-                          <div className={styles.jobsList}>
-                            <Spin
-                              indicator={antIcon}
-                              spinning={projectListModel.fetchingPipelineList}
-                            >
-                              {projectListModel.pipelines.length > 0
-                                ? projectListModel.pipelines.map(
-                                    (pipeline, i: number) => {
-                                      return (
-                                        <div
-                                          className={styles.pipeLine}
-                                          key={`job-${i}`}
-                                        >
-                                          {pipeline.name}
-                                        </div>
-                                      );
-                                    },
-                                  )
-                                : '暂无任务流'}
-                            </Spin>
-                          </div>
-                        }
-                      >
-                        {item.graphCount}
-                      </Popover>
+                      <ProjectPipeLinePopover project={item} />
                     </span>
                   </div>
                   <div className={styles.task}>
                     <div className={styles.titleName}>任务数</div>
                     <div className={styles.count}>
-                      <Popover
-                        title="最新10条运行任务"
-                        overlayClassName={styles.popover}
-                        placement="right"
-                        onOpenChange={(visible) => {
-                          if (visible) {
-                            projectListModel.getJobs(item);
-                          } else {
-                            projectListModel.jobs = [];
-                          }
-                        }}
-                        content={
-                          <div className={styles.jobsList}>
-                            {(() => {
-                              const data = projectListModel.jobs.map(
-                                (job, jobIndex: number) => {
-                                  return (
-                                    <div
-                                      className={styles.jobItem + ' ' + styles.pipeLine}
-                                      key={`task-${jobIndex}`}
-                                    >
-                                      <Space>
-                                        <Badge
-                                          status={projectListModel.mapStatusToBadge(
-                                            job.status as API.GraphJobStatus,
-                                          )}
-                                          text=""
-                                        />
-                                        <span>
-                                          {formatTimestamp(job.gmtCreate as string)}
-                                        </span>
-                                      </Space>
-                                      <div className={styles.jobItemID}>
-                                        ID: {job.jobId}
-                                      </div>
-                                    </div>
-                                  );
-                                },
-                              );
-                              if (data.length > 0) return data;
-
-                              return <Empty description={false} />;
-                            })()}
-                          </div>
-                        }
-                      >
-                        {item.jobCount}
-                      </Popover>
+                      <ProjectTaskPopover project={item} />
                     </div>
                   </div>
                 </div>
@@ -389,12 +260,17 @@ export const ProjectListComponent: React.FC = () => {
                   size="small"
                   style={{ flex: 1 }}
                   onClick={() => {
-                    history.push({
-                      pathname: '/dag',
-                      search: `projectId=${item.projectId}&mode=${
-                        item.computeMode || 'MPC'
-                      }`,
-                    });
+                    history.push(
+                      {
+                        pathname: '/dag',
+                        search: `projectId=${item.projectId}&mode=${
+                          item.computeMode || 'MPC'
+                        }`,
+                      },
+                      {
+                        origin: 'project-management',
+                      },
+                    );
                   }}
                 >
                   进入项目
@@ -414,37 +290,12 @@ export const ProjectListComponent: React.FC = () => {
         <i></i>
         <i></i>
       </div>
-      <Modal
-        title="编辑"
-        open={isModalOpen}
-        onOk={handleOk}
-        onCancel={handleCancel}
-        wrapClassName={styles.editModal}
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            label="项目名称"
-            name="projectName"
-            rules={[
-              { required: true, message: '请输入项目名称' },
-              { max: 32, message: '长度限制32' },
-            ]}
-          >
-            <Input placeholder="请输入项目名称" />
-          </Form.Item>
-          <Form.Item
-            name="description"
-            label={
-              <>
-                项目描述
-                <span style={{ color: '#969696' }}>(可选)</span>
-              </>
-            }
-          >
-            <Input placeholder="请输入项目描述" />
-          </Form.Item>
-        </Form>
-      </Modal>
+      <EditProjectModal
+        isModalOpen={isModalOpen}
+        handleCancel={() => setIsModalOpen(false)}
+        data={editProjectData}
+        onEdit={projectListModel.endEdit}
+      />
       <EdgeAuthWrapper>
         <Tour
           open={
@@ -493,18 +344,18 @@ export class ProjectListModel extends Model {
     this.guideTourService.finishTour(GuideTourKeys.ProjectListTour);
   }
 
-  async endEdit(item: API.ProjectVO, projectId: string) {
+  endEdit = async (item: API.ProjectVO, projectId: string) => {
     const params = {
       projectId,
       name: item.projectName as string,
       description: item.description as string,
     };
-    message.loading({ content: '更新中', key: item.projectId });
+    message.loading({ content: '更新中', key: projectId });
     await this.projectListService.updateProject(params);
     message.destroy(item.projectId);
     await this.getProjectList();
-    this.projectEditStatusMap[item.projectId as string] = false;
-  }
+    this.projectEditStatusMap[projectId as string] = false;
+  };
 
   async getProjectList() {
     this.displayProjectList = await this.projectListService.getListProject();
@@ -561,18 +412,5 @@ export class ProjectListModel extends Model {
 
   handleCreateProject = () => {
     this.showCreateProjectModel = true;
-  };
-
-  mapStatusToBadge = (status: API.GraphJobStatus) => {
-    switch (status.toLowerCase()) {
-      case 'running':
-        return 'processing';
-      case 'failed':
-        return 'error';
-      case 'succeed':
-        return 'success';
-      case 'stopped':
-        return 'warning';
-    }
   };
 }

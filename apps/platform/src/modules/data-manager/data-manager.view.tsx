@@ -21,6 +21,7 @@ import React, { useEffect, useRef } from 'react';
 
 import { confirmDelete } from '@/components/comfirm-delete';
 import { EdgeAuthWrapper } from '@/components/edge-wrapper-auth';
+import { Platform, hasAccess } from '@/components/platform-wrapper';
 import { DataTableAddContent } from '@/modules/data-table-add/data-table-add.view';
 import { DatatableInfoService } from '@/modules/data-table-info/component/data-table-auth/data-table-auth.service';
 import { DataTableAuth } from '@/modules/data-table-info/data-table-auth-drawer';
@@ -62,7 +63,7 @@ export const DataManagerComponent: React.FC = () => {
 
   const columns = [
     {
-      title: '表名称',
+      title: '数据表名',
       dataIndex: 'datatableName',
       key: 'datatableName',
       ellipsis: true,
@@ -74,7 +75,7 @@ export const DataManagerComponent: React.FC = () => {
       ),
     },
     {
-      title: '数据表类型',
+      title: '表类型',
       dataIndex: 'type',
       key: 'type',
       width: '10%',
@@ -218,7 +219,7 @@ export const DataManagerComponent: React.FC = () => {
               {...extendProps}
               onClick={() => viewInstance.openAuth(tableInfo)}
             >
-              授权管理
+              {'授权管理'}
             </Typography.Link>
             {!embeddedSheets.includes(tableInfo.datatableName || '') && (
               <Tooltip
@@ -302,11 +303,11 @@ export const DataManagerComponent: React.FC = () => {
       <div className={styles.content}>
         <Table
           dataSource={viewInstance.displayTableList}
-          // tee节点不展示加密上传
-          // MPC 部署模式 不展示加密上传
+          // tee节点 / MPC部署模式 / p2p部署模式 不展示加密上传
           columns={
             viewInstance.currentNode.nodeId === 'tee' ||
-            loginService.userInfo?.deployMode === 'MPC'
+            loginService.userInfo?.deployMode === 'MPC' ||
+            hasAccess({ type: [Platform.AUTONOMY] })
               ? columns.filter((item) => item.key !== 'pushToTeeStatus')
               : columns
           }

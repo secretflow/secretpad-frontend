@@ -70,10 +70,12 @@ export const ComponentConfigDrawer: React.FC = () => {
         </div>
       </div>
 
-      <ConfigFormComponent
-        node={{ nodeId: id, name: codeName, upstreamNodes, graphNode, inputNodes }}
-        onClose={onClose}
-      />
+      {visible && (
+        <ConfigFormComponent
+          node={{ nodeId: id, name: codeName, upstreamNodes, graphNode, inputNodes }}
+          onClose={onClose}
+        />
+      )}
     </Drawer>
   );
 };

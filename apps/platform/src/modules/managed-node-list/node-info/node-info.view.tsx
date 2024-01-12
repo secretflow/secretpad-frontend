@@ -123,7 +123,7 @@ export const NodeInfoDrawer = ({
             </Button>
           </div>
         }
-        extra={<CloseOutlined onClick={() => close()} style={{ cursor: 'pointer' }} />}
+        extra={<CloseOutlined onClick={() => close()} style={{ fontSize: 12 }} />}
         destroyOnClose
         open={visible}
         onClose={close}

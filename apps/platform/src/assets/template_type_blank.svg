@@ -1,0 +1,25 @@
+<svg width="48px" height="49px" viewBox="0 0 48 49" version="1.1" xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <path
+            d="M4.40625,4.40625 L4.40625,19.59375 L19.59375,19.59375 L19.59375,4.40625 L4.40625,4.40625 Z M2.95982143,2.625 L21.0401786,2.625 C21.2250953,2.625 21.375,2.77490466 21.375,2.95982143 L21.375,21.0401786 C21.375,21.2250953 21.2250953,21.375 21.0401786,21.375 L2.95982143,21.375 C2.77490466,21.375 2.625,21.2250953 2.625,21.0401786 L2.625,2.95982143 C2.625,2.77490466 2.77490466,2.625 2.95982143,2.625 Z"
+            id="path-62-3jolimt-1"></path>
+    </defs>
+    <g id="全部设计稿" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="联合建模项目" transform="translate(-2046.000000, -211.000000)">
+            <g id="5.反馈/8.Drawer抽屉/亮色/默认备份-3" transform="translate(2006.000000, -0.500000)">
+                <g id="编组-2" transform="translate(24.000000, 196.000000)">
+                    <g id="空白" transform="translate(16.000000, 16.000000)">
+                        <rect id="Rectangle-Copy-2" fill="#E6F4FF" x="0" y="0" width="48" height="48" rx="6"></rect>
+                        <g id="Icon/01-Line/1-example" transform="translate(12.000000, 12.000000)">
+                            <mask id="mask-62-3jolimt-2" fill="white">
+                                <use xlink:href="#path-62-3jolimt-1"></use>
+                            </mask>
+                            <use id="Shape" fill="#1890FF" xlink:href="#path-62-3jolimt-1"></use>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

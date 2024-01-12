@@ -17,6 +17,8 @@ export class DefaultComponentInterpreterService
   }
 
   async getComponentI18n() {
+    const token = localStorage.getItem('User-Token') || '';
+    if (!token) return;
     const { data } = await listComponentI18n();
     if (data) {
       this.translationMap['MPC'] = data['secretflow'];

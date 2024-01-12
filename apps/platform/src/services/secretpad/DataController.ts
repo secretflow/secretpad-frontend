@@ -20,25 +20,9 @@ export async function createData(
   });
 }
 
-/** 此处后端没有提供注释 POST /api/v1alpha1/data/createData */
-export async function createDataByDataSource(
-  body?: API.CreateDataByDataSourceRequest,
-  options?: { [key: string]: any },
-) {
-  return request<API.SecretPadResponse_String_>('/api/v1alpha1/data/createData', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: body,
-    ...(options || {}),
-  });
-}
-
 /** Download data api
 @param response http servlet response
 @param request download data request
-@return successful SecretPadResponse with null data
  POST /api/v1alpha1/data/download */
 export async function download(
   params: {
@@ -62,17 +46,6 @@ export async function download(
     data: body,
     ...(options || {}),
   });
-}
-
-/** 此处后端没有提供注释 POST /api/v1alpha1/data/listDataSource */
-export async function listDataSource(options?: { [key: string]: any }) {
-  return request<API.SecretPadResponse_List_DataSourceVO__>(
-    '/api/v1alpha1/data/listDataSource',
-    {
-      method: 'POST',
-      ...(options || {}),
-    },
-  );
 }
 
 /** Upload data api

@@ -4,6 +4,7 @@ import { parse, stringify } from 'query-string';
 import { useMemo, useState, useEffect } from 'react';
 import { history, useLocation } from 'umi';
 
+import { Platform, hasAccess } from '@/components/platform-wrapper';
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import dagLayoutStyle from '@/modules/layout/dag-layout/index.less';
 import recordLayoutStyle from '@/modules/layout/record-layout/index.less';
@@ -66,23 +67,25 @@ export const RecordListDrawer = () => {
 
   const goToDag = () => {
     const searchDagParams = window.location.search;
-    const { projectId, mode } = parse(searchDagParams);
-    const { pipelineName, pipelineId } = history.location.state as {
+    const { projectId, mode, type } = parse(searchDagParams);
+    const { pipelineName, pipelineId, origin } = (history.location.state || {}) as {
       pipelineId: string;
       pipelineName: string;
+      origin: string;
     };
     if (!pipelineId || !projectId) return;
     const searchParams = {
       dagId: pipelineId,
       projectId,
       mode,
+      type: hasAccess({ type: [Platform.AUTONOMY] }) ? type : undefined,
     };
     history.push(
       {
         pathname: '/dag',
         search: stringify(searchParams),
       },
-      { pipelineName, pipelineId },
+      { pipelineName, pipelineId, origin },
     );
   };
 

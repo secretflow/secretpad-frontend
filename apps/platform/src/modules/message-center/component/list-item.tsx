@@ -1,5 +1,6 @@
 import { Divider, Space, Tag, Tooltip } from 'antd';
 import React from 'react';
+
 import { formatTimestamp } from '@/modules/dag-result/utils';
 
 import type { NodeStatusList } from '../message.service';
@@ -73,7 +74,12 @@ export const ListItemDescRender = (props: {
         <DownloadDesc item={item} activeTab={activeTab} />
       ),
       [MessageItemType.NODE_ROUTE]: <CommonDesc item={item} />,
-      [MessageItemType.PROJECT]: <CommonDesc item={item} />,
+      [MessageItemType.PROJECT_NODE_ADD]: (
+        <DownloadDesc item={item} activeTab={activeTab} />
+      ),
+      [MessageItemType.PROJECT_ARCHIVE]: (
+        <DownloadDesc item={item} activeTab={activeTab} />
+      ),
     }),
     [item],
   );
@@ -90,15 +96,18 @@ export const DownloadDesc = (props: {
       <span className={styles.listItemDescText}>
         {formatTimestamp(item?.createTime || '')}
       </span>
-      <Divider type="vertical" />
+      <Divider
+        type="vertical"
+        style={{ borderInlineStart: '1px solid rgba(5, 5, 5, 0.2)' }}
+      />
       {activeTab === MessageActiveTabType.APPLY && (
         <>
           <span className={styles.listItemDescText}>合作节点 : </span>
           {(item?.initiatingTypeMessage?.partyVoteStatuses || []).map(
-            (node: NodeStatusList) => (
+            (node: NodeStatusList, index: number) => (
               <span key={node.nodeID} className={styles.listItemDescText}>{`${
-                node.nodeName
-              }  (${
+                index !== 0 ? '、' : ''
+              } ${node.nodeName}  (${
                 StatusTextObj[node.action as keyof typeof StatusTextObj]?.text
               })`}</span>
             ),

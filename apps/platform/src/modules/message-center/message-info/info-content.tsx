@@ -24,6 +24,18 @@ export const ComputedModelObj = {
   [ComputedModelEnum.MPC]: '管道模式',
 };
 
+export enum ComputeFuncEnum {
+  DAG = 'DAG',
+  PSI = 'PSI',
+  ALL = 'ALL',
+}
+
+export const ComputeFuncObj = {
+  [ComputeFuncEnum.DAG]: '模型训练-联合建模',
+  [ComputeFuncEnum.PSI]: '隐私求交',
+  [ComputeFuncEnum.ALL]: '全家桶',
+};
+
 export const TeeDownloadInfo = (props: IProps) => {
   const { info } = props;
   return (
@@ -119,9 +131,53 @@ export const NodeAuthInfo = (props: IProps) => {
   );
 };
 
-// 项目邀约
-export const ProjectInviteInfo = () => {
-  return <></>;
+// 项目邀约&项目归档
+export const ProjectInviteInfo = (props: IProps) => {
+  const { info } = props;
+  return (
+    <div>
+      <Descriptions column={1}>
+        <Descriptions.Item label="类型">
+          <MessageTypeTag type={info.type} />
+        </Descriptions.Item>
+        <Descriptions.Item label="项目名称">
+          <EllipsisText>{info?.projectName}</EllipsisText>
+        </Descriptions.Item>
+        <Descriptions.Item label="发起端节点">
+          <EllipsisText>{info.initiatorNodeName}</EllipsisText>
+        </Descriptions.Item>
+        <Descriptions.Item label="创建时间">
+          <EllipsisText>
+            {info?.gmtCreated ? formatTimestamp(info?.gmtCreated) : ''}
+          </EllipsisText>
+        </Descriptions.Item>
+        <Descriptions.Item label="受邀节点" className={styles.descNodeStatusList}>
+          <NodeStatusList list={info?.partyVoteStatuses || []} />
+        </Descriptions.Item>
+        <Descriptions.Item label="计算功能">
+          <EllipsisText>
+            {
+              ComputeFuncObj[
+                (info?.computeFunc as ComputeFuncEnum) || ComputeFuncEnum.DAG
+              ]
+            }
+          </EllipsisText>
+        </Descriptions.Item>
+        <Descriptions.Item label="计算模式">
+          <EllipsisText>
+            {
+              ComputedModelObj[
+                (info?.computeMode as ComputedModelEnum) || ComputedModelEnum.MPC
+              ]
+            }
+          </EllipsisText>
+        </Descriptions.Item>
+        <Descriptions.Item label="项目描述">
+          <EllipsisText>{info?.projectDesc}</EllipsisText>
+        </Descriptions.Item>
+      </Descriptions>
+    </div>
+  );
 };
 
 // 功能配置升级

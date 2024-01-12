@@ -1,10 +1,12 @@
 import { HolderOutlined } from '@ant-design/icons';
-import { Popover, Tree } from 'antd';
+import { message, Popover, Tree } from 'antd';
 import { parse } from 'query-string';
 import { useCallback, useEffect } from 'react';
 import { useLocation } from 'umi';
 
 import { DefaultComponentInterpreterService as ComponentInterpreterService } from '@/modules/component-interpreter/component-interpreter-service';
+import { ProjectEditService } from '@/modules/layout/header-project-list/project-edit.service';
+import { DefaultPipelineService } from '@/modules/pipeline/pipeline-service';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { ComponentIcons } from './component-icon';
@@ -18,6 +20,7 @@ const { DirectoryTree } = Tree;
 
 export const ComponentTree = () => {
   const viewInstance = useModel(ComponentTreeView);
+  const defaultPipelineService = useModel(DefaultPipelineService);
 
   const { search } = useLocation();
   const { mode = 'MPC' } = parse(search);
@@ -25,6 +28,16 @@ export const ComponentTree = () => {
   useEffect(() => {
     viewInstance.setTreeData(mode as ComputeMode);
   }, [mode]);
+
+  useEffect(() => {
+    if (defaultPipelineService.pipelines.length === 0) {
+      message.open({
+        type: 'warning',
+        content: '请先创建训练流后再添加组件',
+        duration: 1,
+      });
+    }
+  }, [defaultPipelineService.pipelines]);
 
   const interpreter = viewInstance.componentInterpreter;
   const treeNodeRender = useCallback(
@@ -133,6 +146,7 @@ export class ComponentTreeView extends Model {
 
   componentTreeService = getModel(ComponentTreeService);
   componentInterpreter = getModel(ComponentInterpreterService);
+  projectEditService = getModel(ProjectEditService);
 
   setTreeData = (mode: ComputeMode) => {
     this.componentTreeData = this.componentTreeService.convertToTree(mode);
@@ -174,6 +188,10 @@ export class ComponentTreeView extends Model {
     treeNode: ComponentTreeItem,
     mode: ComputeMode,
   ) => {
+    if (this.projectEditService.canEdit.startDragDisabled) {
+      return;
+    }
+
     e.persist();
     const { title, category } = treeNode;
 

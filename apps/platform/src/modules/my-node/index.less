@@ -3,7 +3,9 @@
   padding: 8px 32px 0;
 
   .card {
+    min-height: calc(100vh - 120px);
     margin-top: 8px;
+    background: #fff;
 
     .header {
       display: flex;
@@ -46,7 +48,6 @@
     }
 
     :global(.ant-card-body) {
-      height: calc(100vh - 200px);
       padding: 0 24px;
       padding-bottom: 24px;
     }
@@ -88,52 +89,11 @@
       cursor: pointer;
     }
   }
-}
 
-.publicKeyPopover {
-  :global(.ant-popover-inner) {
-    overflow: auto;
-    max-width: 512px;
-    max-height: 446px;
+  .cardBottom {
+    width: 100%;
+    height: 24px;
   }
-
-  .publicTitle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    span {
-      color: rgb(0 0 0 / 88%);
-      font-size: 14px;
-      font-weight: 500;
-      line-height: 22px;
-    }
-
-    :global(.ant-typography) {
-      margin-bottom: 0;
-    }
-
-    :global(.ant-typography-copy) {
-      color: #1677ff;
-      font-size: 14px;
-      font-weight: 400;
-      line-height: 22px;
-    }
-  }
-
-  .publicKey {
-    color: rgb(0 0 0 / 88%);
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 22px;
-    text-align: justify;
-    word-break: break-all;
-  }
-}
-
-.eyes {
-  margin-right: 8px;
-  color: rgb(22 119 255) !important;
 }
 
 .memorySize {
@@ -166,6 +126,11 @@
 }
 
 .passwordModel {
+  .name {
+    margin-top: 20px;
+    margin-bottom: 16px;
+  }
+
   :global {
     .ant-modal-body {
       margin: 20px 0;

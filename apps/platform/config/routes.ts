@@ -9,23 +9,36 @@ export const routes = [
       {
         path: '/dag',
         component: 'dag',
-        wrappers: ['@/wrappers/center-auth', '@/wrappers/component-wrapper'],
+        wrappers: ['@/wrappers/p2p-center-auth', '@/wrappers/component-wrapper'],
       },
       {
         path: '/record',
         component: 'record',
-        wrappers: ['@/wrappers/center-auth', '@/wrappers/component-wrapper'],
+        wrappers: ['@/wrappers/p2p-center-auth', '@/wrappers/component-wrapper'],
       },
       {
         path: '/node',
         component: 'new-node',
         wrappers: ['@/wrappers/edge-auth', '@/wrappers/component-wrapper'],
       },
-      { path: '/my-node', component: 'my-node', wrappers: ['@/wrappers/edge-auth'] },
+      {
+        path: '/my-node',
+        component: 'my-node',
+        wrappers: ['@/wrappers/basic-node-auth', '@/wrappers/p2p-edge-center-auth'],
+      },
       {
         path: '/message',
         component: 'message',
-        wrappers: ['@/wrappers/edge-auth', '@/wrappers/component-wrapper'],
+        wrappers: [
+          '@/wrappers/basic-node-auth',
+          '@/wrappers/p2p-edge-center-auth',
+          '@/wrappers/component-wrapper',
+        ],
+      },
+      {
+        path: '/edge',
+        component: 'edge',
+        wrappers: ['@/wrappers/basic-node-auth', '@/wrappers/p2p-login-auth'],
       },
       { path: '/*', redirect: '/login' },
     ],

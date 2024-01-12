@@ -73,7 +73,9 @@
   justify-content: center;
 
   .runAll {
+    display: flex;
     height: 28px;
+    align-items: center;
     border-radius: 4px;
     margin-right: 8px;
     background-color: #0068fa;
@@ -89,6 +91,29 @@
     &:hover {
       background-color: #f6f8fa !important;
       color: #1664ff !important;
+    }
+  }
+
+  .runAllDisabled {
+    border: 1px solid rgb(0 0 0 / 15%);
+    border-radius: 4px;
+    background-color: #f6f8fa !important;
+    color: rgb(0 0 0 / 88%) !important;
+
+    &:hover {
+      background-color: #f6f8fa !important;
+    }
+
+    :global {
+      .ant-btn-text:disabled {
+        display: flex;
+        height: 100%;
+        align-items: center;
+      }
+
+      .ant-btn-icon svg > g > path:last-child {
+        fill: rgb(0 0 0 / 15%);
+      }
     }
   }
 
