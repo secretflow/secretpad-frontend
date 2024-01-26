@@ -1,3 +1,4 @@
+import type { Edge, Graph } from '@antv/x6';
 import { ActionType, NodeStatus } from '@secretflow/dag';
 import type { GraphNode, Node, GraphEventHandlerProtocol } from '@secretflow/dag';
 import { Emitter } from '@secretflow/utils';
@@ -7,8 +8,8 @@ import { parse } from 'query-string';
 import {
   fullUpdateGraph,
   getGraphNodeOutput,
-  updateGraphNode,
 } from '@/services/secretpad/GraphController';
+import { updateGraphNode } from '@/services/secretpad/GraphController';
 import { getModel } from '@/util/valtio-helper';
 
 import type { ComponentConfig } from '../component-config/component-config-protocol';
@@ -34,6 +35,9 @@ import mainDag from './dag';
 export class GraphService implements GraphEventHandlerProtocol {
   protected nodeRunningEmitter = new Emitter<boolean>();
   onNodeRunningEvent = this.nodeRunningEmitter.on;
+
+  protected nodeStatusEmitter = new Emitter<{ nodeId: string; status: NodeStatus }[]>();
+  onNodeStatusChangedEvent = this.nodeStatusEmitter.on;
 
   componentService = getModel(DefaultComponentTreeService);
   componentInterpreter = getModel(DefaultComponentInterpreterService);
@@ -96,6 +100,7 @@ export class GraphService implements GraphEventHandlerProtocol {
     if (this.modalManager.modals['component-result']) {
       this.modalManager.closeModal(resultDrawer.id);
     }
+
     this.logService.cancel();
 
     const data = node.getData<GraphNode>();
@@ -133,12 +138,16 @@ export class GraphService implements GraphEventHandlerProtocol {
     const { projectId } = parse(search);
     const [, nodeId] = outputId.match(/(.*)-output-([0-9]+)$/) || [];
     if (!nodeId) return;
-    const { data } = await getGraphNodeOutput({
+    const { data, status } = await getGraphNodeOutput({
       projectId: projectId as string,
       graphId,
       graphNodeId: nodeId,
       outputId,
     });
+    if (status?.code !== 0) {
+      message.error('结果不存在');
+      return;
+    }
 
     if (data) {
       this.modalManager.openModal(resultDrawer.id, {
@@ -159,8 +168,92 @@ export class GraphService implements GraphEventHandlerProtocol {
     this.modalManager.closeModal(componentConfigDrawer.id);
   }
 
+  async onEdgeConnected(edge: Edge) {
+    /**
+     * 特殊处理，每当「重新连接」下游的分箱修改算子时
+     * 就清空分箱修改算子「codeName = feature/binning_modifications」的配置「nodeDef」
+     *
+     * 若不清空，就无法再次拿到最新的上游
+     * TODO: 长期。需引擎支持上游输出分箱结果表
+     */
+    const componentId = edge?.store?.data?.target?.cell;
+    const sourcePortId = edge?.store?.data?.source?.port;
+    if (componentId && sourcePortId) {
+      const { search } = window.location;
+      const { projectId, dagId } = parse(search);
+      const node = await mainDag.requestService.getGraphNode(componentId);
+      if (node?.codeName === 'feature/binning_modifications') {
+        const { attrs, attrPaths, ...restNodeDef } = node.nodeDef || {};
+        const updatedNode = {
+          ...node,
+          inputs: [sourcePortId],
+          nodeDef: {
+            ...restNodeDef,
+          },
+        };
+        await updateGraphNode({
+          projectId: projectId as string,
+          graphId: dagId as string,
+          node: updatedNode,
+        });
+
+        mainDag.dataService.fetch();
+      }
+    }
+  }
+
   onNodeRunning(isRunning: boolean) {
     this.nodeRunningEmitter.fire(isRunning);
+  }
+
+  onNodeStatusChanged(status: { nodeId: string; status: NodeStatus }[]) {
+    this.nodeStatusEmitter.fire(status);
+  }
+
+  async onNodesPasted(nodes: Node[]) {
+    /**
+     * 特殊处理，情况同 onEdgeConnected
+     */
+    const binningModificationNodeIds = nodes
+      .filter((node) => node?.codeName === 'feature/binning_modifications')
+      .map((node) => node.id);
+
+    this.cleanNodeDef(binningModificationNodeIds);
+  }
+
+  async cleanNodeDef(nodeIds: string[]) {
+    if (!nodeIds?.length) {
+      return;
+    }
+
+    const { search } = window.location;
+    const { projectId, dagId } = parse(search);
+
+    const graph = await mainDag.requestService.fetchGraph();
+
+    const nodes = graph?.nodes?.map((node) => {
+      if (nodeIds.includes(node?.graphNodeId)) {
+        const { attrs, attrPaths, ...restNodeDef } = node?.nodeDef || {};
+        return {
+          ...node,
+          nodeDef: {
+            ...restNodeDef,
+          },
+        };
+      } else {
+        return node;
+      }
+    });
+
+    await fullUpdateGraph({
+      projectId: projectId as string,
+      graphId: dagId as string,
+      edges: graph?.edges,
+      nodes: nodes,
+    });
+
+    // 更新最新的 nodes
+    mainDag.dataService.fetch();
   }
 
   saveTemplateQuickConfig = async (quickConfig: {
@@ -215,10 +308,39 @@ export class GraphService implements GraphEventHandlerProtocol {
           status: NodeStatus.unfinished,
         });
       }
+
+      /**
+       * 特殊处理，情况同 onEdgeConnected
+       */
+      const subNodeIdSet = this.getSubNodeIds(
+        mainDag.graphManager.graph as Graph,
+        node.graphNodeId,
+      );
+
+      const binningModificationNodeIds = Array.from(subNodeIdSet)
+        .filter((id) => id !== node.graphNodeId)
+        .map((id) => {
+          return mainDag.graphManager.graph?.getCellById(id).store.data.data;
+        })
+        .filter((node) => node?.codeName === 'feature/binning_modifications')
+        .map((node) => node.id);
+
+      this.cleanNodeDef(binningModificationNodeIds);
     } else {
       message.error(status?.msg || '操作失败');
     }
   };
+
+  getSubNodeIds(graph: Graph, nodeId: string, nodeIds: Set<string> = new Set()) {
+    nodeIds.add(nodeId);
+    const outgoingEdges = graph.getOutgoingEdges(nodeId);
+    outgoingEdges?.forEach((edge) => {
+      const data = edge.getData();
+      const { target } = data;
+      this.getSubNodeIds(graph, target, nodeIds);
+    });
+    return nodeIds;
+  }
 }
 
 mainDag.addGraphEvents(getModel(GraphService));

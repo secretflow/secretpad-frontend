@@ -2,16 +2,20 @@ import { PlusCircleFilled, DeleteOutlined } from '@ant-design/icons';
 import { Form, Select } from 'antd';
 import classnames from 'classnames';
 import { parse } from 'query-string';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { useLocation } from 'umi';
 
+import { getGraphNodeOutput } from '@/services/secretpad/GraphController';
 import {
   getProject,
+  getProjectAllOutTable,
   getProjectDatatable,
 } from '@/services/secretpad/ProjectController';
 
 import styles from '../index.less';
 
 import type { RenderProp } from './config-render-protocol';
+import type { IDataTable, IOutputDataTable } from './custom-render/types';
 import style from './index.less';
 
 // Used for select join key for psi
@@ -26,46 +30,139 @@ export const DefaultColSelection: React.FC<RenderProp<string>> = (config) => {
   const [colsOptions, setCols] = useState<{ value: string; label: string }[]>([]);
   const [tableName, setTableName] = useState<string>();
   const [errorMsg, setErrorMsg] = useState<string>();
+  const [tables, setTables] = useState<IDataTable[]>([]);
+  const [outputTables, setOutputTables] = useState<IOutputDataTable[]>([]);
 
+  const [columnInfo, setColumnInfo] = useState<{ colName: string; colType: string }[]>(
+    [],
+  );
+
+  const { search } = useLocation();
+  const { projectId, dagId } = parse(search) as {
+    projectId: string;
+    dagId: string;
+  };
   useEffect(() => {
-    const currentTableId = upstreamTables[index];
     const getTables = async () => {
-      const dataTableList: (API.ProjectDatatableBaseVO & {
-        nodeId: string | undefined;
-      })[] = [];
-      const { search } = window.location;
-      const { projectId } = parse(search) as { projectId: string };
+      const dataTableList: IDataTable[] = [];
+
       const { data } = await getProject({ projectId });
+      const { data: outputData } = await getProjectAllOutTable({
+        projectId,
+        graphId: dagId,
+      });
+
+      // all the outputs in the graph
+      if (outputData?.nodes) {
+        setOutputTables(
+          outputData.nodes.reduce<IOutputDataTable[]>(
+            (ret, { outputs, graphNodeId }) =>
+              outputs && graphNodeId
+                ? ret.concat(
+                    outputs.map((output) => ({
+                      graphNodeId,
+                      datatableId: output,
+                      datatableName: output,
+                      nodeId: '',
+                    })),
+                  )
+                : ret,
+            [],
+          ),
+        );
+      }
       if (!data) return;
+
       const { nodes } = data;
       if (!nodes) return;
-      nodes.map((n) => {
-        const { datatables, nodeId } = n;
+
+      nodes.map((_node) => {
+        const { datatables } = _node;
         if (!datatables) return;
-        datatables.map((table) => dataTableList.push({ ...table, nodeId }));
-      });
-      const table = dataTableList.find((d) => d.datatableId === currentTableId);
-      if (!table) return;
-      const { data: tableConfig } = await getProjectDatatable({
-        projectId,
-        nodeId: table.nodeId,
-        datatableId: table.datatableId,
-      });
-      if (!tableConfig) return;
-      const { configs } = tableConfig;
-      if (configs) {
-        setCols(
-          configs.map(({ colName }: { colName: string }) => ({
-            value: colName,
-            label: colName,
-          })),
+        datatables.map((table) =>
+          dataTableList.push({
+            ...table,
+            nodeId: _node?.nodeId,
+          } as IDataTable),
         );
-        setTableName(table.datatableName);
-      }
+      });
+
+      // upsteam tables
+      setTables(
+        dataTableList.filter(
+          ({ datatableId }) => (upstreamTables as string[]).indexOf(datatableId) > -1,
+        ),
+      );
     };
 
     getTables();
-  }, [index, upstreamTables]);
+  }, [upstreamTables]);
+
+  const fromTable = useMemo(() => {
+    if (index !== undefined && upstreamTables[index]) {
+      const currentTableId = upstreamTables[index];
+
+      return (
+        tables.find(({ datatableId }) => datatableId === currentTableId) ||
+        outputTables.find(({ datatableId }) => datatableId === currentTableId)
+      );
+    }
+  }, [index, upstreamTables, outputTables]);
+
+  useEffect(() => {
+    const getCols = async (table) => {
+      const { datatableId, nodeId, graphNodeId } = table;
+      const tableFields: { colName: string; colType: string }[] = [];
+
+      if (!nodeId && graphNodeId) {
+        const { data } = await getGraphNodeOutput({
+          projectId,
+          graphId: dagId,
+          graphNodeId,
+          outputId: datatableId,
+        });
+
+        if (data?.meta?.rows?.length) {
+          data.meta.rows.forEach(
+            ({ fieldTypes, fields }: { fieldTypes: string; fields: string }) => {
+              if (fieldTypes && fields) {
+                const fieldList = fields.split(',');
+                const fieldTypeList = fieldTypes.split(',');
+                tableFields.push(
+                  ...fieldList.map((f, i) => ({
+                    colName: f,
+                    colType: fieldTypeList[i],
+                  })),
+                );
+              }
+            },
+          );
+        }
+      } else {
+        const { data } = await getProjectDatatable({
+          datatableId,
+          nodeId,
+          projectId,
+        });
+        if (!data) return;
+        const { configs } = data;
+
+        configs.map((c) => {
+          tableFields.push({ colName: c.colName, colType: c.colType });
+        });
+      }
+      setTableName(fromTable?.datatableName);
+      setColumnInfo(tableFields);
+      setCols(
+        tableFields.map((option: { colName: string; colType: string }) => ({
+          value: option.colName,
+          label: option.colName,
+        })),
+      );
+    };
+
+    if (fromTable) getCols(fromTable);
+  }, [fromTable]);
 
   return (
     <>
@@ -116,7 +213,18 @@ export const DefaultColSelection: React.FC<RenderProp<string>> = (config) => {
                       },
                     ]}
                   >
-                    <Select options={colsOptions} />
+                    <Select
+                      options={colsOptions}
+                      showSearch
+                      filterOption={(
+                        input: string,
+                        option?: { label: string; value: string },
+                      ) =>
+                        (option?.label ?? '')
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                    />
                   </Form.Item>
                 </div>
                 {(!col_max_cnt_inclusive || col_max_cnt_inclusive > 1) && !disabled && (

@@ -131,13 +131,7 @@ export const PipelineViewComponent = () => {
    */
   useEffect(() => {
     viewInstance.pipelineService.changePipelineCanEdit(dagId as string);
-  }, [
-    projectId,
-    dagId,
-    searchParams,
-    viewInstance.projectListService.projectList,
-    viewInstance.pipelineService.pipelines,
-  ]);
+  }, [projectId, dagId, searchParams, viewInstance.pipelineService.pipelines]);
 
   return (
     <div className={style.treeContainer}>

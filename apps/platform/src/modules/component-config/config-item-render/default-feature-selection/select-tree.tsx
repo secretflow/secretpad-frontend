@@ -5,6 +5,7 @@ import type { Key } from 'react';
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'umi';
 
+import { getGraphNodeOutput } from '@/services/secretpad/GraphController';
 import { getProjectDatatable } from '@/services/secretpad/ProjectController';
 
 import style from './index.less';
@@ -15,8 +16,11 @@ const typeMap = {
   string: 'STRING',
   f32: 'FLOAT',
   float: 'FLOAT',
+  float32: 'FLOAT',
+  float64: 'FLOAT',
   i32: 'INTEGER',
   int: 'INTEGER',
+  int64: 'INTEGER',
 };
 
 type TreeOptions = {
@@ -39,10 +43,13 @@ export const SelectTree = ({
   selectedFields,
   setSelectedFields,
   disabled,
+  rules,
 }: IProps) => {
   const [treeData, setTreeData] = useState<TreeOptions[]>([]);
   const { search } = useLocation();
-  const { projectId } = parse(search) as { projectId: string };
+  const { projectId, dagId } = parse(search) as { projectId: string; dagId: string };
+  const { excludes = [] } = rules || {};
+
   useEffect(() => {
     if (!schema) return;
     const getLeaves = async () => {
@@ -58,63 +65,124 @@ export const SelectTree = ({
 
       await Promise.all(
         schemaArr.map(async (s) => {
-          const { datatableId, nodeId } = s;
-          const { data } = await getProjectDatatable({
-            datatableId,
-            nodeId,
-            projectId,
-          });
-          if (!data) return;
-          const { configs } = data;
+          const { datatableId, nodeId, graphNodeId } = s;
+          if (!nodeId && graphNodeId) {
+            const { data } = await getGraphNodeOutput({
+              projectId,
+              graphId: dagId,
+              graphNodeId,
+              outputId: datatableId,
+            });
 
-          configs?.map((col: ColType) => {
-            const { colName, colType, isAssociateKey, isGroupKey, isLabelKey } = col;
-            if (!typesData[colType as keyof typeof typeMap]) {
-              typesData[colType as keyof typeof typeMap] = [];
+            if (data?.meta?.rows?.length) {
+              data.meta.rows.forEach(
+                ({ fieldTypes, fields }: { fieldTypes: string; fields: string }) => {
+                  if (fieldTypes && fields) {
+                    const fieldList = fields.split(',');
+                    const typeList = fieldTypes.split(',');
+
+                    fieldList.forEach((colName, i) => {
+                      const colType = typeList[i];
+                      if (colType) {
+                        if (!typesData[colType as keyof typeof typeMap]) {
+                          typesData[colType as keyof typeof typeMap] = [];
+                        }
+                        if (
+                          !typesData[colType as keyof typeof typeMap].find(
+                            ({ key }) => key === colName,
+                          )
+                        ) {
+                          const type = typeMap[colType as keyof typeof typeMap];
+                          const leaf = {
+                            title: `${colName}(${type})`,
+                            key: colName,
+                            disabled: excludes.includes(colName),
+                          };
+
+                          typesData[colType as keyof typeof typeMap].push(leaf);
+                        }
+                      }
+                    });
+                  }
+                },
+              );
             }
-            const type = typeMap[colType as keyof typeof typeMap];
+          } else {
+            const { data } = await getProjectDatatable({
+              datatableId,
+              nodeId,
+              projectId,
+            });
+            if (!data) return;
+            const { configs } = data;
 
-            const title = isAssociateKey ? (
-              <span>
-                {colName}
-                {`(${type})`}
-                <Tag color="cyan">关联键</Tag>
-              </span>
-            ) : isGroupKey ? (
-              <span>
-                {colName}
-                {`(${type})`}
-                <Tag color="blue">分组列</Tag>
-              </span>
-            ) : isLabelKey ? (
-              <span>
-                {colName}
-                {`(${type})`}
-                <Tag color="warning">标签列</Tag>
-              </span>
-            ) : (
-              `${colName}(${type})`
-            );
-            const leaf = {
-              title,
-              key: colName,
-            };
+            configs?.map((col: ColType) => {
+              const { colName, colType, isAssociateKey, isGroupKey, isLabelKey } = col;
+              if (!typesData[colType as keyof typeof typeMap]) {
+                typesData[colType as keyof typeof typeMap] = [];
+              }
+              const type = typeMap[colType as keyof typeof typeMap];
 
-            typesData[colType as keyof typeof typeMap].push(leaf);
-          });
+              const title = isAssociateKey ? (
+                <span>
+                  {colName}
+                  {`(${type})`}
+                  <Tag color="cyan">关联键</Tag>
+                </span>
+              ) : isGroupKey ? (
+                <span>
+                  {colName}
+                  {`(${type})`}
+                  <Tag color="blue">分组列</Tag>
+                </span>
+              ) : isLabelKey ? (
+                <span>
+                  {colName}
+                  {`(${type})`}
+                  <Tag color="warning">标签列</Tag>
+                </span>
+              ) : (
+                `${colName}(${type})`
+              );
+
+              if (
+                !typesData[colType as keyof typeof typeMap].find(
+                  ({ key }) => key === colName,
+                )
+              ) {
+                const leaf = {
+                  title,
+                  key: colName,
+                  disabled: excludes.includes(colName),
+                };
+
+                typesData[colType as keyof typeof typeMap].push(leaf);
+              }
+            });
+          }
         }),
       );
-      const treeDataList: TreeOptions[] = [];
+      const treeDataList: TreeOptions[] = Object.entries(typesData).reduce<
+        TreeOptions[]
+      >((ret, [type, children = []]) => {
+        const key = typeMap[type as keyof typeof typesData];
 
-      for (const type in typesData) {
-        const node = {
-          children: typesData[type as keyof typeof typesData],
-          key: typeMap[type as keyof typeof typesData],
-          title: typeMap[type as keyof typeof typesData] as string,
-        };
-        treeDataList.push(node);
-      }
+        const node = ret.find((n) => n.key === key);
 
+        if (node) {
+          node.children = node.children!.concat(
+            children.filter((c) => !node.children!.find((nc) => nc.key === c.key)),
+          );
+        } else {
+          ret.push({
+            key,
+            children,
+            title: key,
+          });
+        }
+
+        return ret;
+      }, []);
       setTreeData(treeDataList);
     };
     getLeaves();
@@ -157,4 +225,5 @@ export interface IProps {
   dataType?: string;
   appendSchema?: boolean;
   disabled?: boolean;
+  rules?: { max?: number; min: number; excludes?: string[] };
 }

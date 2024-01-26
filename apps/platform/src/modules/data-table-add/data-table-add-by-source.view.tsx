@@ -1,3 +1,5 @@
+/** DEPRECATED */
+/** Data table will be added by dragging */
 import { Button, Space } from 'antd';
 import { Drawer } from 'antd';
 import { debounce } from 'lodash';

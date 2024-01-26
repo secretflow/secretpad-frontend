@@ -42,6 +42,8 @@ export const DefaultSwitch: React.FC<RenderProp<boolean>> = (config) => {
 
 export const DefaultInputNumber: React.FC<RenderProp<number>> = (config) => {
   const { node, onChange, value, defaultVal, translation } = config;
+  const { type } = node;
+
   const {
     minVal,
     maxVal,
@@ -103,6 +105,9 @@ export const DefaultInputNumber: React.FC<RenderProp<number>> = (config) => {
         onChange={(val) => {
           onChange(val);
         }}
+        precision={type === 'AT_INT' ? 0 : undefined}
+        min={minVal}
+        max={maxVal}
       />
     </Form.Item>
   );

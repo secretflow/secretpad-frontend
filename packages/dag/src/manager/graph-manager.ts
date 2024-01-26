@@ -234,6 +234,13 @@ export class DefaultGraphManager extends DAGContext implements GraphManager {
     });
     this.graph.on('edge:connected', ({ edge }) => {
       this.executeAction(ActionType.addEdge, edge);
+
+      const events = this.context.EventHub.getData();
+      for (const event of events) {
+        if (event.onEdgeConnected) {
+          event.onEdgeConnected(edge);
+        }
+      }
     });
 
     this.graph.on('node:added', () => {

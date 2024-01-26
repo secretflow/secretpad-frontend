@@ -111,7 +111,7 @@ export const MessageComponent: React.FC = () => {
   ];
   const { Link } = Typography;
 
-  const loadMore = isP2PWorkbench() && (
+  const loadMore = isP2PWorkbench() && !!viewInstance.totalNum && (
     <div className={styles.showAll}>
       <Link
         onClick={() => {

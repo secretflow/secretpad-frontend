@@ -39,6 +39,7 @@ const HomePage = () => {
   useEffect(() => {
     homeLayoutService.setSubTitle('Center');
     homeLayoutService.setBgClassName('centerBg');
+    getUserInfo();
   }, []);
 
   const [hasNotNodeMenu, setHasNotNodeMenu] = React.useState(true);
@@ -53,6 +54,10 @@ const HomePage = () => {
       setHasNotNodeMenu(false);
     }
   }, [loginService.userInfo]);
+
+  const getUserInfo = async () => {
+    await loginService.getUserInfoAsync();
+  };
 
   return (
     <HomeLayout>

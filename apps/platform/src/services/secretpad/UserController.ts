@@ -15,8 +15,6 @@ export async function get(options?: { [key: string]: any }) {
 /** Update user pwd by userName
 @param userUpdatePwdRequest
 @return {@link SecretPadResponse }<{@link Boolean }>
-@author lihaixin
-@date 2023/12/11
  POST /api/v1alpha1/user/updatePwd */
 export async function updatePwd(
   body?: API.UserUpdatePwdRequest,

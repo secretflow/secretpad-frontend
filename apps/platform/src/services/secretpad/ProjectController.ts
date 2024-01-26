@@ -194,6 +194,27 @@ export async function getProject(
   });
 }
 
+/** project_graph_node outputs fix derived fields for chexian
+@param request projectId graphId
+@return ProjectOutputVO
+ POST /api/v1alpha1/project/getOutTable */
+export async function getProjectAllOutTable(
+  body?: API.GetProjectGraphRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.SecretPadResponse_ProjectOutputVO_>(
+    '/api/v1alpha1/project/getOutTable',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: body,
+      ...(options || {}),
+    },
+  );
+}
+
 /** Query project datatable detail api
 @param request get project request
 @return successful SecretPadResponse with project datatable view object
@@ -290,4 +311,25 @@ export async function updateProject(
     data: body,
     ...(options || {}),
   });
+}
+
+/** Update project schema api
+@param request update project request
+@return successful SecretPadResponse with null data
+ POST /api/v1alpha1/project/update/tableConfig */
+export async function updateProjectTableConfig(
+  body?: API.AddProjectDatatableRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.SecretPadResponse_Void_>(
+    '/api/v1alpha1/project/update/tableConfig',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: body,
+      ...(options || {}),
+    },
+  );
 }

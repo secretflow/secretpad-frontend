@@ -153,9 +153,6 @@ export const UploadTable: React.FC<IProps> = ({ setDisabled }) => {
                       viewInstance.uploadingHandler(a);
                     }}
                     maxCount={1}
-                    customRequest={() => {
-                      return;
-                    }}
                   >
                     <a style={{ padding: '0 5px' }}>重新上传</a>
                   </Upload>
@@ -291,7 +288,11 @@ export const UploadTable: React.FC<IProps> = ({ setDisabled }) => {
                             validateTrigger="onBlur"
                             rules={[
                               { required: true, message: '请输入特征名称' },
-                              { max: 32, message: '特征名称长度限制32字符' },
+                              {
+                                max: 64,
+                                message:
+                                  '特征名称长度限制64字符,请缩短特征名,需要同步修改本地数据文件schema',
+                              },
                               {
                                 pattern: /^([a-zA-Z0-9-_]*)$/,
                                 message: '名称可由英文/数字/下划线/中划线组成',
@@ -603,25 +604,30 @@ export class UploadTableView extends Model {
   }
 
   async submit() {
-    this.submitting = true;
-    const validateRes = await this.validateForm();
-    const values = validateRes;
+    try {
+      this.submitting = true;
+      const validateRes = await this.validateForm();
+      const values = validateRes;
 
-    const res = await createData({
-      nodeId: this.nodeService.currentNode?.nodeId || '',
-      name: this.fileInfo?.name,
-      tableName: values.tbl_name,
-      description: values.tbl_desc,
-      datatableSchema: values.schema,
-      realName: this.fileInfo?.realName,
-    });
+      const res = await createData({
+        nodeId: this.nodeService.currentNode?.nodeId || '',
+        name: this.fileInfo?.name,
+        tableName: values.tbl_name,
+        description: values.tbl_desc,
+        datatableSchema: values.schema,
+        realName: this.fileInfo?.realName,
+      });
 
-    this.submitting = false;
-    if (res.status?.code === 0) {
-      message.success('添加成功');
-    } else {
-      message.error(res.status?.msg || '添加失败');
-      throw new Error('保存失败');
+      this.submitting = false;
+      if (res.status?.code === 0) {
+        message.success('添加成功');
+      } else {
+        message.error(res.status?.msg || '添加失败');
+        throw new Error('保存失败');
+      }
+    } catch (e) {
+      this.submitting = false;
+      throw e;
     }
   }
 

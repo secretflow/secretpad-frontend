@@ -37,6 +37,19 @@ export default defineConfig({
     'babel-plugin-parameter-decorator',
   ],
   mfsu: false,
+  codeSplitting: {
+    jsStrategy: 'granularChunks',
+  },
+  // oneApi: {
+  //   apps: [
+  //     {
+  //       name: 'secretpad', // 后端应用名
+  //       tag: 'feat/cx_merge', // 分支 tag
+  //       source: 'ZAPPINFO', // 应用来源，默认 ZAPPINFO，其他来源可在官网的应用信息中查看
+  //     },
+  //   ],
+  //   typescript: true, // 每个接口的类型定义，自动生成，默认 false
+  // },
   esbuildMinifyIIFE: true,
   ...proxyOptions,
 });

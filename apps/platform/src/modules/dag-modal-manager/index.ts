@@ -50,7 +50,9 @@ export class DefaultModalManager extends Model implements ModalManager<any> {
 
   closeAllModalsBut: (modalId: string) => void = (modalId) => {
     for (const id in this.modals) {
-      if (id !== modalId) this.closeModal(id);
+      if (id !== modalId) {
+        this.closeModal(id);
+      }
     }
   };
 }

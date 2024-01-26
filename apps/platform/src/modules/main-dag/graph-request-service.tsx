@@ -306,6 +306,22 @@ export class GraphRequestService extends DefaultRequestService {
     return Math.max(...nodeIndices);
   }
 
+  async fetchGraph() {
+    const { search } = window.location;
+    const { projectId, dagId } = parse(search);
+
+    const { data, status } = await getGraphDetail({
+      projectId: projectId as string,
+      graphId: dagId as string,
+    });
+
+    if (!data || status?.code !== 0) {
+      return;
+    }
+
+    return data;
+  }
+
   async getGraphNode(nodeId: string) {
     const { search } = window.location;
     const { projectId, dagId } = parse(search);

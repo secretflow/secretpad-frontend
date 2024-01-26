@@ -1,6 +1,6 @@
 /* eslint-disable */
-// API 更新时间：2024-01-03 20:13:08
-// API 唯一标识：65954f53385be66b3d55a101
+// API 更新时间：2024-01-09 19:03:58
+// API 唯一标识：659d281d8eb7d68955de26a7
 // 该文件由 OneAPI 自动生成，请勿手动修改！
 
 import * as ApprovalController from './ApprovalController';
@@ -15,8 +15,8 @@ import * as MessageController from './MessageController';
 import * as NodeController from './NodeController';
 import * as NodeRouteController from './NodeRouteController';
 import * as NodeUserController from './NodeUserController';
-import * as P2pNodeController from './P2pNodeController';
 import * as P2PProjectController from './P2PProjectController';
+import * as P2pNodeController from './P2pNodeController';
 import * as ProjectController from './ProjectController';
 import * as RemoteUserController from './RemoteUserController';
 import * as UserController from './UserController';

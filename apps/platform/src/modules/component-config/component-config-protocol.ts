@@ -9,6 +9,7 @@ import type {
 export type AtomicConfigNode = {
   name: string;
   type: AtomicParameterType;
+  fromInputIndex?: number;
   docString: string;
   isRequired: boolean;
   prefixes?: string[];
@@ -17,6 +18,13 @@ export type AtomicConfigNode = {
   col_max_cnt_inclusive?: number;
   col_min_cnt_inclusive?: number;
 } & AtomicParameterDef;
+
+export type CustomConfigNode = {
+  name: string;
+  type: 'AT_CUSTOM_PROTOBUF';
+  custom_protobuf_cls: string;
+  prefixes?: string[];
+};
 
 export type StructConfigNode = {
   selectedName?: string;
@@ -42,9 +50,13 @@ export type ComponentConfigRegistry = {
 
 export const codeNameRenderKey = {
   'read_data/datatable': 'DATA_TABLE_SELECT',
-  'ml.eval/biclassification_eval': 'COL_INPUT',
-  'ml.eval/prediction_bias_eval': 'COL_INPUT',
+  'data_prep/psi': 'UNION_KEY_SELECT',
   'preprocessing/psi': 'UNION_KEY_SELECT',
+  'preprocessing/sqlite': 'SQL',
+};
+
+export const codeNameRenderIndex = {
+  'preprocessing/binary_op': [0, 2, 1, 3, 4],
 };
 
 export interface ComponentConfig {
@@ -105,12 +117,26 @@ type GraphNodeTaskStatus =
 type ResultKind = 'FedTable' | 'Model' | 'Rule' | 'Report';
 
 export const getUpstreamKey = {
-  'preprocessing/psi': (upstreamNodes: GraphNodeDetail[]) => {
-    return upstreamNodes.map((n) => {
+  'data_prep/psi': (upstreamNodes: GraphNodeDetail[], graphNode?: GraphNodeDetail) => {
+    const { inputs = [] } = graphNode || {};
+    return upstreamNodes.map((n, index) => {
       const { codeName, nodeDef } = n || {};
-      if (codeName !== 'read_data/datatable') return;
+      if (codeName !== 'read_data/datatable') return inputs[index];
       const { attrs } = nodeDef;
-      if (!attrs) return;
+      if (!attrs) return inputs[index];
+      return attrs[0]?.s;
+    });
+  },
+  'preprocessing/psi': (
+    upstreamNodes: GraphNodeDetail[],
+    graphNode?: GraphNodeDetail,
+  ) => {
+    const { inputs = [] } = graphNode || {};
+    return upstreamNodes.map((n, index) => {
+      const { codeName, nodeDef } = n || {};
+      if (codeName !== 'read_data/datatable') return inputs[index];
+      const { attrs } = nodeDef;
+      if (!attrs) return inputs[index];
       return attrs[0]?.s;
     });
   },

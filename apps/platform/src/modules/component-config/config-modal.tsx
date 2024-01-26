@@ -43,6 +43,7 @@ export const ComponentConfigDrawer: React.FC = () => {
       onClose={onClose}
       open={visible}
       autoFocus={false}
+      destroyOnClose
       rootClassName={classNames(
         styles.componentConfigDrawer,
         {

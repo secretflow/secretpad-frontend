@@ -206,7 +206,10 @@ export const CooperativeNodeDetailDrawer = ({
         open={showDeleteModal}
         data={data}
         onClose={() => setShowDeleteModal(false)}
-        onOk={onOk}
+        onOk={() => {
+          onOk();
+          onClose();
+        }}
       />
     </Drawer>
   );

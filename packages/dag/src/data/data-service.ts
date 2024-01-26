@@ -36,7 +36,7 @@ export class DefaultDataService extends DAGContext implements DataService {
 
   async addNodes(nodes: GraphNode[]) {
     this.nodes.push(...nodes);
-    this.context.requestService.saveDag(this.context.dagId, {
+    await this.context.requestService.saveDag(this.context.dagId, {
       nodes: this.nodes,
       edges: this.edges,
     });
@@ -44,7 +44,7 @@ export class DefaultDataService extends DAGContext implements DataService {
 
   async addEdges(edges: GraphEdge[]) {
     this.edges.push(...edges);
-    this.context.requestService.saveDag(this.context.dagId, {
+    await this.context.requestService.saveDag(this.context.dagId, {
       nodes: this.nodes,
       edges: this.edges,
     });

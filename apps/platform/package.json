@@ -12,11 +12,14 @@
     "lint:typing": "tsc --noEmit",
     "test": "jest --coverage",
     "preview": "umi preview",
-    "openapi": "node config/openapi.config.js"
+    "openapi": "node config/openapi.config.js",
+    "oneapi": "bigfish api generate service"
   },
   "dependencies": {
     "@ant-design/icons": "^5.0.1",
     "@antv/g2": "^4.2.9",
+    "@antv/s2": "^1.52.0",
+    "@antv/s2-react": "^1.44.2",
     "@antv/x6": "^2.11.1",
     "@antv/x6-plugin-keyboard": "2.2.1",
     "@antv/x6-plugin-selection": "^2.1.7",
@@ -50,5 +53,6 @@
   "peerDependencies": {
     "antd": "^5.0.0",
     "react": "^18.0.0"
-  }
+  },
+  "repository": "https://code.alipay.com/Secret-Flow/platform-web.git"
 }

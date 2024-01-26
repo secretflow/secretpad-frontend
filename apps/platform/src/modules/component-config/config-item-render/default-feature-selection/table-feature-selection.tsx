@@ -1,7 +1,7 @@
 import { MenuOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import classnames from 'classnames';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { FieldMiniTable } from './field-mini-table';
 import style from './index.less';
@@ -11,7 +11,15 @@ import type { TableInfoType } from './type';
 export const MultiTableFeatureSelection = (props: IProps) => {
   const [showSelectorModal, setShowSelectorModal] = useState(false);
   const [showFields, setShowFields] = useState(false);
-  const { value = '', tableKeys, onChange, disabled, rules } = props;
+  const {
+    value = '',
+    tableKeys,
+    onChange,
+    disabled,
+    fromTableKey,
+    outputTableKeys,
+    rules,
+  } = props;
   const fields = Array.isArray(value)
     ? value.filter((v) => v)
     : value
@@ -50,6 +58,8 @@ export const MultiTableFeatureSelection = (props: IProps) => {
       <MultiFieldSelectModal
         visible={showSelectorModal}
         tableInfos={tableKeys}
+        fromTableInfo={fromTableKey}
+        outputTableInfos={outputTableKeys}
         multiple={Array.isArray(tableKeys) && tableKeys.length > 1}
         submit={onChange}
         fields={fields.map((f: string) => ({ colName: f }))}
@@ -65,7 +75,9 @@ export interface IProps {
   size: 'small' | 'middle';
   disabled?: boolean;
   tableKeys: TableInfoType[];
+  fromTableKey?: TableInfoType;
+  outputTableKeys?: TableInfoType[];
   onChange?: (values: string[]) => void;
   value?: string | string[];
-  rules?: { max?: number; min: number };
+  rules?: { max?: number; min: number; excludes?: string[] };
 }

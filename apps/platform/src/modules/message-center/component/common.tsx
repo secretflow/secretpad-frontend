@@ -28,7 +28,7 @@ export enum MessageItemType {
 
 export const ListItemTitleMap = {
   [MessageItemType.TEE_DOWNLOAD]: {
-    tagColor: 'orange',
+    // tagColor: 'orange',
     tagIcon: <DownloadOutlined style={{ color: '#FF4D4F' }} />,
     tagText: '结果下载',
     suffix: '下载申请',
@@ -37,7 +37,7 @@ export const ListItemTitleMap = {
     },
   },
   [MessageItemType.NODE_ROUTE]: {
-    tagColor: 'cyan',
+    // tagColor: 'cyan',
     tagIcon: <HddOutlined style={{ color: '#13A8A8' }} />,
     tagText: '节点合作',
     suffix: '授权邀约',
@@ -46,7 +46,7 @@ export const ListItemTitleMap = {
     },
   },
   [MessageItemType.PROJECT_NODE_ADD]: {
-    tagColor: 'orange',
+    // tagColor: 'orange',
     tagIcon: <Icon component={projectManager} style={{ color: '#1677ff' }} />,
     tagText: '项目邀约',
     suffix: '邀约',
@@ -55,7 +55,7 @@ export const ListItemTitleMap = {
     },
   },
   [MessageItemType.PROJECT_ARCHIVE]: {
-    tagColor: 'orange',
+    // tagColor: 'orange',
     tagIcon: <PoweroffOutlined style={{ color: '#FF4D4F' }} />,
     tagText: '项目归档',
     suffix: '归档',
@@ -72,7 +72,7 @@ export const MessageTypeTag = ({ type }: { type: MessageItemType }) => {
   return (
     <Tag
       className={styles.listItemTitleTypeTag}
-      color={itemObj.tagColor}
+      // color={itemObj.tagColor}
       icon={itemObj.tagIcon}
       style={itemObj.style}
     >

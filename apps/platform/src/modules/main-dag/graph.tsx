@@ -9,6 +9,7 @@ import { useLocation } from 'umi';
 
 import templateImg from '@/assets/dag-background.svg';
 import { ProjectEditService } from '@/modules/layout/header-project-list/project-edit.service';
+import { DefaultPipelineService } from '@/modules/pipeline/pipeline-service';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { DefaultComponentInterpreterService } from '../component-interpreter/component-interpreter-service';
@@ -34,6 +35,7 @@ export const GraphComponents: React.FC<{
   const dagInstatnce = props?.dagInstatnce || mainDag;
   const modalManager = useModel(DefaultModalManager);
   const projectEditService = useModel(ProjectEditService);
+  const pipelineService = useModel(DefaultPipelineService);
 
   const { search, pathname } = useLocation();
   const { dagId, mode } = parse(search);
@@ -42,16 +44,20 @@ export const GraphComponents: React.FC<{
   const { width, height } = useSize(viewRef.current) || {};
 
   React.useEffect(() => {
-    dagInstatnce.dispose();
-    if (dagId && containerRef.current) {
-      modalManager.closeAllModalsBut(RecordListDrawerItem.id);
-      viewInstance.initGraph(
-        dagId as string,
-        containerRef.current,
-        mode as ComputeMode,
-        projectEditService.canEdit.graphHotKeyDisabled ? 'LITE' : 'FULL',
-      );
-    }
+    const getGraphInit = async () => {
+      dagInstatnce.dispose();
+      if (dagId && containerRef.current) {
+        modalManager.closeAllModalsBut(RecordListDrawerItem.id);
+        await pipelineService.changePipelineCanEdit(dagId as string);
+        viewInstance.initGraph(
+          dagId as string,
+          containerRef.current,
+          mode as ComputeMode,
+          projectEditService.canEdit.graphHotKeyDisabled ? 'LITE' : 'FULL',
+        );
+      }
+    };
+    getGraphInit();
   }, [dagId, mode]);
 
   React.useEffect(() => {
@@ -83,6 +89,7 @@ export const GraphComponents: React.FC<{
         open={true}
         arrow={true}
         placement="top"
+        overlayStyle={{ height: 'fit-content' }}
       >
         <span style={{ position: 'relative', left: -1000, top: -1000 }} />
       </Tooltip>

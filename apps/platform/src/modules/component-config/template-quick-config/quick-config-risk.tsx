@@ -1,4 +1,4 @@
-import { Form, Select } from 'antd';
+import { Form, Select, Input } from 'antd';
 import { parse } from 'query-string';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'umi';
@@ -164,6 +164,33 @@ export const QuickConfigRisk = () => {
           size={'small'}
           rules={{ min: 1, max: 1 }}
         />
+      </Form.Item>
+
+      <Form.Item
+        name="pred"
+        label={<div className={styles.configItemLabel}>预测结果列名</div>}
+        required
+        messageVariables={{ msg: '请填写预测结果列名' }}
+        initialValue={{ s: 'pred' }}
+        rules={[
+          {
+            required: true,
+            message: '${msg}',
+            validator: (_, val) => {
+              if (!val || !val.s) return Promise.reject(new Error('${msg}'));
+
+              return Promise.resolve();
+            },
+          },
+        ]}
+        getValueProps={(value) => {
+          return { value: value?.s };
+        }}
+        getValueFromEvent={(e) => {
+          return { s: e.target.value };
+        }}
+      >
+        <Input />
       </Form.Item>
 
       <Form.Item

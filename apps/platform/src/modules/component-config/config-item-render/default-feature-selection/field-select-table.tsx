@@ -77,6 +77,7 @@ export interface IProps {
   setSelectedFields: (fields: FieldInfoType[]) => void;
   dataType?: string;
   disabled?: boolean;
+  rules?: { max?: number; min: number; excludes?: string[] };
   // groupKeys: FieldInfoType[];
   // associatedKeys: FieldInfoType[];
 }

@@ -4,6 +4,7 @@ export interface TableInfoType {
   datatableId: string;
   datatableName: string;
   nodeId: string;
+  graphNodeId?: string;
 }
 
 export interface SchemaValueType {

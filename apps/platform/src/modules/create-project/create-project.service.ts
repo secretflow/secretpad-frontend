@@ -103,7 +103,7 @@ export class CreateProjectService extends Model {
           nodeId: 'alice',
           datatableId: aliceData[0].datatableId,
           configs: [
-            { colName: 'id1', isAssociateKey: true },
+            { colName: 'id1', isAssociateKey: true, isProtection: true },
             { colName: 'y', isLabelKey: true },
           ],
         }),
@@ -112,7 +112,7 @@ export class CreateProjectService extends Model {
           nodeId: 'bob',
           datatableId: bobData[0].datatableId,
           configs: [
-            { colName: 'id2', isAssociateKey: true },
+            { colName: 'id2', isAssociateKey: true, isProtection: true },
             { colName: 'y', isLabelKey: true },
           ],
         }),
@@ -134,7 +134,7 @@ export class CreateProjectService extends Model {
             nodeId: 'alice',
             datatableId: (alice?.datatables || [])[0].datatableId,
             configs: [
-              { colName: 'id1', isAssociateKey: true },
+              { colName: 'id1', isAssociateKey: true, isProtection: true },
               { colName: 'y', isLabelKey: true },
             ],
           }),
@@ -147,7 +147,7 @@ export class CreateProjectService extends Model {
             nodeId: 'bob',
             datatableId: (bob?.datatables || [])[0].datatableId,
             configs: [
-              { colName: 'id2', isAssociateKey: true },
+              { colName: 'id2', isAssociateKey: true, isProtection: true },
               { colName: 'y', isLabelKey: true },
             ],
           }),

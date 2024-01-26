@@ -5,8 +5,10 @@ import type { Tab } from './result-report-types';
 import type { ResultComponentProps } from './types';
 import { formatTimestamp } from './utils';
 import { CorrMatrix } from './vis/corr-matrix';
+import { GroupPivotTable } from './vis/groupby-pivot-table';
 import { PVAChart } from './vis/mpc-pva-chart';
 import { OutputTable } from './vis/output-table';
+import { RegressionTable } from './vis/regression-table';
 import { transformCorrMatrixData } from './vis/utils';
 
 export const getTabsName = (name: string | undefined, index: number) => {
@@ -22,8 +24,10 @@ export const getTabsName = (name: string | undefined, index: number) => {
   return reportMapZh[name] || name;
 };
 
-export const ResultReportComponent = (props: ResultComponentProps<'report'>) => {
-  const { data, id, codeName } = props;
+export const ResultReportComponent = (
+  props: ResultComponentProps<'report'> & { visible: boolean },
+) => {
+  const { data, id, codeName, visible } = props;
   const { gmtCreate, tabs = [] } = data;
   return (
     <>
@@ -38,17 +42,7 @@ export const ResultReportComponent = (props: ResultComponentProps<'report'>) => 
           <span>{formatTimestamp(gmtCreate || '')}</span>
         </div>
       </div>
-      <Tabs
-        className={styles.tabsTable}
-        defaultActiveKey="0"
-        items={(tabs || []).map((item, index) => {
-          return {
-            label: getTabsName(item.name, index),
-            key: `${index}`,
-            children: <div key={index}>{getVisComponents(codeName, item, id)}</div>,
-          };
-        })}
-      />
+      {visible && <>{getVisTabsContent(codeName, tabs, id)}</>}
     </>
   );
 };
@@ -69,6 +63,7 @@ export const getVisComponents = (
         showFullscreen={showFullscreen}
       />
     ),
+    // 'stats/groupby_statistics': <PivotTable data={data} />,
     // 全表统计
     // "stats/table_statistics": div,
   };
@@ -78,4 +73,29 @@ export const getVisComponents = (
   }
 
   return <OutputTable tableInfo={data} name={id} showFullscreen={showFullscreen} />;
+};
+
+export const getVisTabsContent = (codeName: string, tabs: Tab[], id: string) => {
+  const ComponentVisMap: Record<string, any> = {
+    //  分组统计
+    'stats/groupby_statistics': <GroupPivotTable data={tabs} id={id} />,
+    // 回归模型评估
+    'ml.eval/regression_eval': <RegressionTable data={tabs} id={id} />,
+  };
+  if (ComponentVisMap[codeName]) {
+    return ComponentVisMap[codeName];
+  }
+  return (
+    <Tabs
+      className={styles.tabsTable}
+      defaultActiveKey="0"
+      items={(tabs || []).map((item, index) => {
+        return {
+          label: getTabsName(item.name, index),
+          key: `${index}`,
+          children: <div key={index}>{getVisComponents(codeName, item, id)}</div>,
+        };
+      })}
+    />
+  );
 };
