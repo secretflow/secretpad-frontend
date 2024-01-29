@@ -25,6 +25,10 @@ import { PipelineCommands } from './pipeline-protocol';
 
 import { getPipelineTemplates } from '.';
 
+const CUSTOM_COMPONENT = {
+  BinningModification: 'feature/binning_modifications',
+};
+
 export class DefaultPipelineService extends Model {
   pipelines: Pipeline[] = [];
   currentPipeline: Pipeline | undefined;
@@ -111,9 +115,12 @@ export class DefaultPipelineService extends Model {
    * 归档项目不可编辑。
    * 非本方创建的训练流不可编辑
    */
-  changePipelineCanEdit = (pipelineId?: string) => {
+  changePipelineCanEdit = async (pipelineId?: string) => {
     const { projectId } = parse(window.location.search);
     if (this.projectEditService.isP2pMode()) {
+      if (this.projectListService.projectList.length === 0) {
+        await this.projectListService.getListProject();
+      }
       const project = this.projectListService.projectList?.find(
         (item) => item.projectId === projectId,
       );
@@ -296,7 +303,23 @@ export class DefaultPipelineService extends Model {
   ) {
     const { nodes, edges } = graph;
     const newNodes = nodes.map((node) => {
-      const { graphNodeId, inputs, outputs } = node;
+      const { graphNodeId, inputs, outputs, codeName, nodeDef } = node;
+
+      /** 粘贴训练流时，清空 分箱修改 配置 */
+      let newNodeDef = nodeDef;
+      if (codeName === CUSTOM_COMPONENT.BinningModification) {
+        const { domain, name, version } = nodeDef as {
+          domain: string;
+          name: string;
+          version: string;
+        };
+        newNodeDef = {
+          domain,
+          name,
+          version,
+        };
+      }
+
       const newGraphNodeId = graphNodeId?.replace(/.*(-node-[0-9]+$)/, id + '$1');
       const newInputs = inputs?.map((i) =>
         i.replace(/.*(-node-[0-9]+-output-[0-9]+$)/, id + '$1'),
@@ -307,6 +330,7 @@ export class DefaultPipelineService extends Model {
 
       return {
         ...node,
+        nodeDef: newNodeDef,
         graphNodeId: newGraphNodeId,
         inputs: newInputs,
         jobId: null,

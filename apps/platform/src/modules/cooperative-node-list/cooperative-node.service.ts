@@ -11,7 +11,7 @@ import {
   listNode,
   get,
 } from '@/services/secretpad/NodeRouteController';
-import { createP2pNode, deleteNode } from '@/services/secretpad/P2pNodeController';
+import { createP2pNode, deleteP2pNode } from '@/services/secretpad/P2pNodeController';
 import { Model, getModel } from '@/util/valtio-helper';
 
 export class CooperativeNodeService extends Model {
@@ -93,7 +93,7 @@ export class CooperativeNodeService extends Model {
    * @returns
    */
   p2pDeleteCooperativeNode = async (routerId: string) => {
-    return await deleteNode({ routerId });
+    return await deleteP2pNode({ routerId });
   };
 
   /**

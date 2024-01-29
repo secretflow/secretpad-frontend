@@ -7,6 +7,11 @@ import { getModel } from '@/util/valtio-helper';
 
 import type { ComputeMode } from '../component-tree/component-protocol';
 
+const DISTDATA_TYPE = {
+  REPORT: 'sf.report',
+  READ_DATA: 'sf.read_data',
+};
+
 export class GraphHookService extends DefaultHookService {
   componentService = getModel(DefaultComponentTreeService);
 
@@ -25,6 +30,14 @@ export class GraphHookService extends DefaultHookService {
       const results: GraphNodeOutput[] = [];
       const { outputs } = component;
       outputs.forEach((output, index) => {
+        if (
+          output.types &&
+          output.types[0] &&
+          [DISTDATA_TYPE.READ_DATA].includes(output.types[0])
+        ) {
+          return;
+        }
+
         results.push({
           id: `${nodeId}-output-${index}`,
           name: output.name,
@@ -37,6 +50,13 @@ export class GraphHookService extends DefaultHookService {
     return [];
   }
 
+  /**
+   * Create input and output ports on graph nodes.
+   * Node: When the output type is a report, the render of this port should be ignored
+   * @param nodeId graphNode id
+   * @param codeName the component name
+   * @returns the ports list
+   */
   async createPort(nodeId: string, codeName: string) {
     const [domain, name] = codeName.split('/');
     const { mode } = parse(window.location.search);
@@ -66,10 +86,19 @@ export class GraphHookService extends DefaultHookService {
       });
 
       outputs.forEach((output, index) => {
+        // ignore the report output
+        if (
+          output.types &&
+          output.types[0] &&
+          [DISTDATA_TYPE.REPORT, DISTDATA_TYPE.READ_DATA].includes(output.types[0])
+        ) {
+          return;
+        }
+
         ports.push({
           id: `${nodeId}-output-${index}`,
           group: 'bottom',
-          type: output.types[0],
+          type: output.types,
           attrs: {
             circle: {
               magnet: false,

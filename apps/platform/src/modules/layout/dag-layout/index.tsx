@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { history } from 'umi';
 
 import { AccessWrapper, Platform } from '@/components/platform-wrapper';
+import BinningResultDrawer from '@/modules/component-config/config-item-render/custom-render/binning-modification/drawer';
 import {
   componentConfigDrawer,
   ComponentConfigDrawer,
@@ -186,6 +187,8 @@ export const DagLayout = () => {
       <div style={{ display: 'none' }}>
         <DAGGuideTourComponent />
       </div>
+      {/* 分箱修改 drawer 独立不与 modalManager 耦合：解决执行算子的时候不关闭 modal 问题 */}
+      <BinningResultDrawer />
     </div>
   );
 };

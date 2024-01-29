@@ -45,15 +45,24 @@ export class QueryStatusAction extends DAGContext implements ActionProtocol {
       this.timer = window.setTimeout(() => {
         this.queryStatus(graph, dagId);
       }, 2000);
+
       for (const event of events) {
         if (event.onNodeRunning) {
           event.onNodeRunning(true);
+        }
+
+        if (event.onNodeStatusChanged) {
+          event.onNodeStatusChanged(nodeStatus);
         }
       }
     } else {
       for (const event of events) {
         if (event.onNodeRunning) {
           event.onNodeRunning(false);
+        }
+
+        if (event.onNodeStatusChanged) {
+          event.onNodeStatusChanged(nodeStatus);
         }
       }
     }

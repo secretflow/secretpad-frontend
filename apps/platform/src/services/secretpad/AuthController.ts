@@ -3,28 +3,14 @@
 import request from 'umi-request';
 
 /** User login api
-@param response http servlet response
 @param request login request
 @return successful SecretPadResponse with token
  POST /api/login */
-export async function login(
-  params: {
-    // query
-    /** http servlet response */
-    response?: API.HttpServletResponse;
-  },
-  body?: API.LoginRequest,
-  options?: { [key: string]: any },
-) {
+export async function login(body?: API.LoginRequest, options?: { [key: string]: any }) {
   return request<API.SecretPadResponse_UserContextDTO_>('/api/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-    },
-    params: {
-      ...params,
-      response: undefined,
-      ...params['response'],
     },
     data: body,
     ...(options || {}),
@@ -33,7 +19,6 @@ export async function login(
 
 /** User logout api
 @param request http servlet request
-@param response
 @return {@link SecretPadResponse }<{@link String }>
 @author lihaixin
 @date 2023/12/15

@@ -83,15 +83,14 @@ export class TemplateGuidePSI extends Model implements PipelineTemplateContribut
         {
           outputs: [`${graphId}-node-3-output-0`],
           nodeDef: {
-            domain: `preprocessing`,
+            domain: `data_prep`,
             name: `psi`,
-            version: `0.0.1`,
+            version: `0.0.2`,
             attrPaths: [
               'input/receiver_input/key',
               'input/sender_input/key',
               'protocol',
-              'bucket_size',
-              'ecdh_curve_type',
+              'ecdh_curve',
             ],
             attrs: [
               {
@@ -101,10 +100,7 @@ export class TemplateGuidePSI extends Model implements PipelineTemplateContribut
                 ss: ['id2'],
               },
               {
-                s: 'ECDH_PSI_2PC',
-              },
-              {
-                i64: 1048576,
+                s: 'PROTOCOL_ECDH',
               },
               {
                 s: 'CURVE_FOURQ',
@@ -112,7 +108,7 @@ export class TemplateGuidePSI extends Model implements PipelineTemplateContribut
             ],
           },
           inputs: [`${graphId}-node-1-output-0`, `${graphId}-node-2-output-0`],
-          codeName: `preprocessing/psi`,
+          codeName: `data_prep/psi`,
           x: -260,
           y: -100,
           label: `隐私求交`,

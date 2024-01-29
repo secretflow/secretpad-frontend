@@ -1,6 +1,10 @@
-import type { AtomicConfigNode } from '../component-config-protocol';
+import type { AtomicConfigNode, CustomConfigNode } from '../component-config-protocol';
 
 import type { ConfigRenderProtocol } from './config-render-protocol';
+import { BinModificationsRender } from './custom-render/binning-modification';
+import { CalculateOpRender } from './custom-render/calculate-op-render';
+import { CaseWhenRender } from './custom-render/case-when-render';
+import { GroupByRender } from './custom-render/groupby-render';
 import { DefaultColSelection } from './defalt-col-selection-template';
 import { DefaultMultiTableFeatureSelection } from './default-feature-selection/default-feature-selection';
 import { DefaultNodeSelect } from './default-node-selection-template';
@@ -10,11 +14,46 @@ import {
   DefaultInput,
   DefaultSelect,
 } from './default-render-template';
+import { DefaultSQLEditor } from './default-sql-editor';
 import { DefaultTableSelect } from './default-table-selection-temple';
 
 export class DefaultConfigRender implements ConfigRenderProtocol {
   registerConfigRenders() {
     return [
+      {
+        canHandle: (node: CustomConfigNode) =>
+          node.type === 'AT_CUSTOM_PROTOBUF' &&
+          node.custom_protobuf_cls === 'Binning_modifications'
+            ? 1
+            : false,
+        component: BinModificationsRender,
+      },
+      {
+        canHandle: (node: CustomConfigNode) =>
+          node.type === 'AT_CUSTOM_PROTOBUF' &&
+          node.custom_protobuf_cls === 'case_when_rules_pb2.CaseWhenRule'
+            ? 1
+            : false,
+        component: CaseWhenRender,
+      },
+      {
+        canHandle: (node: CustomConfigNode) =>
+          node.type === 'AT_CUSTOM_PROTOBUF' &&
+          node.custom_protobuf_cls === 'calculate_rules_pb2.CalculateOpRules'
+            ? 1
+            : false,
+        component: CalculateOpRender,
+      },
+      {
+        canHandle: (node: CustomConfigNode) =>
+          node.type === 'AT_CUSTOM_PROTOBUF' &&
+          node.custom_protobuf_cls ===
+            'groupby_aggregation_config_pb2.GroupbyAggregationConfig'
+            ? 1
+            : false,
+        component: GroupByRender,
+      },
+
       {
         canHandle: (node: AtomicConfigNode, renderKey?: string) => {
           return renderKey === 'UNION_KEY_SELECT' && node.type === 'AT_SF_TABLE_COL'
@@ -22,14 +61,6 @@ export class DefaultConfigRender implements ConfigRenderProtocol {
             : false;
         },
         component: DefaultColSelection,
-      },
-      {
-        canHandle: (node: AtomicConfigNode, renderKey?: string) => {
-          return renderKey === 'COL_INPUT' && node.type === 'AT_SF_TABLE_COL'
-            ? 3
-            : false;
-        },
-        component: DefaultInput,
       },
       {
         canHandle: (node: AtomicConfigNode) => {
@@ -55,7 +86,13 @@ export class DefaultConfigRender implements ConfigRenderProtocol {
           node.type === 'AT_SF_TABLE_COL' ? 1 : false,
         component: DefaultMultiTableFeatureSelection,
       },
-
+      {
+        canHandle: (node: AtomicConfigNode, renderKey?: string) =>
+          node.type === 'AT_STRING' && node.name === 'sql' && renderKey === 'SQL'
+            ? 1
+            : false,
+        component: DefaultSQLEditor,
+      },
       {
         canHandle: (node: AtomicConfigNode) => (node.type === 'AT_BOOL' ? 1 : false),
         component: DefaultSwitch,

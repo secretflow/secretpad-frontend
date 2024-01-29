@@ -38,11 +38,11 @@ export const DataTableInfoDrawer: React.FC<IProps<PropsData>> = (props) => {
       label: '数据表结构',
       children: <DataTableStructure schema={tableInfo.schema || []} />,
     },
-    {
-      key: '2',
-      label: '授权信息',
-      children: <DataTableAuthComponent tableInfo={tableInfo} size="small" />,
-    },
+    // {
+    //   key: '2',
+    //   label: '授权信息',
+    //   children: <DataTableAuthComponent tableInfo={tableInfo} size="small" />,
+    // },
   ];
 
   return (

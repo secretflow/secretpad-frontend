@@ -1,6 +1,7 @@
 import { NodeStatus } from '@secretflow/dag';
 import type { Cell, GraphNode, Node } from '@secretflow/dag';
 import type { GraphEventHandlerProtocol } from '@secretflow/dag';
+import { message } from 'antd';
 import { parse } from 'query-string';
 
 import { componentConfigDrawer } from '@/modules/component-config/config-modal';
@@ -33,12 +34,17 @@ export class RecordGraphService extends Model implements GraphEventHandlerProtoc
     const { projectId } = parse(search);
     const [, nodeId] = outputId.match(/(.*)-output-([0-9]+)$/) || [];
     if (!nodeId) return;
-    const { data } = await getJobTaskOutput({
+    const { data, status } = await getJobTaskOutput({
       projectId: projectId as string,
       jobId: graphId,
       taskId: `${graphId}-${nodeId}`,
       outputId,
     });
+
+    if (status?.code !== 0) {
+      message.error('结果不存在');
+      return;
+    }
 
     if (data) {
       if (this.modalManager.modals[componentConfigDrawer.id].visible) {

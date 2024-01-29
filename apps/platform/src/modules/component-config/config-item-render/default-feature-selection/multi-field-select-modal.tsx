@@ -1,4 +1,5 @@
 import { Modal, Alert } from 'antd';
+import { intersection } from 'lodash';
 import { parse } from 'query-string';
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'umi';
@@ -11,8 +12,18 @@ import { TableSelector } from './table-selector';
 import type { FieldInfoType, TableInfoType } from './type';
 
 export const MultiFieldSelectModal = (props: IProps) => {
-  const { visible, hideModal, submit, tableInfos, multiple, fields, disabled, rules } =
-    props;
+  const {
+    visible,
+    hideModal,
+    submit,
+    tableInfos,
+    multiple,
+    fields,
+    disabled,
+    outputTableInfos,
+    fromTableInfo,
+    rules,
+  } = props;
   const [selectedTable, setSelectedTable] = useState<TableInfoType | undefined>();
   const [selectedFields, setSelectedFields] = useState<FieldInfoType[]>([]);
   const [selectedTables, setSelectedTables] = useState<TableInfoType[] | undefined>();
@@ -65,9 +76,11 @@ export const MultiFieldSelectModal = (props: IProps) => {
 
   useEffect(() => {
     if (multiple) {
-      setSelectedTables(tableInfos);
+      setSelectedTables(fromTableInfo ? [fromTableInfo, ...tableInfos] : tableInfos);
     } else {
-      setSelectedTable(Array.isArray(tableInfos) ? tableInfos[0] : tableInfos);
+      setSelectedTable(
+        fromTableInfo || Array.isArray(tableInfos) ? tableInfos[0] : tableInfos,
+      );
     }
   }, [tableInfos, multiple]);
 
@@ -75,9 +88,17 @@ export const MultiFieldSelectModal = (props: IProps) => {
     // validate selected features
     if (!rules) return;
     setShowError(undefined);
-    const { max, min } = rules;
+    const { max, min, excludes } = rules;
     if (selectedFields.length < min) setShowError(`请至少选择${min}列`);
     if (max && selectedFields.length > max) setShowError(`至多选择${max}列`);
+    if (
+      excludes &&
+      intersection(
+        excludes,
+        selectedFields.map(({ colName }) => colName),
+      ).length > 0
+    )
+      setShowError(`${excludes.join(',')}列不可选择`);
   }, [selectedFields]);
 
   const onSubmit = () => {
@@ -116,6 +137,7 @@ export const MultiFieldSelectModal = (props: IProps) => {
         setSelectedTable={setSelectedTable}
         multiple={props.multiple}
         selectedTables={selectedTables}
+        outputTableInfos={outputTableInfos}
         setSelectedTables={(tables) => {
           setShowWarn(true);
           setSelectedTables(tables);
@@ -135,6 +157,7 @@ export const MultiFieldSelectModal = (props: IProps) => {
         selectedFields={selectedFields}
         setSelectedFields={setSelectedFields}
         disabled={disabled}
+        rules={rules}
       />
     </Modal>
   );
@@ -142,6 +165,8 @@ export const MultiFieldSelectModal = (props: IProps) => {
 
 export interface IProps {
   tableInfos: TableInfoType[];
+  outputTableInfos?: TableInfoType[];
+  fromTableInfo?: TableInfoType;
   visible: boolean;
   fields: Record<'colName', string>[];
   submit: ((values: string[]) => void) | undefined;
@@ -150,5 +175,5 @@ export interface IProps {
   dataType?: string;
   multiple?: boolean;
   disabled?: boolean;
-  rules?: { max?: number; min: number };
+  rules?: { max?: number; min: number; excludes?: string[] };
 }

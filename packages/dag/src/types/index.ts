@@ -1,4 +1,4 @@
-import type { Node, Cell } from '@antv/x6';
+import type { Node, Cell, Edge } from '@antv/x6';
 
 export enum NodeStatus {
   success,
@@ -72,4 +72,7 @@ export interface GraphEventHandlerProtocol {
   onResultClick?: (graphId: string, outputId: string, codeName: string) => void;
   onNodeRunning?: (isRunning: boolean) => void;
   onCopyActionChange?: (isCopied: boolean) => void;
+  onNodeStatusChanged?: (status: { nodeId: string; status: NodeStatus }[]) => void;
+  onEdgeConnected?: (edge: Edge) => void;
+  onNodesPasted?: (nodes: Node[]) => void;
 }

@@ -32,6 +32,7 @@ export class ComponentConfigRegistry extends Model {
       version,
       children: [],
     };
+
     if (inputs) {
       const inputsNode = this.createInputConfigNode(inputs);
       inputsNode && parent.children.push(inputsNode);
@@ -74,7 +75,7 @@ export class ComponentConfigRegistry extends Model {
       name: 'input',
       children: [],
     };
-    input.map((i) => {
+    input.map((i, inputIndex) => {
       if (i.attrs) {
         const { name: inputName, attrs } = i;
 
@@ -94,6 +95,7 @@ export class ComponentConfigRegistry extends Model {
             docString: desc,
             type: 'AT_SF_TABLE_COL',
             prefixes: ['input', inputName],
+            fromInputIndex: inputIndex,
             col_max_cnt_inclusive,
             col_min_cnt_inclusive,
             isRequired,
@@ -109,7 +111,7 @@ export class ComponentConfigRegistry extends Model {
 
   createNode(param: ParameterNode): ConfigItem {
     let isRequired = true;
-    const { type, name, desc: docString, prefixes } = param;
+    const { type, name, desc: docString, prefixes, custom_protobuf_cls } = param;
     switch (type) {
       case 'AT_UNION_GROUP':
         return {
@@ -124,6 +126,15 @@ export class ComponentConfigRegistry extends Model {
           name,
           prefixes,
           children: [],
+          docString,
+        };
+      case 'AT_CUSTOM_PROTOBUF':
+        return {
+          name,
+          prefixes,
+          type,
+          custom_protobuf_cls,
+          isRequired: true,
           docString,
         };
       default:

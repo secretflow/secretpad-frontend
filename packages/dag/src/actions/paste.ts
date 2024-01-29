@@ -58,22 +58,28 @@ export class PasteAction extends DAGContext implements ActionProtocol {
     graph.addEdges(fixedData.edges, { dry: true });
     graph.resetSelection(fixedData.nodes.map((n) => n.id!));
 
-    this.context.dataService.addNodes(
-      fixedData.nodes.map((node) => ({
-        id: node.data.id,
-        codeName: node.data.codeName,
-        label: node.data.label,
-        x: node.position!.x,
-        y: node.position!.y,
-        status:
-          node.data.status === NodeStatus.unfinished
-            ? NodeStatus.default
-            : node.data.status,
-        nodeDef: node.data.nodeDef,
-      })),
-    );
+    const nodes = fixedData.nodes.map((node) => ({
+      id: node.data.id,
+      codeName: node.data.codeName,
+      label: node.data.label,
+      x: node.position!.x,
+      y: node.position!.y,
+      status:
+        node.data.status === NodeStatus.unfinished
+          ? NodeStatus.default
+          : node.data.status,
+      nodeDef: node.data.nodeDef,
+    }));
+    await this.context.dataService.addNodes(nodes);
 
-    this.context.dataService.addEdges(
+    const events = this.context.EventHub.getData();
+    for (const event of events) {
+      if (event.onNodesPasted) {
+        event.onNodesPasted(nodes);
+      }
+    }
+
+    await this.context.dataService.addEdges(
       fixedData.edges.map((edge) => ({
         id: edge.data.id,
         source: edge.data.source,

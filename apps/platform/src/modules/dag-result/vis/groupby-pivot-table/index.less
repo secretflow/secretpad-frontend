@@ -1,0 +1,87 @@
+.tableTab {
+  margin-top: 24px;
+}
+
+.tabsTable {
+  position: relative;
+
+  :global {
+    .ant-tabs-nav::before {
+      border-bottom: none !important;
+    }
+
+    .ant-table-container {
+      border-radius: 0;
+    }
+  }
+
+  :global(.ant-tabs-tab) {
+    padding: 0 0 8px !important;
+  }
+
+  :global(.ant-tabs-nav) {
+    width: calc(100% - 110px);
+    margin-bottom: 8px !important;
+  }
+}
+
+.palette-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.palette-color {
+  width: 12px;
+  height: 12px;
+}
+
+.palette-limit {
+  color: rgb(94 94 94);
+  font-size: 12px;
+}
+
+.palette-color + .palette-limit {
+  margin-left: 5px;
+}
+
+.palette-limit + .palette-color {
+  margin-left: 5px;
+}
+
+.pivotHeader {
+  :global {
+    .s2-header-content {
+      padding-top: 0;
+    }
+
+    //   .s2-header-heading {
+    //     margin-top: -25px;
+    //   }
+  }
+}
+
+.customBtn {
+  // border: none;
+  // animation: none;
+  color: rgb(0 10 26/68%);
+
+  &:hover {
+    color: #0068fa !important;
+  }
+}
+
+.switcherButton {
+  :global(.antv-s2-switcher-entry-button.ant-btn) {
+    position: absolute;
+    top: 5px;
+  }
+}
+
+.switcherPopover {
+  :global(.antv-s2-switcher-dimension-items) {
+    padding: 0;
+    margin: 8px;
+  }
+}

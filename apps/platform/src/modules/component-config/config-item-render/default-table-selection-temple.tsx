@@ -1,4 +1,4 @@
-import { Form, Select, Tag } from 'antd';
+import { Form, Select, Tag, Typography } from 'antd';
 import { parse } from 'query-string';
 import { useState, useEffect } from 'react';
 
@@ -75,6 +75,10 @@ export const DefaultTableSelect: React.FC<RenderProp<string>> = (config) => {
         onChange={(val) => {
           onChange(val);
         }}
+        showSearch
+        filterOption={(input: string, option?: { label: string; value: string }) =>
+          (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+        }
       >
         {tables.map((table) => (
           <Option
@@ -83,7 +87,7 @@ export const DefaultTableSelect: React.FC<RenderProp<string>> = (config) => {
             label={table.datatableName}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              {table.datatableName}
+              <Typography.Text ellipsis>{table.datatableName}</Typography.Text>
               <Tag>{table.nodeName}</Tag>
             </div>
           </Option>

@@ -1,8 +1,11 @@
 import { Form } from 'antd';
 import { parse } from 'query-string';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
-import { getProject } from '@/services/secretpad/ProjectController';
+import {
+  getProject,
+  getProjectAllOutTable,
+} from '@/services/secretpad/ProjectController';
 
 import type { AtomicConfigNode } from '../../component-config-protocol';
 import styles from '../../index.less';
@@ -17,20 +20,54 @@ interface IDataTable {
   value: string | string[];
   nodeId: string;
 }
+interface IOutputDataTable {
+  datatableId: string;
+  datatableName: string;
+  graphNodeId: string;
+  nodeId: string;
+}
 
 export const DefaultMultiTableFeatureSelection: React.FC<RenderProp<string>> = (
   config,
 ) => {
   const { node, defaultVal, translation, upstreamTables = [], disabled } = config;
+  const { fromInputIndex, prefixes, name, docString } = node;
   const [tables, setTables] = useState<IDataTable[]>([]);
+  const [outputTables, setOutputTables] = useState<IOutputDataTable[]>([]);
 
   useEffect(() => {
     const getTables = async () => {
       const dataTableList: IDataTable[] = [];
       const { search } = window.location;
-      const { projectId } = parse(search) as { projectId: string };
+      const { projectId, dagId } = parse(search) as {
+        projectId: string;
+        dagId: string;
+      };
 
       const { data } = await getProject({ projectId });
+      const { data: outputData } = await getProjectAllOutTable({
+        projectId,
+        graphId: dagId,
+      });
+
+      if (outputData?.nodes) {
+        setOutputTables(
+          outputData.nodes.reduce<IOutputDataTable[]>(
+            (ret, { outputs, graphNodeId }) =>
+              outputs && graphNodeId
+                ? ret.concat(
+                    outputs.map((output) => ({
+                      graphNodeId,
+                      datatableId: output,
+                      datatableName: output,
+                      nodeId: '',
+                    })),
+                  )
+                : ret,
+            [],
+          ),
+        );
+      }
       if (!data) return;
 
       const { nodes } = data;
@@ -57,20 +94,20 @@ export const DefaultMultiTableFeatureSelection: React.FC<RenderProp<string>> = (
     getTables();
   }, [upstreamTables]);
 
+  const fromTable = useMemo(() => {
+    if (fromInputIndex !== undefined && upstreamTables[fromInputIndex]) {
+      const tableName = upstreamTables[fromInputIndex];
+
+      return outputTables.find(({ datatableName }) => datatableName === tableName);
+    }
+  }, [fromInputIndex, upstreamTables, outputTables]);
+
   return (
     <Form.Item
-      label={
-        <div className={styles.configItemLabel}>
-          {translation[node.name] || node.name}
-        </div>
-      }
-      name={
-        node.prefixes && node.prefixes.length > 0
-          ? node.prefixes.join('/') + '/' + node.name
-          : node.name
-      }
-      tooltip={translation[node.docString] || node.docString}
-      messageVariables={{ label: translation[node.name] || node.name }}
+      label={<div className={styles.configItemLabel}>{translation[name] || name}</div>}
+      name={prefixes && prefixes.length > 0 ? prefixes.join('/') + '/' + name : name}
+      tooltip={translation[docString] || docString}
+      messageVariables={{ label: translation[name] || name }}
       rules={[
         {
           required: (node as AtomicConfigNode).isRequired,
@@ -115,7 +152,9 @@ export const DefaultMultiTableFeatureSelection: React.FC<RenderProp<string>> = (
     >
       <MultiTableFeatureSelection
         tableKeys={tables}
+        outputTableKeys={outputTables}
         size={'small'}
+        fromTableKey={fromTable}
         disabled={disabled}
         rules={{
           min: node.col_min_cnt_inclusive || 0,

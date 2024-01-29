@@ -14,13 +14,10 @@ export class LoginService extends Model {
   userInfo: User | null = null;
 
   async login(loginField: { name: string; password: string }) {
-    return await API.AuthController.login(
-      {},
-      {
-        name: loginField.name,
-        passwordHash: sha256(loginField.password).toString(),
-      },
-    );
+    return await API.AuthController.login({
+      name: loginField.name,
+      passwordHash: sha256(loginField.password).toString(),
+    });
   }
 
   getUserInfo = async () => {
@@ -28,6 +25,12 @@ export class LoginService extends Model {
       const { data } = await API.UserController.get();
       this.userInfo = data as User;
     }
+    return this.userInfo;
+  };
+
+  getUserInfoAsync = async () => {
+    const { data } = await API.UserController.get();
+    this.userInfo = data as User;
     return this.userInfo;
   };
 

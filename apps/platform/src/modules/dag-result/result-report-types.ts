@@ -8,7 +8,7 @@ export type Tab = {
   divs: ReportDiv[];
 };
 
-type Item = {
+export type Item = {
   name: string;
   desc: string;
   type:
@@ -23,7 +23,7 @@ type Item = {
   value: Value;
 };
 
-type Descriptions = {
+export type Descriptions = {
   name: string;
   desc: string;
   items: Item[];
@@ -63,7 +63,7 @@ type ReportDivChildren =
     }
   | { type: 'div'; div: ReportDiv };
 
-type Value = {
+export type Value = {
   f: string;
   i64: number | string;
   s: string;
@@ -72,4 +72,15 @@ type Value = {
   i64s: number[];
   ss: string[];
   bs: boolean[];
+};
+
+export const TypeMap = {
+  float: 'f',
+  int: 'i64',
+  bool: 'b',
+  str: 's',
+  AT_FLOAT: 'f',
+  AT_INT: 'i64',
+  AT_STRING: 's',
+  AT_BOOL: 'b',
 };

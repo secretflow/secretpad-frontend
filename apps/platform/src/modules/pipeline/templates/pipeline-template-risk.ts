@@ -21,6 +21,7 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
       featureSelects,
       labelSelects,
       receiver,
+      pred,
     } = quickConfigs || {};
     return {
       edges: [
@@ -137,32 +138,18 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           target: `${graphId}-node-13`,
         },
         {
-          edgeId: `${graphId}-node-13-output-0__${graphId}-node-15-input-1`,
+          edgeId: `${graphId}-node-13-output-0__${graphId}-node-15-input-0`,
           sourceAnchor: `${graphId}-node-13-output-0`,
-          targetAnchor: `${graphId}-node-15-input-1`,
-          source: `${graphId}-node-13`,
-          target: `${graphId}-node-15`,
-        },
-        {
-          edgeId: `${graphId}-node-13-output-0__${graphId}-node-14-input-1`,
-          sourceAnchor: `${graphId}-node-13-output-0`,
-          targetAnchor: `${graphId}-node-14-input-1`,
-          source: `${graphId}-node-13`,
-          target: `${graphId}-node-14`,
-        },
-        {
-          edgeId: `${graphId}-node-8-output-0__${graphId}-node-14-input-0`,
-          sourceAnchor: `${graphId}-node-8-output-0`,
-          targetAnchor: `${graphId}-node-14-input-0`,
-          source: `${graphId}-node-8`,
-          target: `${graphId}-node-14`,
-        },
-        {
-          edgeId: `${graphId}-node-8-output-0__${graphId}-node-15-input-0`,
-          sourceAnchor: `${graphId}-node-8-output-0`,
           targetAnchor: `${graphId}-node-15-input-0`,
-          source: `${graphId}-node-8`,
+          source: `${graphId}-node-13`,
           target: `${graphId}-node-15`,
+        },
+        {
+          edgeId: `${graphId}-node-13-output-0__${graphId}-node-14-input-0`,
+          sourceAnchor: `${graphId}-node-13-output-0`,
+          targetAnchor: `${graphId}-node-14-input-0`,
+          source: `${graphId}-node-13`,
+          target: `${graphId}-node-14`,
         },
       ],
       nodes: [
@@ -214,10 +201,16 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
             domain: `ml.train`,
             name: `ss_sgd_train`,
             version: `0.0.1`,
-            ...(labelSelects
+            ...(labelSelects && featureSelects
               ? {
-                  attrPaths: ['input/train_dataset/label'],
-                  attrs: [{ ...labelSelects, is_na: false }],
+                  attrPaths: [
+                    'input/train_dataset/label',
+                    'input/train_dataset/feature_selects',
+                  ],
+                  attrs: [
+                    { ...labelSelects, is_na: false },
+                    { ...featureSelects, is_na: false },
+                  ],
                 }
               : {}),
           },
@@ -247,10 +240,14 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
         {
           outputs: [`${graphId}-node-13-output-0`],
           nodeDef: {
-            ...(receiver
+            ...(receiver && pred
               ? {
-                  attrPaths: ['receiver'],
-                  attrs: [{ ...receiver, is_na: false }],
+                  attrPaths: ['receiver', 'pred_name', 'save_label'],
+                  attrs: [
+                    { ...receiver, is_na: false },
+                    { ...pred, is_na: false },
+                    { b: true, is_na: false },
+                  ],
                 }
               : {}),
 
@@ -272,8 +269,17 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
             domain: `ml.eval`,
             name: `biclassification_eval`,
             version: `0.0.1`,
+            ...(labelSelects && pred
+              ? {
+                  attrPaths: ['input/in_ds/label', 'input/in_ds/prediction'],
+                  attrs: [
+                    { ...labelSelects, is_na: false },
+                    { ...{ ss: [pred.s] }, is_na: false },
+                  ],
+                }
+              : {}),
           },
-          inputs: [`${graphId}-node-8-output-0`, `${graphId}-node-13-output-0`],
+          inputs: [`${graphId}-node-13-output-0`],
           codeName: `ml.eval/biclassification_eval`,
           x: 130,
           y: 450,
@@ -287,8 +293,17 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
             domain: `ml.eval`,
             name: `prediction_bias_eval`,
             version: `0.0.1`,
+            ...(labelSelects && pred
+              ? {
+                  attrPaths: ['input/in_ds/label', 'input/in_ds/prediction'],
+                  attrs: [
+                    { ...labelSelects, is_na: false },
+                    { ...{ ss: [pred.s] }, is_na: false },
+                  ],
+                }
+              : {}),
           },
-          inputs: [`${graphId}-node-8-output-0`, `${graphId}-node-13-output-0`],
+          inputs: [`${graphId}-node-13-output-0`],
           codeName: `ml.eval/prediction_bias_eval`,
           x: -110,
           y: 540,
@@ -329,12 +344,12 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
                   ],
                 }
               : {}),
-            domain: `preprocessing`,
+            domain: `data_prep`,
             name: `psi`,
-            version: `0.0.1`,
+            version: `0.0.2`,
           },
           inputs: [`${graphId}-node-1-output-0`, `${graphId}-node-2-output-0`],
-          codeName: `preprocessing/psi`,
+          codeName: `data_prep/psi`,
           x: -240,
           y: -160,
           label: `隐私求交`,
@@ -359,12 +374,12 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
         {
           outputs: [`${graphId}-node-5-output-0`, `${graphId}-node-5-output-1`],
           nodeDef: {
-            domain: `preprocessing`,
+            domain: `data_prep`,
             name: `train_test_split`,
             version: `0.0.1`,
           },
           inputs: [`${graphId}-node-3-output-0`],
-          codeName: `preprocessing/train_test_split`,
+          codeName: `data_prep/train_test_split`,
           x: -120,
           y: -80,
           label: `随机分割`,
@@ -372,7 +387,7 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           status: `STAGING`,
         },
         {
-          outputs: [`${graphId}-node-6-output-0`],
+          outputs: [`${graphId}-node-6-output-0`, `${graphId}-node-6-output-1`],
           nodeDef: {
             ...(featureSelects
               ? {
@@ -388,7 +403,7 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
               : {}),
             domain: `feature`,
             name: `vert_woe_binning`,
-            version: `0.0.1`,
+            version: `0.0.2`,
           },
           inputs: [`${graphId}-node-5-output-0`],
           codeName: `feature/vert_woe_binning`,
@@ -401,30 +416,30 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
         {
           outputs: [`${graphId}-node-7-output-0`],
           nodeDef: {
-            domain: `feature`,
+            domain: `preprocessing`,
             name: `vert_bin_substitution`,
             version: `0.0.1`,
           },
           inputs: [`${graphId}-node-5-output-0`, `${graphId}-node-6-output-0`],
-          codeName: `feature/vert_bin_substitution`,
+          codeName: `preprocessing/vert_bin_substitution`,
           x: -320,
           y: 110,
-          label: `WOE转换`,
+          label: `分箱转换`,
           graphNodeId: `${graphId}-node-7`,
           status: `STAGING`,
         },
         {
           outputs: [`${graphId}-node-8-output-0`],
           nodeDef: {
-            domain: `feature`,
+            domain: `preprocessing`,
             name: `vert_bin_substitution`,
             version: `0.0.1`,
           },
           inputs: [`${graphId}-node-5-output-1`, `${graphId}-node-6-output-0`],
-          codeName: `feature/vert_bin_substitution`,
+          codeName: `preprocessing/vert_bin_substitution`,
           x: -10,
           y: 100,
-          label: `WOE转换`,
+          label: `分箱转换`,
           graphNodeId: `${graphId}-node-8`,
           status: `STAGING`,
         },

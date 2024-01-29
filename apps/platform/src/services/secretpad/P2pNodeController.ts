@@ -24,7 +24,7 @@ export async function createP2pNode(
 @param request delete collaborative node request
 @return void
  POST /api/v1alpha1/p2p/node/delete */
-export async function deleteNode(
+export async function deleteP2pNode(
   body?: API.RouterIdRequest,
   options?: { [key: string]: any },
 ) {

@@ -30,7 +30,12 @@ export type ParameterNode = {
   // `input` and `output` are reserved.
   name: string;
   desc: string;
-} & (AtomicParameterNode | UnionParameterNode | StructParameterNode);
+} & (
+  | AtomicParameterNode
+  | UnionParameterNode
+  | StructParameterNode
+  | CustomParameterNode
+);
 
 type OneOf<T, P extends keyof T = keyof T> = {
   [K in P]-?: Required<Pick<T, K>> & Partial<Record<Exclude<P, K>, never>>;
@@ -98,6 +103,11 @@ type StructParameterNode = {
   type: 'AT_STRUCT_GROUP';
 };
 
+type CustomParameterNode = {
+  type: 'AT_CUSTOM_PROTOBUF';
+  custom_protobuf_cls: string;
+};
+
 // Define an input/output for component.
 export type IoDef = {
   // should be unique among all IOs of the component.
@@ -147,9 +157,10 @@ export type ComponentList = {
 export type ComponentTreeItem = {
   isLeaf: boolean;
   key: string;
-  title: string;
+  title: { val: string };
   children?: ComponentTreeItem[];
   docString: string;
+  category: string;
 };
 
 export type ComputeMode = 'MPC' | 'TEE';

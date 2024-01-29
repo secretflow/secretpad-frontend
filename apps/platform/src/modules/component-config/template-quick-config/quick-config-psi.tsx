@@ -1,6 +1,6 @@
 import { PlusCircleFilled, DeleteOutlined } from '@ant-design/icons';
 import type { FormInstance } from 'antd';
-import { Form, Select, Tag } from 'antd';
+import { Form, Select, Tag, Typography } from 'antd';
 import { parse } from 'query-string';
 import type { Dispatch, SetStateAction } from 'react';
 import { useState, useEffect } from 'react';
@@ -89,7 +89,13 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
           return { s: value };
         }}
       >
-        <Select optionLabelProp="label">
+        <Select
+          optionLabelProp="label"
+          showSearch
+          filterOption={(input: string, option?: { label: string; value: string }) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+        >
           {tables.map((table) => (
             <Option
               key={table.datatableId}
@@ -97,7 +103,7 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
               label={table.datatableName}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                {table.datatableName}
+                <Typography.Text ellipsis>{table.datatableName}</Typography.Text>
                 <Tag>{table.nodeName}</Tag>
               </div>
             </Option>
@@ -127,7 +133,16 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
                     },
                   ]}
                 >
-                  <Select options={receiverCols} />
+                  <Select
+                    options={receiverCols}
+                    showSearch
+                    filterOption={(
+                      input: string,
+                      option?: { label: string; value: string },
+                    ) =>
+                      (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                    }
+                  />
                 </Form.Item>
                 <Form.ErrorList errors={errors} />
               </div>
@@ -167,7 +182,13 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
           return { s: value };
         }}
       >
-        <Select optionLabelProp="label">
+        <Select
+          optionLabelProp="label"
+          showSearch
+          filterOption={(input: string, option?: { label: string; value: string }) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+        >
           {tables.map((table) => (
             <Option
               key={table.datatableId}
@@ -175,7 +196,7 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
               label={table.datatableName}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                {table.datatableName}
+                <Typography.Text ellipsis>{table.datatableName}</Typography.Text>
                 <Tag>{table.nodeName}</Tag>
               </div>
             </Option>
@@ -208,7 +229,16 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
                     },
                   ]}
                 >
-                  <Select options={senderCols} />
+                  <Select
+                    options={senderCols}
+                    showSearch
+                    filterOption={(
+                      input: string,
+                      option?: { label: string; value: string },
+                    ) =>
+                      (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                    }
+                  />
                 </Form.Item>
                 <Form.ErrorList errors={errors} />
               </div>

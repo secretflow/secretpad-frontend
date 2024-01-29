@@ -6,7 +6,7 @@ import {
 import { useFullscreen } from 'ahooks';
 import { Button, Empty, Space, Table } from 'antd';
 import classNames from 'classnames';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { CSVLink } from 'react-csv';
 
 import type { DescriptionList, ResultOriginData } from '../typing';
@@ -35,6 +35,16 @@ export const OutputTable: React.FC<OutputTableProps> = (props) => {
     }
   };
 
+  const [isEllipsis, setEllipsis] = React.useState(false);
+
+  useEffect(() => {
+    if (tableInfo.schema.length > 3) {
+      setEllipsis(true);
+    } else {
+      setEllipsis(false);
+    }
+  }, [tableInfo.schema.length]);
+
   if (!tableInfo) {
     return (
       <div className="content">
@@ -51,7 +61,6 @@ export const OutputTable: React.FC<OutputTableProps> = (props) => {
       />
     );
   }
-
   const columnsList: Columns[] = [];
   tableInfo.schema.forEach(({ name, type }) => {
     if (name !== 'name') {
@@ -74,7 +83,7 @@ export const OutputTable: React.FC<OutputTableProps> = (props) => {
         render: (text) => {
           return (
             <div style={{ whiteSpace: 'nowrap' }} title={text}>
-              {text.length > 12
+              {text.length > 12 && isEllipsis
                 ? `${text.slice(0, 6)}...${text.slice(text.length - 6, text.length)}`
                 : text}
             </div>
@@ -90,7 +99,7 @@ export const OutputTable: React.FC<OutputTableProps> = (props) => {
         render: (text) => {
           return (
             <div style={{ whiteSpace: 'nowrap' }} title={text}>
-              {text.length > 12
+              {text.length > 12 && isEllipsis
                 ? `${text.slice(0, 6)}...${text.slice(text.length - 6, text.length)}`
                 : text}
             </div>

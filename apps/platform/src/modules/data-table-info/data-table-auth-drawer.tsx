@@ -2,7 +2,8 @@ import { CloseOutlined } from '@ant-design/icons';
 import { Drawer } from 'antd';
 import React from 'react';
 
-import { DataTableAuthComponent } from './component/data-table-auth/data-table-auth.view';
+// import { DataTableAuthComponent } from './component/data-table-auth/data-table-auth.view';
+import { DataTableAuth as DataTableAuthComponent } from './data-table-auth/data-tabel-auth.view';
 
 export enum DataAuthDrawerArea {
   Auth = 'Auth',
@@ -29,6 +30,7 @@ export const DataTableAuth: React.FC<IProps<API.DatatableVO>> = ({
       closable={false}
     >
       <DataTableAuthComponent tableInfo={data} size="middle" />
+      {/* <DataTableAuthComponent tableInfo={data} size="middle" /> */}
     </Drawer>
   );
 };

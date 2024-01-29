@@ -1,3 +1,5 @@
+/** DEPRECATED */
+/** Data table will be added by dragging */
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Space,
@@ -287,7 +289,11 @@ export const AddDataTableForRegisteredNode = () => {
                       validateTrigger="onBlur"
                       rules={[
                         { required: true, message: '请输入特征名称' },
-                        { max: 32, message: '特征名称长度限制32字符' },
+                        {
+                          max: 64,
+                          message:
+                            '特征名称长度限制64字符,请缩短特征名,需要同步修改本地数据文件schema',
+                        },
                         {
                           pattern: /^([a-zA-Z0-9-_]*)$/,
                           message: '名称可由英文/数字/下划线/中划线组成',

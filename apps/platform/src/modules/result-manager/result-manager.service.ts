@@ -38,12 +38,15 @@ export class ResultManagerService extends Model {
         'content-type': 'application/json',
         'User-Token': token,
       },
+
       body: JSON.stringify({
         nodeId,
         domainDataId: tableInfo.domainDataId,
       }),
     }).then((res) =>
       res.blob().then((blob) => {
+        const data = new Blob(['\ufeff', blob], { type: 'text/plain;charset=utf-8' });
+
         const disposition = res.headers.get('Content-Disposition');
         let filename = '';
         const filenameRegex = /filename[^;=\n]*=[^'"]*['"]*((['"]).*?\2|[^;\n]*)/;
@@ -53,7 +56,7 @@ export class ResultManagerService extends Model {
         }
         const a = document.createElement('a');
         document.body.appendChild(a); //兼容火狐，将a标签添加到body当中
-        const url = window.URL.createObjectURL(blob); // 获取 blob 本地文件连接 (blob 为纯二进制对象，不能够直接保存到磁盘上)
+        const url = window.URL.createObjectURL(data); // 获取 blob 本地文件连接 (blob 为纯二进制对象，不能够直接保存到磁盘上)
         a.href = url;
         a.download = filename;
         a.click();

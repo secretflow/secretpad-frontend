@@ -28,4 +28,5 @@ export interface IProps {
   dataType?: string;
   multiple?: boolean;
   disabled?: boolean;
+  rules?: { max?: number; min: number; excludes?: string[] };
 }

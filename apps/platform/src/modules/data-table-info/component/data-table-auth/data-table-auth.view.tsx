@@ -14,12 +14,7 @@ import {
 } from 'antd';
 import React, { useEffect } from 'react';
 
-import {
-  AccessWrapper,
-  PadMode,
-  Platform,
-  hasAccess,
-} from '@/components/platform-wrapper';
+import { PadMode, Platform, hasAccess } from '@/components/platform-wrapper';
 import { formatTimestamp } from '@/modules/dag-result/utils';
 import { NodeService } from '@/modules/node';
 import {
@@ -363,6 +358,7 @@ export class DataTableAuth extends Model {
       {
         colName: item.key,
         isAssociateKey: true,
+        isProtection: true,
       },
     ];
 

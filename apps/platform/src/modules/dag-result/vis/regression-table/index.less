@@ -1,0 +1,25 @@
+.tableTab {
+  margin-top: 24px;
+}
+
+.tabsTable {
+  position: relative;
+
+  :global {
+    .ant-tabs-nav::before {
+      border-bottom: none !important;
+    }
+
+    .ant-table-container {
+      border-radius: 0;
+    }
+  }
+
+  :global(.ant-tabs-tab) {
+    padding: 0 0 8px !important;
+  }
+
+  :global(.ant-tabs-nav) {
+    margin-bottom: 8px !important;
+  }
+}

@@ -29,16 +29,12 @@ export const ResultDrawer = () => {
     useFullscreen(fullScreenRef);
   const { visible, data, close } = modalManager.modals[resultDrawer.id];
 
-  const { data: report, codeName, outputId } = data || {};
+  const { data: resultData, codeName, outputId } = data || {};
 
-  const [resultData, setResultData] = React.useState<any>(report);
   const handleClose = () => {
     modalManager.closeModal(resultDrawer.id);
   };
 
-  React.useEffect(() => {
-    setResultData(report);
-  }, [report]);
   return (
     <Drawer
       title={
@@ -120,6 +116,7 @@ export const ResultDrawer = () => {
               data={resultData}
               id={outputId}
               codeName={codeName}
+              visible={visible}
             />
           )}
           {!resultData?.type && <span>非数据参与方，无计算结果</span>}

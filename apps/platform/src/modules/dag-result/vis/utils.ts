@@ -1,3 +1,5 @@
+import type { Item, Descriptions } from '../result-report-types';
+
 import type { ResultOriginData } from './typing';
 
 export function parseData(
@@ -77,27 +79,49 @@ export const lexicographicalOrder = (a: string, b: string) => {
 };
 
 export const modifyDataStructure = (resultObj: ResultOriginData) => {
-  const result = resultObj.divs[0].children[0];
-  if (result.type === 'descriptions') {
-    const records = result.descriptions.items?.map((item) => {
-      let value: number | string | boolean | undefined = '-';
-      if (item.type === 'AT_INT' || item.type === 'int') {
-        value = item.value?.i64 ?? '-';
-      }
-      if (item.type === 'float' || item.type === 'AT_FLOAT') {
-        value = item.value?.f ?? '-';
-      }
-      if (item.type === 'str' || item.type === 'AT_STRING') {
-        value = item.value?.s ?? '-';
-      }
-      if (item.type === 'bool' || item.type === 'AT_BOOL') {
-        value = item.value?.b ?? '-';
-      }
-      return {
-        name: item.name,
-        value,
-      };
-    });
+  const result = resultObj.divs[0]?.children[0];
+  if (result?.type === 'descriptions') {
+    const records = resultObj.divs
+      ?.reduce<Item[]>(
+        (ret, div) =>
+          div?.children
+            ? ret.concat(
+                div.children.reduce<Item[]>(
+                  (
+                    childrenRet,
+                    {
+                      descriptions,
+                      type,
+                    }: { type: string; descriptions?: Descriptions },
+                  ) =>
+                    type === 'descriptions' && descriptions && descriptions?.items
+                      ? childrenRet.concat(descriptions.items)
+                      : childrenRet,
+                  [],
+                ),
+              )
+            : ret,
+        [],
+      )
+      .map((item) => {
+        let value: number | string | boolean | undefined = '-';
+        if (item.type === 'AT_INT' || item.type === 'int') {
+          value = item.value?.i64 ?? '-';
+        }
+        if (item.type === 'float' || item.type === 'AT_FLOAT') {
+          value = item.value?.f ?? '-';
+        }
+        if (item.type === 'str' || item.type === 'AT_STRING') {
+          value = item.value?.s ?? '-';
+        }
+        if (item.type === 'bool' || item.type === 'AT_BOOL') {
+          value = item.value?.b ?? '-';
+        }
+        return {
+          name: item.name,
+          value,
+        };
+      });
     const schemaHeader = result.descriptions.items.map((item) => ({
       name: item.name,
       type: item.type,
@@ -109,7 +133,7 @@ export const modifyDataStructure = (resultObj: ResultOriginData) => {
     };
   }
 
-  if (result.type === 'table') {
+  if (result?.type === 'table') {
     const arr = result.table;
     const recordList = arr.rows.map((row, i) => {
       const { items, name = i } = row;
@@ -143,9 +167,9 @@ export const modifyDataStructure = (resultObj: ResultOriginData) => {
 
 // 转换相关系数矩阵需要的数据格式
 export const transformCorrMatrixData = (resultObj: ResultOriginData) => {
-  const result = resultObj.divs[0].children[0];
+  const result = resultObj.divs[0]?.children[0];
   const records: string[][] = [];
-  if (result.type === 'table') {
+  if (result?.type === 'table') {
     const headers = result.table.headers;
     result.table.rows.forEach((row) => {
       const name = row.name;

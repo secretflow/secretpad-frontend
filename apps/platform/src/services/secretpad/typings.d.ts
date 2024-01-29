@@ -56,7 +56,9 @@ declare namespace API {
     | 202011602
     | 'AUTH_FAILED'
     | 202011603
-    | 'USER_IS_LOCKED';
+    | 'USER_IS_LOCKED'
+    | 202011604
+    | 'RESET_PASSWORD_IS_LOCKED';
 
   interface AuthProjectVO {
     /** Project id */
@@ -313,6 +315,13 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     nodeId?: string;
     /** Datatable id, it can not be blank */
     datatableId?: string;
+  }
+
+  interface GetProjectGraphRequest {
+    /** Project id, it can not be blank */
+    projectId?: string;
+    /** graphId, it can not be blank */
+    graphId?: string;
   }
 
   interface GetProjectJobRequest {
@@ -935,7 +944,10 @@ result management list interface */
     data?: OrgSecretflowSecretpadCommonDtoSecretPadResponse_SyncDataDTO;
   }
 
-  type OrgSecretflowSecretpadServiceModelApprovalParticipantVoteInfo = Record<string, any>;
+  type OrgSecretflowSecretpadServiceModelApprovalParticipantVoteInfo = Record<
+    string,
+    any
+  >;
 
   interface P2pCreateNodeRequest {
     /** Node name, the value cannot be empty and can be the same */
@@ -1054,7 +1066,18 @@ result management list interface */
     | 202011508
     | 'PROJECT_UPDATE_FAIL'
     | 202011509
-    | 'PROJECT_CAN_NOT_ARCHIVE';
+    | 'PROJECT_CAN_NOT_ARCHIVE'
+    | 202011510
+    | 'PROJECT_CAN_NOT_CREATE_ARCHIVE_VOTE';
+
+  interface ProjectGraphOutputVO {
+    /** graphId */
+    graphId?: string;
+    /** graphNodeId */
+    graphNodeId?: string;
+    /** outputs */
+    outputs?: Array<string>;
+  }
 
   interface ProjectJobBaseVO {
     /** Job id */
@@ -1129,6 +1152,25 @@ result management list interface */
   }
 
   type ProjectNodesInfo = Record<string, any>;
+
+  interface ProjectOutputVO {
+    /** Project id */
+    projectId?: string;
+    /** Project name */
+    projectName?: string;
+    /** Project description */
+    description?: string;
+    /** List of added nodes output */
+    nodes?: Array<ProjectGraphOutputVO>;
+    /** The count of graph */
+    graphCount?: number;
+    /** The count of job */
+    jobCount?: number;
+    /** Start time of the project */
+    gmtCreate?: string;
+    /** computeMode pipeline: ,hub: */
+    computeMode?: string;
+  }
 
   interface ProjectResultBaseVO {
     /** Result kind enum */
@@ -1215,9 +1257,11 @@ result management list interface */
 
   type ResourceTypeEnum = 'API' | 'NODE_ID';
 
-  type ResultKind = 'FedTable' | 'Model' | 'Rule' | 'Report';
+  type ResultKind = 'FedTable' | 'Model' | 'Rule' | 'Report' | 'READ_DATA';
 
   interface RouterIdRequest {
+    /** nodeId */
+    nodeId?: string;
     /** routerId */
     routerId?: string;
   }
@@ -1381,6 +1425,11 @@ result management list interface */
     data?: ProjectJobVO;
   }
 
+  interface SecretPadResponse_ProjectOutputVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: ProjectOutputVO;
+  }
+
   interface SecretPadResponse_ProjectVO_ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: ProjectVO;
@@ -1502,6 +1551,8 @@ result management list interface */
     isGroupKey?: boolean;
     /** Label key or not. False by default */
     isLabelKey?: boolean;
+    /** key protection or not, false by default */
+    isProtection?: boolean;
   }
 
   interface TableColumnVO {
@@ -1586,11 +1637,11 @@ create operation */
   }
 
   type UserErrorCode =
-    | 202312601
+    | 202012001
     | 'USER_UPDATE_PASSWORD_ERROR_INCONSISTENT'
-    | 202312602
+    | 202012002
     | 'USER_UPDATE_PASSWORD_ERROR_SAME'
-    | 202312603
+    | 202012003
     | 'USER_UPDATE_PASSWORD_ERROR_INCORRECT';
 
   type UserOwnerTypeEnum = 'EDGE' | 'CENTER' | 'P2P';
@@ -1631,7 +1682,15 @@ create operation */
     voteParticipantID?: string;
   }
 
-  type VoteStatusEnum = 0 | 'REVIEWING' | 1 | 'APPROVED' | 2 | 'REJECTED' | 3 | 'NOT_INITIATED';
+  type VoteStatusEnum =
+    | 0
+    | 'REVIEWING'
+    | 1
+    | 'APPROVED'
+    | 2
+    | 'REJECTED'
+    | 3
+    | 'NOT_INITIATED';
 
   interface VoteSyncRequest {
     /** vote request vote result
