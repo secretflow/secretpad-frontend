@@ -42,6 +42,7 @@ declare namespace API {
     teeNodeId?: string;
     /** Datasource id, it can be blank and has default value */
     datasourceId?: string;
+    type?: string;
   }
 
   interface ArchiveProjectRequest {
@@ -99,6 +100,15 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     datatableSchema?: Array<DatatableSchema>;
   }
 
+  interface CreateFeatureDatasourceRequest {
+    nodeId?: string;
+    featureTableName?: string;
+    type?: string;
+    desc?: string;
+    url?: string;
+    columns?: Array<TableColumnVO>;
+  }
+
   interface CreateGraphRequest {
     /** Project id, it can not be blank */
     projectId?: string;
@@ -116,6 +126,16 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     /** Graph id */
     graphId?: string;
   }
+
+  interface CreateModelServingRequest {
+    modelId?: string;
+    projectId?: string;
+    partyConfigs?: Array<CreateModelServingRequestPartyConfig>;
+  }
+
+  type CreateModelServingRequest$PartyConfig = Record<string, any>;
+
+  type CreateModelServingRequestPartyConfig = Record<string, any>;
 
   interface CreateNodeRequest {
     /** Node name, the value cannot be empty and can be the same */
@@ -156,6 +176,8 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     | 'NAME_DUPLICATION_ERROR';
 
   type DataResourceTypeEnum = 'NODE_ID' | 'PROJECT_ID';
+
+  type DataSourceTypeEnum = 'HTTP' | 'CSV';
 
   type DatatableErrorCode =
     | 202011301
@@ -234,6 +256,7 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     datasourceId?: string;
     /** Relative uri */
     relativeUri?: string;
+    type?: string;
   }
 
   interface DeleteGraphRequest {
@@ -243,6 +266,15 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     graphId?: string;
   }
 
+  interface DeleteModelPackRequest {
+    modelId?: string;
+    nodeId?: string;
+  }
+
+  interface DeleteModelServingRequest {
+    servingId?: string;
+  }
+
   interface DeleteProjectDatatableRequest {
     /** Project id, it can not be blank */
     projectId?: string;
@@ -250,6 +282,11 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     nodeId?: string;
     /** Datatable id, it can not be blank */
     datatableId?: string;
+    type?: string;
+  }
+
+  interface DiscardModelPackRequest {
+    modelId?: string;
   }
 
   interface DownloadDataRequest {
@@ -258,6 +295,15 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     /** Domain data id */
     domainDataId?: string;
   }
+
+  interface FeatureDataSourceVO {
+    nodeId?: string;
+    featureTableId?: string;
+    featureTableName?: string;
+    columns?: Array<TableColumnVO>;
+  }
+
+  type FeatureTableErrorCode = 202012301 | 'FEATURE_TABLE_NOT_EXIST';
 
   type FileMeta = Record<string, any>;
 
@@ -286,6 +332,7 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     nodeId?: string;
     /** Datatable id */
     datatableId?: string;
+    type?: string;
     /** Tee node id, it can be blank and has default value */
     teeNodeId?: string;
   }
@@ -315,6 +362,14 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     nodeId?: string;
     /** Datatable id, it can not be blank */
     datatableId?: string;
+    type?: string;
+  }
+
+  interface GetProjectGraphRequest {
+    /** Project id, it can not be blank */
+    projectId?: string;
+    /** graphId, it can not be blank */
+    graphId?: string;
   }
 
   interface GetProjectGraphRequest {
@@ -584,10 +639,16 @@ Unavailable：Datatables that filter unavailable status Other values or null：A
     statusFilter?: string;
     /** Fuzzy search by table name */
     datatableNameFilter?: string;
+    /** Fuzzy search by table name */
+    types?: Array<string>;
     /** Node Id */
     nodeId?: string;
     /** Tee node id, it can be blank and has default value */
     teeNodeId?: string;
+  }
+
+  interface ListFeatureDatasourceRequest {
+    nodeId?: string;
   }
 
   interface ListGraphNodeStatusRequest {
@@ -621,6 +682,11 @@ id here Filter by ID */
     nameFilter?: string;
     /** The rules are sorted by time 1. Ascending：ascending 2. Descending：descending */
     timeSortingRule?: string;
+  }
+
+  interface ListProjectFeatureDatasourceRequest {
+    projectId?: string;
+    nodeId?: string;
   }
 
   interface ListProjectJobRequest {
@@ -710,6 +776,107 @@ waiting approved
     /** vote id */
     voteID?: string;
   }
+
+  interface ModelComponent {
+    graphNodeId?: string;
+    domain?: string;
+    name?: string;
+    version?: string;
+  }
+
+  type ModelExportErrorCode = 202012401 | 'MODEL_EXPORT_FAILED';
+
+  interface ModelExportPackageRequest {
+    projectId?: string;
+    graphId?: string;
+    trainId?: string;
+    modelName?: string;
+    modelDesc?: string;
+    graphNodeOutPutId?: string;
+    modelPartyConfig: Array<ModelPartyConfig>;
+    modelComponent: Array<ModelComponent>;
+  }
+
+  interface ModelExportPackageResponse {
+    modelId?: string;
+    jobId?: string;
+  }
+
+  interface ModelExportStatusRequest {
+    jobId?: string;
+    projectId?: string;
+  }
+
+  interface ModelPackDetailVO {
+    parties?: Array<ModelPackDetailVOParties>;
+  }
+
+  type ModelPackDetailVO$Parties = Record<string, any>;
+
+  type ModelPackDetailVOParties = Record<string, any>;
+
+  interface ModelPackInfoVO {
+    graphDetailVO?: GraphDetailVO;
+    modelGraphDetail?: Array<string>;
+  }
+
+  interface ModelPackListVO {
+    pageSize?: number;
+    pageNum?: number;
+    total?: number;
+    totalPage?: number;
+    modelPacks?: Array<ModelPackVO>;
+  }
+
+  interface ModelPackVO {
+    modelId?: string;
+    servingId?: string;
+    modelName?: string;
+    modelDesc?: string;
+    modelStats?: string;
+    createTime?: string;
+  }
+
+  interface ModelPartiesVO {
+    parties?: Array<ModelPartiesVOParty>;
+  }
+
+  type ModelPartiesVO$Party = Record<string, any>;
+
+  type ModelPartiesVOParty = Record<string, any>;
+
+  interface ModelPartyConfig {
+    modelParty?: string;
+    modelDataSource?: string;
+    modelDataName?: string;
+  }
+
+  interface ModelPartyPathRequest {
+    projectId?: string;
+    graphNodeId?: string;
+    graphNodeOutPutId?: string;
+  }
+
+  interface ModelPartyPathResponse {
+    nodeId?: string;
+    nodeName?: string;
+    dataSource?: string;
+    dataSourcePath?: string;
+  }
+
+  type ModelStatsEnum =
+    | 0
+    | 'INIT'
+    | 1
+    | 'PUBLISHING'
+    | 2
+    | 'PUBLISHED'
+    | 3
+    | 'OFFLINE'
+    | 4
+    | 'PUBLISH_FAIL'
+    | 5
+    | 'DISCARDED';
 
   interface NodeDatatableVO {
     /** Datatable id */
@@ -1028,6 +1195,12 @@ result management list interface */
 
   type Participant$VoteInfo = Record<string, any>;
 
+  type Parties = Record<string, any>;
+
+  type Party = Record<string, any>;
+
+  type PartyConfig = Record<string, any>;
+
   interface PartyVoteInfoVO {
     nodeId?: string;
     nodeName?: string;
@@ -1068,7 +1241,19 @@ result management list interface */
     | 202011509
     | 'PROJECT_CAN_NOT_ARCHIVE'
     | 202011510
-    | 'PROJECT_CAN_NOT_CREATE_ARCHIVE_VOTE';
+    | 'PROJECT_CAN_NOT_CREATE_ARCHIVE_VOTE'
+    | 202011511
+    | 'PROJECT_MODEL_NOT_FOUND'
+    | 202011512
+    | 'PROJECT_SERVING_NOT_FOUND'
+    | 202011513
+    | 'PROJECT_SERVING_NOT_SUCCESS'
+    | 202011514
+    | 'PROJECT_SERVING_NOT_OFFLINE'
+    | 202011515
+    | 'PROJECT_SERVING_NOT_DISCARD'
+    | 202011516
+    | 'PROJECT_FEATURE_TABLE_NOT_EXISTS';
 
   interface ProjectGraphOutputVO {
     /** graphId */
@@ -1244,6 +1429,27 @@ result management list interface */
     relativeUri?: string;
   }
 
+  interface QueryModelDetailRequest {
+    modelId?: string;
+    projectId?: string;
+  }
+
+  interface QueryModelPageRequest {
+    /** page num default 1 */
+    page?: number;
+    /** page size default 10 */
+    size?: number;
+    /** sort，property,property(,ASC|DESC) "createdDate,desc" */
+    sort?: Record<string, any>;
+    projectId?: string;
+    searchKey?: string;
+    modelStats?: string;
+  }
+
+  interface QueryModelServingRequest {
+    servingId?: string;
+  }
+
   interface ResetNodeUserPwdRequest {
     /** nodeId */
     nodeId?: string;
@@ -1350,9 +1556,19 @@ result management list interface */
     data?: GraphStatus;
   }
 
+  interface SecretPadResponse_List_FeatureDataSourceVO__ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: Array<FeatureDataSourceVO>;
+  }
+
   interface SecretPadResponse_List_GraphMetaVO__ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: Array<GraphMetaVO>;
+  }
+
+  interface SecretPadResponse_List_ModelPartyPathResponse__ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: Array<ModelPartyPathResponse>;
   }
 
   interface SecretPadResponse_List_NodeVO__ {
@@ -1383,6 +1599,31 @@ result management list interface */
   interface SecretPadResponse_MessageListVO_ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: MessageListVO;
+  }
+
+  interface SecretPadResponse_ModelExportPackageResponse_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: ModelExportPackageResponse;
+  }
+
+  interface SecretPadResponse_ModelPackDetailVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: ModelPackDetailVO;
+  }
+
+  interface SecretPadResponse_ModelPackInfoVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: ModelPackInfoVO;
+  }
+
+  interface SecretPadResponse_ModelPackListVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: ModelPackListVO;
+  }
+
+  interface SecretPadResponse_ModelPartiesVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: ModelPartiesVO;
   }
 
   interface SecretPadResponse_NodeResultDetailVO_ {
@@ -1450,6 +1691,11 @@ result management list interface */
     data?: SecretPadPageResponse_NodeVO_;
   }
 
+  interface SecretPadResponse_ServingDetailVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: ServingDetailVO;
+  }
+
   interface SecretPadResponse_StartGraphVO_ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: StartGraphVO;
@@ -1474,6 +1720,17 @@ result management list interface */
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: Record<string, any>;
   }
+
+  type ServingDetail = Record<string, any>;
+
+  interface ServingDetailVO {
+    modelId?: string;
+    servingDetails?: Array<ServingDetailVOServingDetail>;
+  }
+
+  type ServingDetailVO$ServingDetail = Record<string, any>;
+
+  type ServingDetailVOServingDetail = Record<string, any>;
 
   type SseEmitter = Record<string, any>;
 

@@ -154,6 +154,7 @@ export class DefaultPipelineService extends Model {
             createPipelineDisabled: false,
             pipelineEditDisabled: false,
             runAllToolTip: '非我方节点创建，仅可查看',
+            submitModelDisabled: false,
           });
         } else {
           this.projectEditService.changeCanEditFalse();

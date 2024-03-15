@@ -9,7 +9,7 @@ export class GraphDataService extends DefaultDataService {
   nodes: IGraphNodeType[] = [];
   edges: IGraphEdgeType[] = [];
 
-  highlightNodeId = '';
+  highlightNodeId: string | string[] = '';
   mode: ComputeMode | undefined;
 
   setGraphInfo = ({
@@ -20,7 +20,7 @@ export class GraphDataService extends DefaultDataService {
   }: {
     nodes: IGraphNodeType[];
     edges: IGraphEdgeType[];
-    highlightNodeId: string;
+    highlightNodeId: string | string[];
     mode: ComputeMode;
   }) => {
     this.nodes = nodes;
@@ -30,8 +30,14 @@ export class GraphDataService extends DefaultDataService {
   };
 
   async fetch() {
+    let highlightNodeIds = [];
+    if (Array.isArray(this.highlightNodeId)) {
+      highlightNodeIds = [...this.highlightNodeId];
+    } else {
+      highlightNodeIds = [this.highlightNodeId];
+    }
     const handledNodes = this.nodes.map((node: IGraphNodeType) => {
-      if (this.highlightNodeId === node.taskId) {
+      if (highlightNodeIds.includes(node.taskId)) {
         return { ...node, styles: { isHighlighted: true } };
       } else {
         return { ...node, styles: { isHighlighted: false } };

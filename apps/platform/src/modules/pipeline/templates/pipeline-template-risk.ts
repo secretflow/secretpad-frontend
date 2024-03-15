@@ -359,9 +359,15 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
         {
           outputs: [`${graphId}-node-4-output-0`],
           nodeDef: {
+            ...(featureSelects
+              ? {
+                  attrPaths: ['input/input_data/features'],
+                  attrs: [{ ...featureSelects, is_na: false }],
+                }
+              : {}),
             domain: `stats`,
             name: `table_statistics`,
-            version: `0.0.1`,
+            version: `0.0.2`,
           },
           inputs: [`${graphId}-node-3-output-0`],
           codeName: `stats/table_statistics`,

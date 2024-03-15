@@ -1,6 +1,7 @@
 import type { GraphModel, GraphNode } from '@secretflow/dag';
 import { NodeStatus } from '@secretflow/dag';
 import { DefaultRequestService } from '@secretflow/dag';
+import { Emitter } from '@secretflow/utils';
 import { message, Image as AntdImage } from 'antd';
 import { parse } from 'query-string';
 
@@ -69,6 +70,12 @@ export class GraphRequestService extends DefaultRequestService {
   componentConfigRegistry = getModel(ComponentConfigRegistry);
   componentConfigService = getModel(DefaultComponentConfigService);
 
+  onNodeStatusChangedEmitter = new Emitter<API.GraphStatus>();
+  onNodeStatusChanged = this.onNodeStatusChangedEmitter.on;
+
+  onNodeChangedEmitter = new Emitter<IGraphNodeType[]>();
+  onNodeChanged = this.onNodeChangedEmitter.on;
+
   async queryStatus(dagId: string) {
     const { data } = await listGraphNodeStatus({
       projectId: getProjectId(),
@@ -87,6 +94,11 @@ export class GraphRequestService extends DefaultRequestService {
     if (isAllNodeStatusSuccess) {
       this.logDagSuccess();
     }
+    // 将状态传过去，用于判断模型提交按钮能否置灰
+    this.onNodeStatusChangedEmitter.fire({
+      nodes,
+      finished,
+    });
 
     return {
       nodeStatus:
@@ -181,9 +193,11 @@ export class GraphRequestService extends DefaultRequestService {
       edges: convertedEdges as IGraphEdgeType[],
     };
 
+    // 将节点数据传过去，用于判断模型提交按钮能否置灰
+    this.onNodeChangedEmitter.fire(convertedNodes as IGraphNodeType[]);
+
     this.graphData = convertedData;
     this.graphUpdated = false;
-
     return convertedData;
   }
 

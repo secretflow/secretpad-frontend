@@ -28,7 +28,6 @@ export async function logout(
     // query
     /** http servlet request */
     request?: API.HttpServletRequest;
-    response?: API.HttpServletResponse;
   },
   options?: { [key: string]: any },
 ) {
@@ -38,8 +37,6 @@ export async function logout(
       ...params,
       request: undefined,
       ...params['request'],
-      response: undefined,
-      ...params['response'],
     },
     ...(options || {}),
   });

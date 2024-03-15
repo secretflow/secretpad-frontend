@@ -1,0 +1,45 @@
+.wrapper {
+  padding: 16px 0;
+}
+
+.dagNode {
+  display: flex;
+  width: 100%;
+  height: 32px;
+  align-items: center;
+  border: 1px solid #c2c8d5;
+  border-radius: 4px;
+  border-left: 4px solid rgb(35 182 95 / 100%);
+  background-color: #fff;
+  box-shadow: 0 2px 5px 1px rgb(0 0 0 / 6%);
+
+  .icon {
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+
+  .label {
+    display: inline-block;
+    overflow: hidden;
+    width: 122px;
+    flex-shrink: 0;
+    margin-left: 8px;
+    color: #666;
+    cursor: default;
+    font-size: 12px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .status {
+    flex-shrink: 0;
+  }
+}
+
+.line {
+  width: 1px;
+  height: 32px;
+  border-left: 1px solid #b4bdcf;
+  margin-left: 88px;
+}

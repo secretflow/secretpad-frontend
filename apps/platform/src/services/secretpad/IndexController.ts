@@ -42,6 +42,16 @@ export async function index11(options?: { [key: string]: any }) {
   });
 }
 
+/** index_12 All page requests are returned to this index, and the front end handles page routing
+@return the string
+ GET /model-submission/ */
+export async function index12(options?: { [key: string]: any }) {
+  return request<API.OneApiResult_string_>('/model-submission/', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
 /** index_2 All page requests are returned to this index, and the front end handles page routing
 @return the string
  GET /home/ */

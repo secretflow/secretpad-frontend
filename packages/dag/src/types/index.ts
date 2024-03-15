@@ -39,6 +39,9 @@ export type GraphEdge = {
   sourceAnchor: string;
   target: string;
   targetAnchor: string;
+  styles?: {
+    isOpaque?: boolean;
+  };
 };
 
 export type GraphPort = {

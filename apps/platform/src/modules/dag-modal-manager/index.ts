@@ -56,3 +56,17 @@ export class DefaultModalManager extends Model implements ModalManager<any> {
     }
   };
 }
+
+export enum ModalsEnum {
+  ComponentConfigDrawer = 'component-config',
+  RecordListDrawer = 'RecordListDrawer',
+  ResultDrawer = 'component-result',
+  ModelSubmissionDrawer = 'ModelSubmissionDrawer',
+}
+
+export const ModalsWidth = {
+  [ModalsEnum.ComponentConfigDrawer]: 300,
+  [ModalsEnum.RecordListDrawer]: 320,
+  [ModalsEnum.ResultDrawer]: 600,
+  [ModalsEnum.ModelSubmissionDrawer]: 560,
+};

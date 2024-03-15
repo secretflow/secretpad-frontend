@@ -1,0 +1,165 @@
+.container {
+  width: 100%;
+  height: 100%;
+}
+
+.graph {
+  width: 100%;
+  height: 100%;
+}
+
+.empty {
+  position: absolute;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.toolbutton {
+  display: flex;
+  border: 1px solid #e6e8eb;
+  border-radius: 6px;
+
+  .search {
+    display: flex;
+    align-items: center;
+    border-right: 1px solid #e6e8eb;
+
+    .searchselect {
+      overflow: hidden;
+      width: 0;
+      flex-shrink: 0;
+      transition: width 0.3s;
+    }
+
+    button {
+      width: 36px;
+      flex-shrink: 0;
+      border: none;
+    }
+
+    :global(.ant-select-selector) {
+      border: none !important;
+    }
+  }
+
+  .btns {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    button {
+      width: 36px;
+      height: 36px;
+      border: 1px solid #fff;
+
+      &:nth-child(4) {
+        border-left: 1px solid #e6e8eb;
+      }
+    }
+  }
+}
+
+.toolbar {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+
+  button {
+    color: rgb(0 0 0 / 65%);
+    font-size: 12px;
+    font-weight: 400;
+
+    span:nth-child(2) {
+      margin-inline-start: 2px;
+    }
+
+    &.active {
+      color: #1664ff;
+    }
+  }
+}
+
+.popoverContent {
+  width: 208px;
+
+  :global(.ant-popover-inner) {
+    border-radius: 8px;
+  }
+
+  .title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .titleText {
+      width: 40px;
+      height: 22px;
+      color: #000;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0;
+      line-height: 22px;
+    }
+  }
+
+  .descContent {
+    margin-top: -8px;
+
+    .text {
+      width: 184px;
+      height: 36px;
+      color: rgb(0 0 0 / 65%);
+      font-size: 12px;
+      font-weight: 400;
+    }
+
+    img {
+      width: 100%;
+      height: 144px;
+      background-color: #f8f8fb;
+    }
+  }
+}
+
+.tooltip-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.resultCard {
+  :global(.ant-card-body) {
+    display: flex;
+    width: 94px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 3px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px 0 rgb(0 0 0 / 5%);
+    color: rgb(0 0 0 / 100%);
+    cursor: pointer;
+    font-size: 12px;
+  }
+}
+
+.selected {
+  :global(.ant-card-body) {
+    border: 1px solid rgb(0 104 250 / 100%);
+    background-color: rgb(74 135 255 / 12%);
+  }
+}
+
+.statusIcon {
+  padding-inline: 8px 8px;
+}
+
+.resultTypeIcon {
+  padding-right: 4px;
+}

@@ -43,6 +43,7 @@ export const MultiFieldSelectModal = (props: IProps) => {
             nodeId: selectedTable.nodeId,
             datatableId: selectedTable.datatableId,
             projectId,
+            type: 'CSV',
           });
           if (!data) return;
           setSelectedFields(data.configs);
@@ -64,6 +65,7 @@ export const MultiFieldSelectModal = (props: IProps) => {
             nodeId: table.nodeId,
             datatableId: table.datatableId,
             projectId,
+            type: 'CSV',
           });
           if (!data) return;
           configs.push(data.configs);

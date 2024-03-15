@@ -112,6 +112,7 @@ export const SelectTree = ({
               datatableId,
               nodeId,
               projectId,
+              type: 'CSV',
             });
             if (!data) return;
             const { configs } = data;

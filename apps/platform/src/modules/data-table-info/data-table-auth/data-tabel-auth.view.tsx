@@ -137,6 +137,7 @@ export class DataTableAuthModel extends Model {
     const response = await getDatatable({
       datatableId: tableInfo.datatableId,
       nodeId: nodeId as string,
+      type: tableInfo.type,
     });
     this.tableInfo = response.data || {};
     this.projectAuthList = [...(this.tableInfo.authProjects || [])].reverse() || [];
@@ -147,6 +148,7 @@ export class DataTableAuthModel extends Model {
       projectId: item.projectId,
       nodeId: this.nodeService.currentNode?.nodeId,
       datatableId: tableInfo.datatableId,
+      type: tableInfo.type,
     });
 
     if (res.status?.code == 0) {

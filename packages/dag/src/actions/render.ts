@@ -64,6 +64,14 @@ export class RenderAction extends DAGContext implements ActionProtocol {
         target: edge.target,
         targetAnchor: edge.targetAnchor,
       },
+      attrs: {
+        line: {
+          stroke: '#C2C8D5',
+          strokeWidth: 1,
+          targetMarker: null,
+          opacity: edge?.styles?.isOpaque ? 0.25 : 1,
+        },
+      },
       zIndex: -1,
     };
   }

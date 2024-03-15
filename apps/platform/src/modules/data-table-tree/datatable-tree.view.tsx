@@ -277,6 +277,7 @@ export class DatatableTreeView extends Model {
       nodeId,
       datatableId,
       projectId: projectId as string,
+      type: 'CSV',
     });
 
     // 防止多个数据表预览出现冲突

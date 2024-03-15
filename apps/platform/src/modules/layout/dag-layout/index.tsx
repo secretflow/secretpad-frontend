@@ -1,6 +1,6 @@
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import type { TabsProps } from 'antd';
-import { Divider, Tabs } from 'antd';
+import { Divider, Tabs, Space } from 'antd';
 import classnames from 'classnames';
 import { parse } from 'query-string';
 import { useEffect } from 'react';
@@ -20,13 +20,15 @@ import { DagLogDrawer } from '@/modules/dag-log/log.drawer.layout';
 import { DagLog } from '@/modules/dag-log/log.view';
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import { ModalWidth } from '@/modules/dag-modal-manager/modal-manger-protocol';
-import { ResultDrawer } from '@/modules/dag-result/result-modal';
+import { ResultDrawer, resultDrawer } from '@/modules/dag-result/result-modal';
 import { DatatableTreeComponent } from '@/modules/data-table-tree/datatable-tree.view';
 import { LoginService } from '@/modules/login/login.service';
 import { GraphComponents } from '@/modules/main-dag/graph';
+import { ModelSubmissionEntry } from '@/modules/main-dag/model-submission-entry';
 import { RecordComponent } from '@/modules/main-dag/record';
 import { ToolbarComponent } from '@/modules/main-dag/toolbar';
 import { ToolbuttonComponent } from '@/modules/main-dag/toolbutton';
+import { ModelListComponent } from '@/modules/model-manager';
 import { PipelineCreationComponent } from '@/modules/pipeline/pipeline-creation-view';
 import { PipelineViewComponent } from '@/modules/pipeline/pipeline-view';
 import { RecordListDrawerItem } from '@/modules/pipeline-record-list/record-list-drawer-view';
@@ -54,11 +56,17 @@ const tabItems: TabsProps['items'] = [
   },
 ];
 
+export enum DagLayoutMenu {
+  PROJECTDATA = 'project-data',
+  MODELTRAIN = 'model-train',
+  MODELMANAGER = 'model-manager',
+}
+
 export const DagLayout = () => {
   const viewInstance = useModel(DagLayoutView);
   const loginService = useModel(LoginService);
 
-  const { type = 'DAG' } = parse(window.location.search);
+  const { type = 'DAG', mode } = parse(window.location.search);
 
   const goBack = async () => {
     const userInfo = await loginService.getUserInfo();
@@ -75,14 +83,35 @@ export const DagLayout = () => {
       {
         key: 'DAG-项目数据',
         label: '项目数据',
-        callBack: () => viewInstance.setActiveKey('datatable'),
+        id: DagLayoutMenu.PROJECTDATA,
+        callBack: () => {
+          viewInstance.setDagShow();
+          viewInstance.setActiveKey('datatable');
+        },
         isInit: false,
+        projectMode: ['MPC', 'TEE'],
       },
       {
         key: 'DAG-模型训练',
         label: '模型训练',
-        callBack: () => viewInstance.setActiveKey('pipeline'),
+        id: DagLayoutMenu.MODELTRAIN,
+        callBack: () => {
+          viewInstance.setDagShow();
+          viewInstance.setActiveKey('pipeline');
+        },
         isInit: true,
+        projectMode: ['MPC', 'TEE'],
+      },
+      {
+        key: '模型管理',
+        label: '模型管理',
+        id: DagLayoutMenu.MODELMANAGER,
+        callBack: () => {
+          viewInstance.setModelManagerShow();
+          viewInstance.setActiveKey('pipeline');
+        },
+        isInit: false,
+        projectMode: ['MPC'],
       },
     ],
     PSI: [],
@@ -90,10 +119,25 @@ export const DagLayout = () => {
   };
 
   useEffect(() => {
-    viewInstance.setActiveMenu(
-      P2pMenuList[type as keyof typeof P2pMenuList]?.findIndex((item) => item.isInit),
+    const currentMenu = P2pMenuList[type as keyof typeof P2pMenuList]?.find(
+      (item) => item.isInit,
     );
-  }, []);
+    viewInstance.setActiveMenu(currentMenu?.id || DagLayoutMenu.PROJECTDATA);
+    currentMenu?.callBack && currentMenu.callBack();
+  }, [type, mode]);
+
+  useEffect(() => {
+    if (viewInstance.initActiveMenu) {
+      const currentMenuList = P2pMenuList[type as keyof typeof P2pMenuList];
+      const currentMenu = currentMenuList.find(
+        (item) => item.id === viewInstance.initActiveMenu,
+      );
+      if (currentMenu) {
+        viewInstance.setActiveMenu(viewInstance.initActiveMenu);
+        currentMenu?.callBack && currentMenu.callBack();
+      }
+    }
+  }, [viewInstance.initActiveMenu]);
 
   return (
     <div className={styles.wrap}>
@@ -106,76 +150,84 @@ export const DagLayout = () => {
         <span className={styles.slot}>
           <ProjectListComponent />
         </span>
-        <AccessWrapper accessType={{ type: [Platform.AUTONOMY] }}>
+        <AccessWrapper accessType={{ type: [Platform.AUTONOMY, Platform.CENTER] }}>
           <div className={styles.p2pMenuHeader}>
-            {P2pMenuList[type as keyof typeof P2pMenuList].map(
-              (item, index: number) => {
+            {P2pMenuList[type as keyof typeof P2pMenuList]
+              .filter((menu) => menu.projectMode.includes(mode as string))
+              .map((item, index: number) => {
                 return (
                   <div
                     key={item.key}
                     className={classnames(styles.divMenu, {
-                      [styles.active]: index === viewInstance.activeMenu,
+                      [styles.active]: item.id === viewInstance.activeMenu,
                     })}
                     onClick={() => {
-                      viewInstance.setActiveMenu(index);
+                      viewInstance.setActiveMenu(item.id);
                       item?.callBack && item.callBack();
                     }}
                   >
                     {item.label}
                   </div>
                 );
-              },
-            )}
+              })}
           </div>
         </AccessWrapper>
       </div>
-      <div className={styles.content}>
-        <div
-          className={classnames(styles.left, {
-            [styles.hide]: !viewInstance.leftPanelShow,
-          })}
-        >
-          <div className={styles.leftTop}>
-            <Tabs
-              destroyInactiveTabPane={true}
-              items={tabItems}
-              activeKey={viewInstance.activeKey}
-              onChange={(key) => viewInstance.setActiveKey(key)}
-            />
-          </div>
-          <div className={styles.leftBottom}>
-            <PipelineCreationComponent />
-          </div>
-        </div>
-        <div
-          className={classnames(styles.anchor, {
-            [styles.hide]: !viewInstance.leftPanelShow,
-          })}
-          onClick={() => viewInstance.toggleLeftPanel()}
-        />
-
-        <div
-          className={classnames(styles.center, {
-            [styles.hide]: !viewInstance.leftPanelShow,
-          })}
-        >
-          <div className={styles.toolbar}>
-            <ToolbarComponent />
-            <div className={styles.right}>
-              <RecordComponent />
+      {/* <div className={styles.content}> */}
+      {viewInstance.modelManagerShow && <ModelListComponent />}
+      {/* </div> */}
+      {viewInstance.dagShow && (
+        <div className={styles.content}>
+          <div
+            className={classnames(styles.left, {
+              [styles.hide]: !viewInstance.leftPanelShow,
+            })}
+          >
+            <div className={styles.leftTop}>
+              <Tabs
+                destroyInactiveTabPane={true}
+                items={tabItems}
+                activeKey={viewInstance.activeKey}
+                onChange={(key) => viewInstance.setActiveKey(key)}
+              />
+            </div>
+            <div className={styles.leftBottom}>
+              <PipelineCreationComponent />
             </div>
           </div>
-          <div className={styles.graph}>
-            <GraphComponents />
-          </div>
           <div
-            className={styles.toolbutton}
-            style={{ right: viewInstance.rightModalSize }}
+            className={classnames(styles.anchor, {
+              [styles.hide]: !viewInstance.leftPanelShow,
+            })}
+            onClick={() => viewInstance.toggleLeftPanel()}
+          />
+
+          <div
+            className={classnames(styles.center, {
+              [styles.hide]: !viewInstance.leftPanelShow,
+            })}
           >
-            <ToolbuttonComponent />
+            <div className={styles.toolbar}>
+              <ToolbarComponent />
+              <div className={styles.right}>
+                <Space>
+                  <RecordComponent />
+                  {!isTeeProject() && <ModelSubmissionEntry />}
+                </Space>
+              </div>
+            </div>
+            <div className={styles.graph}>
+              <GraphComponents />
+            </div>
+            <div
+              className={styles.toolbutton}
+              style={{ right: viewInstance.rightModalSize }}
+            >
+              <ToolbuttonComponent />
+            </div>
           </div>
         </div>
-      </div>
+      )}
       <ResultDrawer />
       <ComponentConfigDrawer />
       <QuickConfigModal />
@@ -194,6 +246,12 @@ export const DagLayout = () => {
 };
 
 const RIGHT_DIST = 20;
+
+/** 判断项目是不是TEE项目，TEE项目没有模型提交功能 */
+export const isTeeProject = () => {
+  const { mode } = parse(window.location.search);
+  return mode === 'TEE';
+};
 
 export class DagLayoutView extends Model {
   modalManager = getModel(DefaultModalManager);
@@ -233,14 +291,34 @@ export class DagLayoutView extends Model {
 
   activeKey = 'pipeline';
 
-  activeMenu = 0;
+  activeMenu = '';
+
+  initActiveMenu: string | null = '';
+
+  modelManagerShow = false;
+  dagShow = true;
 
   setActiveKey = (key: string) => {
     this.activeKey = key;
   };
 
-  setActiveMenu = (key: number) => {
+  setInitActiveMenu = (id: string) => {
+    this.initActiveMenu = id;
+  };
+
+  setActiveMenu = (key: string) => {
     this.activeMenu = key;
+  };
+
+  setModelManagerShow = () => {
+    this.modelManagerShow = true;
+    this.dagShow = false;
+    this.modalManager.closeAllModals();
+  };
+
+  setDagShow = () => {
+    this.modelManagerShow = false;
+    this.dagShow = true;
   };
 
   toggleLeftPanel() {

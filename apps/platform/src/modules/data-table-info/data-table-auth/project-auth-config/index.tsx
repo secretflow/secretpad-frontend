@@ -114,6 +114,7 @@ export const ProjectAuthConfigDrawer = ({
         projectId: data?.projectId,
         nodeId: nodeId as string,
         datatableId: tableInfo.datatableId,
+        type: tableInfo.type,
       });
       if (res?.status?.code === 0) {
         form.setFieldsValue({
@@ -135,6 +136,7 @@ export const ProjectAuthConfigDrawer = ({
         nodeId: nodeId as string,
         datatableId: tableInfo.datatableId,
         configs: value.fields,
+        type: tableInfo.type,
       });
       if (res.status?.code == 0) {
         message.success('授权成功');
@@ -151,6 +153,7 @@ export const ProjectAuthConfigDrawer = ({
         nodeId: nodeId as string,
         datatableId: tableInfo.datatableId,
         configs: value.fields,
+        type: tableInfo.type,
       });
       if (res.status?.code == 0) {
         message.success('授权修改成功');

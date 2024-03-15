@@ -4,10 +4,10 @@ import { Drawer } from 'antd';
 import type { TabsProps } from 'antd';
 import React, { useEffect } from 'react';
 
+import { DataSheetType } from '@/modules/data-manager/data-manager.service';
 import { getDatatable } from '@/services/secretpad/DatatableController';
 import { Model, useModel } from '@/util/valtio-helper';
 
-import { DataTableAuthComponent } from './component/data-table-auth/data-table-auth.view';
 import { DataTableStructure } from './component/data-table-structure';
 import styles from './index.less';
 
@@ -44,7 +44,6 @@ export const DataTableInfoDrawer: React.FC<IProps<PropsData>> = (props) => {
     //   children: <DataTableAuthComponent tableInfo={tableInfo} size="small" />,
     // },
   ];
-
   return (
     <Drawer
       title={
@@ -52,8 +51,11 @@ export const DataTableInfoDrawer: React.FC<IProps<PropsData>> = (props) => {
           <Space style={{ fontSize: 16 }}>
             「{tableInfo.datatableName}」 详情{' '}
             <Space>
-              <Badge key="green" color="green" text="" />
-              可用
+              {tableInfo.status === 'Available' ? (
+                <Badge key="green" color="green" text="可用" />
+              ) : (
+                <Badge key="red" color="red" text="不可用" />
+              )}
             </Space>
             <a
               style={{ fontSize: 14 }}
@@ -75,7 +77,9 @@ export const DataTableInfoDrawer: React.FC<IProps<PropsData>> = (props) => {
           {/* {tableInfo.datasourceId} */}
           默认数据源
         </Descriptions.Item>
-        <Descriptions.Item label="数据源类型">节点本地数据</Descriptions.Item>
+        <Descriptions.Item label="数据源类型">
+          {tableInfo.type === DataSheetType.CSV ? '节点本地数据' : 'HTTP数据'}
+        </Descriptions.Item>
         <Descriptions.Item span={2} label="数据地址">
           {tableInfo.relativeUri}
         </Descriptions.Item>
@@ -110,6 +114,7 @@ export class DataTableInfoDrawerView extends Model {
     const response = await getDatatable({
       datatableId: tableInfo.datatableId,
       nodeId: node.nodeId,
+      type: tableInfo.type,
     });
 
     setTimeout(() => {

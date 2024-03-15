@@ -1,6 +1,11 @@
-import { SearchOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import type { RadioChangeEvent, TourProps } from 'antd';
-import { message, Tag } from 'antd';
+import {
+  SearchOutlined,
+  InfoCircleOutlined,
+  DownOutlined,
+  ReloadOutlined,
+} from '@ant-design/icons';
+import type { MenuProps, RadioChangeEvent, TourProps } from 'antd';
+import { Dropdown, message, Tag } from 'antd';
 import {
   Button,
   Radio,
@@ -15,6 +20,7 @@ import {
   Empty,
 } from 'antd';
 import type { MessageInstance } from 'antd/es/message/interface';
+import type { FilterValue } from 'antd/es/table/interface';
 import { parse } from 'query-string';
 import type { ChangeEvent } from 'react';
 import React, { useEffect, useRef } from 'react';
@@ -22,6 +28,7 @@ import React, { useEffect, useRef } from 'react';
 import { confirmDelete } from '@/components/comfirm-delete';
 import { EdgeAuthWrapper } from '@/components/edge-wrapper-auth';
 import { Platform, hasAccess } from '@/components/platform-wrapper';
+import { HttpDataAddDrawer } from '@/modules/data-table-add/add-http-data/http-data-add.view';
 import { DataTableAddContent } from '@/modules/data-table-add/data-table-add.view';
 import { DatatableInfoService } from '@/modules/data-table-info/component/data-table-auth/data-table-auth.service';
 import { DataTableAuth } from '@/modules/data-table-info/data-table-auth-drawer';
@@ -34,12 +41,17 @@ import { NodeService } from '@/modules/node';
 import {
   deleteDatatable,
   pushDatatableToTeeNode,
+  getDatatable,
 } from '@/services/secretpad/DatatableController';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { LoginService } from '../login/login.service';
 
-import { DataManagerService, UploadStatus } from './data-manager.service';
+import {
+  DataManagerService,
+  DataSheetType,
+  UploadStatus,
+} from './data-manager.service';
 import styles from './index.less';
 
 const embeddedSheets = ['alice.csv', 'bob.csv'];
@@ -79,11 +91,10 @@ export const DataManagerComponent: React.FC = () => {
       dataIndex: 'type',
       key: 'type',
       width: '10%',
-      // filters: [
-      //   { text: '表', value: 'table' },
-      //   { text: '模型', value: 'model' },
-      //   { text: '规则', value: 'rule' },
-      // ],
+      filters: [
+        { text: 'CSV', value: DataSheetType.CSV },
+        { text: 'HTTP', value: DataSheetType.HTTP },
+      ],
     },
     {
       title: '已授权项目',
@@ -130,23 +141,26 @@ export const DataManagerComponent: React.FC = () => {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      width: '10%',
-      render: (status: string) => {
-        if (status == 'Available') {
-          return (
-            <Space>
-              <Badge key="green" color="green" text="" />
-              可用
-            </Space>
-          );
-        } else {
-          return (
-            <Space>
-              <Badge key="red" color="red" text="" />
-              不可用
-            </Space>
-          );
-        }
+      width: '14%',
+      render: (status: string, record: API.DatatableVO) => {
+        return (
+          <>
+            {status === 'Available' ? (
+              <Badge key="green" color="green" text="可用" />
+            ) : (
+              <Badge key="red" color="red" text="不可用" />
+            )}
+            <Button
+              type="link"
+              icon={<ReloadOutlined />}
+              onClick={() => {
+                viewInstance.refreshTableStatus(record);
+              }}
+            >
+              刷新
+            </Button>
+          </>
+        );
       },
     },
     {
@@ -162,6 +176,7 @@ export const DataManagerComponent: React.FC = () => {
       dataIndex: 'pushToTeeStatus',
       width: '15%',
       render: (status: string, record: API.DatatableVO) => {
+        if (record.type === DataSheetType.HTTP) return '-';
         if (!status || status === '') {
           return (
             <Button
@@ -251,6 +266,7 @@ export const DataManagerComponent: React.FC = () => {
           record.datatableName || '',
           record.datatableId || '',
           messageApi,
+          record.type,
         );
       },
     });
@@ -270,6 +286,17 @@ export const DataManagerComponent: React.FC = () => {
       clearTimeout(viewInstance.tableListTimeOut);
     }
   }, [viewInstance.tablesList]);
+
+  const items: MenuProps['items'] = [
+    {
+      key: '1',
+      label: <a onClick={() => viewInstance.addData()}>本地数据</a>,
+    },
+    {
+      key: '2',
+      label: <a onClick={() => viewInstance.addHttpData()}>HTTP数据</a>,
+    },
+  ];
 
   return (
     <div className={styles.main}>
@@ -295,9 +322,11 @@ export const DataManagerComponent: React.FC = () => {
           </Radio.Group>
         </div>
         <div>
-          <Button type="primary" onClick={() => viewInstance.addData()}>
-            添加数据
-          </Button>
+          <Dropdown menu={{ items }} placement="bottom">
+            <Button type="primary">
+              添加数据 <DownOutlined />
+            </Button>
+          </Dropdown>
         </div>
       </div>
       <div className={styles.content}>
@@ -312,6 +341,10 @@ export const DataManagerComponent: React.FC = () => {
               : columns
           }
           loading={viewInstance.tableLoading}
+          onChange={(pagination, filters, sorter) => {
+            viewInstance.typeFilters = filters?.type as FilterValue;
+            viewInstance.getTableList();
+          }}
           pagination={{
             total: viewInstance.totalNum || 1,
             current: viewInstance.pageNumber,
@@ -320,7 +353,7 @@ export const DataManagerComponent: React.FC = () => {
             onChange: (page, pageSize) => {
               viewInstance.pageNumber = page;
               viewInstance.pageSize = pageSize;
-              viewInstance.getTableList();
+              // viewInstance.getTableList();
             },
             size: 'default',
           }}
@@ -374,6 +407,16 @@ export const DataManagerComponent: React.FC = () => {
           }}
         />
       )}
+
+      {viewInstance.showHttpDataAddDrawer && (
+        <HttpDataAddDrawer
+          onClose={() => {
+            viewInstance.getTableList();
+            viewInstance.showHttpDataAddDrawer = false;
+          }}
+          visible={viewInstance.showHttpDataAddDrawer}
+        />
+      )}
       {contextHolder}
     </div>
   );
@@ -392,6 +435,8 @@ export class DataManagerView extends Model {
 
   statusFilter = '';
 
+  typeFilters: FilterValue | null = null;
+
   search = '';
 
   tableLoading = false;
@@ -407,6 +452,8 @@ export class DataManagerView extends Model {
   showAddDataDrawer = false;
 
   showDatatableInfoDrawer = false;
+
+  showHttpDataAddDrawer = false;
 
   currentNode: API.NodeVO = {};
 
@@ -448,6 +495,7 @@ export class DataManagerView extends Model {
       this.pageSize,
       this.statusFilter,
       this.search,
+      this.typeFilters,
     );
 
     this.tableLoading = false;
@@ -460,6 +508,10 @@ export class DataManagerView extends Model {
   addData() {
     this.showAddDataDrawer = true;
   }
+
+  addHttpData = () => {
+    this.showHttpDataAddDrawer = true;
+  };
 
   openDataInfo(tableInfo: API.DatatableVO) {
     this.tableInfo = tableInfo;
@@ -475,11 +527,13 @@ export class DataManagerView extends Model {
     datatableName: string,
     dataId: string,
     messageApi: MessageInstance,
+    type: string,
   ) => {
     if (!this.nodeService.currentNode?.nodeId) return;
     const { status } = await deleteDatatable({
       nodeId: this.nodeService.currentNode?.nodeId,
       datatableId: dataId,
+      type,
     });
     if (status && status.code !== 0) {
       messageApi.error(status.msg);
@@ -529,4 +583,22 @@ export class DataManagerView extends Model {
       this.getTableList();
     }, 300) as unknown as number;
   }
+
+  refreshTableStatus = async (record: API.DatatableVO) => {
+    try {
+      const { status } = await getDatatable({
+        datatableId: record.datatableId,
+        nodeId: this.currentNode.nodeId,
+        type: record.type,
+      });
+      if (status?.code === 0) {
+        message.success('数据状态刷新成功');
+        this.getTableList();
+      } else {
+        message.error('数据状态刷新失败');
+      }
+    } catch (error) {
+      message.error((error as Error).message);
+    }
+  };
 }

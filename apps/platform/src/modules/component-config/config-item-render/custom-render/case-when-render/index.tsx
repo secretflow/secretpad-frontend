@@ -226,6 +226,7 @@ export const CaseWhenRender = (prop: { node: AtomicConfigNode }) => {
               datatableId,
               nodeId,
               projectId,
+              type: 'CSV',
             });
             if (!data) return;
             const { configs } = data;

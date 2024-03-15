@@ -11,6 +11,8 @@ import {
   getProjectDatatable,
 } from '@/services/secretpad/ProjectController';
 
+import { MultiTableFeatureSelection } from '../config-item-render/default-feature-selection/table-feature-selection';
+
 import styles from './index.less';
 
 const { Option } = Select;
@@ -23,10 +25,11 @@ type QuickConfigPSIComponentProps = {
   })[];
 
   form: FormInstance;
+  type?: 'MPC' | 'TEE';
 };
 
 export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => {
-  const { tables, tableList, form } = props;
+  const { tables, tableList, form, type = 'TEE' } = props;
 
   const { s: selectedReceiver } = Form.useWatch('dataTableReceiver', form) || {};
   const { s: selectedSender } = Form.useWatch('dataTableSender', form) || {};
@@ -36,6 +39,15 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
   const [senderCols, setSenderCols] = useState<{ value: string; label: string }[]>([]);
   const { search } = useLocation();
   const { projectId } = parse(search) as { projectId: string };
+
+  const [selectedTableInfo, setSelectedTableInfo] = useState<
+    {
+      datatableId: string;
+      datatableName: string;
+      nodeId: string;
+      nodeName: string;
+    }[]
+  >([]);
 
   const getCols = async (
     selectedTable: string,
@@ -47,6 +59,7 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
       projectId,
       nodeId: table.nodeId,
       datatableId: table.datatableId,
+      type: 'CSV',
     });
     if (!tableConfig) return;
     const { configs } = tableConfig;
@@ -60,6 +73,19 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
       );
     }
   };
+
+  useEffect(() => {
+    const tableSelected = tableList.filter(
+      (d) => d.datatableId === selectedReceiver || d.datatableId === selectedSender,
+    ) as {
+      datatableId: string;
+      datatableName: string;
+      nodeId: string;
+      nodeName: string;
+    }[];
+
+    if (tableSelected.length > 1) setSelectedTableInfo(tableSelected);
+  }, [selectedReceiver, selectedSender, projectId]);
 
   useEffect(() => {
     getCols(selectedReceiver, setReceiverCols);
@@ -253,11 +279,45 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
           ))
         }
       </Form.List>
+
+      {type === 'MPC' && (
+        <Form.Item
+          name="featureSelects"
+          label={<div className={styles.configItemLabel}>选择特征</div>}
+          required
+          messageVariables={{ msg: '请选择特征列' }}
+          rules={[
+            {
+              required: true,
+              message: '${msg}',
+              validator: (_, val) => {
+                if (!val || val.length === 0)
+                  return Promise.reject(new Error('${msg}'));
+
+                return Promise.resolve();
+              },
+            },
+          ]}
+          getValueProps={(value) => {
+            return { value: value?.ss };
+          }}
+          getValueFromEvent={(value) => {
+            return { ss: value };
+          }}
+        >
+          <MultiTableFeatureSelection
+            tableKeys={selectedTableInfo}
+            size={'small'}
+            rules={{ min: 1 }}
+          />
+        </Form.Item>
+      )}
     </>
   );
 };
 
-export const QuickConfigPSI = () => {
+export const QuickConfigPSI = (props: { type?: 'MPC' | 'TEE' }) => {
+  const { type = 'TEE' } = props;
   const form = Form.useFormInstance();
   const [tables, setTables] = useState<
     { datatableId: string; nodeName: string; datatableName: string }[]
@@ -310,5 +370,12 @@ export const QuickConfigPSI = () => {
     getTables();
   }, [projectId]);
 
-  return <QuickConfigPSIComponent tables={tables} tableList={tableList} form={form} />;
+  return (
+    <QuickConfigPSIComponent
+      tables={tables}
+      tableList={tableList}
+      form={form}
+      type={type}
+    />
+  );
 };
