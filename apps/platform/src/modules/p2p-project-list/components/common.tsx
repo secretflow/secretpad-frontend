@@ -149,7 +149,7 @@ export const P2pProjectButtons = (props: { project: API.ProjectVO }) => {
     confirmArchive({
       title: `确认要将「${projectInfo.projectName}」归档吗？`,
       description: checkAllApproved(projectInfo)
-        ? '归档后会向合作节点发出归档申请，所有合作节点同意后才可归档'
+        ? '归档后会向合作节点发出归档申请，所有合作节点同意后才可归档，归档后，正在运行的任务和发布的模型服务不受影响，但不可新建任务和服务'
         : '',
       onOk: () => {
         if (checkAllApproved(projectInfo)) {

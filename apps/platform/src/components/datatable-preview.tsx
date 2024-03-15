@@ -48,6 +48,11 @@ export const DatatablePreview = (props: DatatablePreviewInterface) => {
       nodeId,
       datatableId,
       projectId: projectId as string,
+      /**
+       * 需求:  数据管理列表不仅有csv数据，还有http数据，画布上只会用到 csv 类型
+       * 所以除数据管理模块，其他用到的这个接口都需要加一个type: CSV 类型用来区分数据源类型，用于服务端做代码兼容
+       */
+      type: 'CSV',
     });
     setLoading(false);
     if (data) {

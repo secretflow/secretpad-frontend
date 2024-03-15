@@ -1,10 +1,9 @@
 import type { GraphNode } from '@secretflow/dag';
-
-import { componentConfigDrawer } from '@/modules/component-config/config-modal';
-import { DefaultModalManager } from '@/modules/dag-modal-manager';
-import { ModalWidth } from '@/modules/dag-modal-manager/modal-manger-protocol';
-import { resultDrawer } from '@/modules/dag-result/result-modal';
-import { RecordListDrawerItem } from '@/modules/pipeline-record-list/record-list-drawer-view';
+import {
+  DefaultModalManager,
+  ModalsEnum,
+  ModalsWidth,
+} from '@/modules/dag-modal-manager';
 import { getGraphNodeLogs } from '@/services/secretpad/GraphController';
 import { getJobLog } from '@/services/secretpad/ProjectController';
 import { Model, getModel } from '@/util/valtio-helper';
@@ -91,35 +90,42 @@ export class DagLogService extends Model {
     super();
     this.modalManager.onModalsChanged((modals: any) => {
       if (
-        modals[componentConfigDrawer.id].visible &&
-        modals[RecordListDrawerItem.id]?.visible
+        modals[ModalsEnum.ComponentConfigDrawer].visible &&
+        modals[ModalsEnum.RecordListDrawer]?.visible
       ) {
         return this.setLogRightAllConfigWidth({
           componentConfigWidth:
-            ModalWidth[componentConfigDrawer.id] + ModalWidth[RecordListDrawerItem.id],
+            ModalsWidth[ModalsEnum.ComponentConfigDrawer] +
+            ModalsWidth[ModalsEnum.RecordListDrawer],
         });
       }
-      if (modals[resultDrawer.id].visible) {
+      if (modals[ModalsEnum.ResultDrawer].visible) {
         return this.setLogRightAllConfigWidth({
-          componentResultWidth: ModalWidth[resultDrawer.id],
+          componentResultWidth: ModalsWidth[ModalsEnum.ResultDrawer],
         });
       }
-      if (modals[RecordListDrawerItem.id]?.visible) {
+      if (modals[ModalsEnum.RecordListDrawer]?.visible) {
         return this.setLogRightAllConfigWidth({
-          componentResultWidth: ModalWidth[RecordListDrawerItem.id],
+          componentResultWidth: ModalsWidth[ModalsEnum.RecordListDrawer],
         });
       }
 
-      if (modals[componentConfigDrawer.id].visible) {
+      if (modals[ModalsEnum.ComponentConfigDrawer].visible) {
         return this.setLogRightAllConfigWidth({
-          componentConfigWidth: ModalWidth[componentConfigDrawer.id],
+          componentConfigWidth: ModalsWidth[ModalsEnum.ComponentConfigDrawer],
+        });
+      }
+
+      if (modals[ModalsEnum.ModelSubmissionDrawer].visible) {
+        return this.setLogRightAllConfigWidth({
+          componentConfigWidth: ModalsWidth[ModalsEnum.ModelSubmissionDrawer],
         });
       }
 
       if (
-        !modals[componentConfigDrawer.id].visible &&
-        !modals[resultDrawer.id].visible &&
-        !modals[RecordListDrawerItem.id]?.visible
+        !modals[ModalsEnum.ComponentConfigDrawer].visible &&
+        !modals[ModalsEnum.ResultDrawer].visible &&
+        !modals[ModalsEnum.RecordListDrawer]?.visible
       ) {
         return this.setLogRightAllConfigWidth({ componentConfigWidth: 0 });
       }

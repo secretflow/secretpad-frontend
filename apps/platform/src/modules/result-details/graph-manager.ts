@@ -9,7 +9,7 @@ export class GraphManager extends DefaultGraphManager {
     dagId: string,
     graphConfig: Graph.Options,
     mode: GraphMode = 'FULL',
-    highlightNodeId: string,
+    highlightNodeId: string | string[],
     nodes: API.GraphNodeDetail[] = [],
     edges: API.GraphEdge[] = [],
     computeMode: ComputeMode,

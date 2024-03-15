@@ -54,6 +54,7 @@ export const useCols = (
             datatableId,
             nodeId,
             projectId,
+            type: 'CSV',
           });
           if (!data) return;
           const { configs } = data;

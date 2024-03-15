@@ -20,6 +20,7 @@ export class ProjectEditService extends Model {
     runAllToolTip: '',
     recordStoptaskDisabled: false,
     pipelineEditDisabled: false,
+    submitModelDisabled: false,
   };
 
   changeCanEditTrue = () => {
@@ -33,6 +34,7 @@ export class ProjectEditService extends Model {
       runAllToolTip: '',
       recordStoptaskDisabled: true,
       pipelineEditDisabled: true,
+      submitModelDisabled: true,
     };
   };
 
@@ -47,6 +49,7 @@ export class ProjectEditService extends Model {
       runAllToolTip: '',
       recordStoptaskDisabled: false,
       pipelineEditDisabled: false,
+      submitModelDisabled: false,
     };
   };
 
@@ -84,4 +87,6 @@ type CanEditType = {
   recordStoptaskDisabled: boolean;
   /** pipeline edit */
   pipelineEditDisabled: boolean;
+  /** 画布提交模型 */
+  submitModelDisabled: boolean;
 };

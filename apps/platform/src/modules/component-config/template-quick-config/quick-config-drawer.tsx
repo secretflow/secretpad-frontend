@@ -73,7 +73,7 @@ export const QuickConfigModal = () => {
           }}
         >
           {type === PipelineTemplateType.RISK && <QuickConfigRisk />}
-          {type === PipelineTemplateType.PSI && <QuickConfigPSI />}
+          {type === PipelineTemplateType.PSI && <QuickConfigPSI type="MPC" />}
           {type === PipelineTemplateType.PSI_TEE && <QuickConfigPSI />}
           {type === PipelineTemplateType.TEE && <QuickConfigTee />}
 

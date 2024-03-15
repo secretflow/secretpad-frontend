@@ -1,0 +1,71 @@
+.submissionDrawer {
+  position: absolute;
+
+  &:focus {
+    outline: none;
+  }
+
+  :global {
+    .ant-drawer-content-wrapper {
+      box-shadow: 0 1px 4px 0 rgb(0 0 0 / 15%);
+    }
+
+    .ant-drawer-body {
+      padding: 16px;
+    }
+
+    .ant-drawer-header {
+      padding: 13px 16px;
+      border-bottom-color: transparent;
+    }
+
+    .ant-form-item {
+      margin-bottom: 16px;
+    }
+  }
+
+  .title {
+    color: rgb(0 0 0 / 85%);
+    font-size: 14px;
+  }
+
+  .extra {
+    color: rgb(0 0 0 / 88%);
+    font-size: 12px;
+  }
+
+  .formLabel {
+    color: rgb(0 0 0 / 85%);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 22px;
+  }
+
+  .itemBlock {
+    padding: 16px 12px;
+    border-radius: 6px;
+    background: rgb(0 10 26 / 2%);
+  }
+
+  .itemRowLabel {
+    margin-bottom: 6px;
+  }
+
+  .itemRow {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .itemMargin {
+    margin-top: 16px;
+  }
+
+  .canvas {
+    display: flex;
+    min-height: 168px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: rgb(0 10 26 / 2%);
+  }
+}

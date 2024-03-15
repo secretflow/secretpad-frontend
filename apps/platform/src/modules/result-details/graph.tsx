@@ -18,14 +18,22 @@ const X6ReactPortalProvider = Portal.getProvider(); // 注意，一个 graph 只
 
 export const PreviewGraphComponents: React.FC<{
   graph: API.GraphDetailVO;
-  id: string;
+  id: string | string[];
   projectMode: ComputeMode;
+  value?: boolean;
 }> = (props) => {
-  const { graph, id, projectMode } = props;
+  const { graph, id, projectMode, value } = props;
   const { pathname } = useLocation();
 
-  /** id: record.domainDataId */
-  const [, nodeTaskId] = (id as string)?.match(/(.*)-output-([0-9]+)$/) || [];
+  /** id: record.domainDataId 或者是 算子taskId 数组 */
+  let newNodeTaskIds: string[] = [];
+  if (Array.isArray(id)) {
+    // 如果是数组的话，ID必须是节点taskId
+    newNodeTaskIds = [...id];
+  } else {
+    const [, nodeTaskId] = (id as string)?.match(/(.*)-output-([0-9]+)$/) || [];
+    newNodeTaskIds = [nodeTaskId];
+  }
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [nodeCenterId, setNodeCenterId] = useState('');
@@ -45,20 +53,17 @@ export const PreviewGraphComponents: React.FC<{
     if (containerRef.current) {
       const dagId = 'preview';
       /** nodeId is the id of center node */
-      if (graph && nodeTaskId) {
+      if (graph && newNodeTaskIds.length !== 0) {
         viewInstance.initGraph(
           dagId,
           containerRef.current,
-          nodeTaskId,
+          newNodeTaskIds,
           graph.nodes,
           graph.edges,
           projectMode,
         );
-
-        const node = graph.nodes?.find((n) => n.taskId === nodeTaskId);
-
+        const node = graph.nodes?.find((n) => n.taskId === newNodeTaskIds[0]);
         setNodeCenterId(node?.graphNodeId || '');
-
         setTimeout(() => {
           viewInstance.centerNode(node?.graphNodeId || '');
         }, 100);
@@ -85,7 +90,9 @@ export const PreviewGraphComponents: React.FC<{
   return (
     <div className={styles.dagBox}>
       <div className={styles.graphContainer} id="minimap-id">
-        <ShowMenuContext.Provider value={pathname === '/dag'}>
+        <ShowMenuContext.Provider
+          value={value === undefined ? pathname === '/dag' : value}
+        >
           <X6ReactPortalProvider />
         </ShowMenuContext.Provider>
         <div
@@ -115,7 +122,7 @@ export class GraphView extends Model {
   initGraph = (
     dagId: string,
     container: HTMLDivElement,
-    highlightNodeId: string,
+    highlightNodeId: string | string[],
     nodes: API.GraphNodeDetail[] = [],
     edges: API.GraphEdge[] = [],
     mode: ComputeMode,
