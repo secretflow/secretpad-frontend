@@ -1,9 +1,10 @@
-import { SubmitGraphService } from '@/modules/dag-submit/graph-service';
-import { Model, getModel } from '@/util/valtio-helper';
 import { parse } from 'query-string';
-import API from '@/services/secretpad';
-import { LoginService } from '@/modules/login/login.service';
+
 import { Platform } from '@/components/platform-wrapper';
+import { SubmitGraphService } from '@/modules/dag-submit/graph-service';
+import { LoginService } from '@/modules/login/login.service';
+import API from '@/services/secretpad';
+import { Model, getModel } from '@/util/valtio-helper';
 
 export interface ModelInfo {
   modelNode: any[];

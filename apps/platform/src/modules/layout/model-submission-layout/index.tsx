@@ -14,13 +14,13 @@ import {
   SubmissionDrawer,
 } from '@/modules/dag-model-submission';
 import { ModelSubmissionDrawerItem } from '@/modules/dag-model-submission/submission-drawer';
+import { SubmissionDrawerService } from '@/modules/dag-model-submission/submission-service';
 import { SubmitGraphComponent } from '@/modules/dag-submit/graph';
 import { ToolbuttonComponent } from '@/modules/dag-submit/toolbutton';
 import { LoginService } from '@/modules/login/login.service';
 import { Model, useModel, getModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
-import { SubmissionDrawerService } from '@/modules/dag-model-submission/submission-service';
 
 const RIGHT_DIST = 20;
 

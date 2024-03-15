@@ -1,13 +1,12 @@
 import { Descriptions, Drawer } from 'antd';
 import { useEffect } from 'react';
 
+import { PreviewGraphComponents } from '@/modules/result-details/graph';
+import { FullscreenGraphModalComponent } from '@/modules/result-details/graph-fullscreen-modal';
+import API from '@/services/secretpad';
 import { Model, useModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
-import { PreviewGraphComponents } from '@/modules/result-details/graph';
-import { FullscreenGraphModalComponent } from '@/modules/result-details/graph-fullscreen-modal';
-
-import API from '@/services/secretpad';
 
 type ModelDetail = {
   visible: boolean;

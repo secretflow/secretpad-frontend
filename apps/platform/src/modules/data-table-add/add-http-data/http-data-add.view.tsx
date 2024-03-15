@@ -16,17 +16,17 @@ import {
   message,
 } from 'antd';
 import { Drawer } from 'antd';
+import { parse } from 'query-string';
 import { useEffect, useRef } from 'react';
 import { CSVLink } from 'react-csv';
-import { createFeatureDatasource } from '@/services/secretpad/FeatureDatasourceController';
+import { flushSync } from 'react-dom';
 
+import { createFeatureDatasource } from '@/services/secretpad/FeatureDatasourceController';
 import { Model, useModel } from '@/util/valtio-helper';
 
 import { analysisCsv } from '../component/upload-table/util';
 
 import styles from './index.less';
-import { parse } from 'query-string';
-import { flushSync } from 'react-dom';
 
 const downloadData = [
   { 特征名称: 'id1', 特征类型: 'string', 特征描述: '' },

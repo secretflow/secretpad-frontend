@@ -1,6 +1,8 @@
+import { parse } from 'query-string';
+
 import API from '@/services/secretpad';
 import { Model } from '@/util/valtio-helper';
-import { parse } from 'query-string';
+
 import { ModelStatus } from '../types';
 
 export class ModelReleaseService extends Model {

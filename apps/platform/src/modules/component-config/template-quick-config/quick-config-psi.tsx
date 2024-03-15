@@ -5,12 +5,13 @@ import { parse } from 'query-string';
 import type { Dispatch, SetStateAction } from 'react';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'umi';
-import { MultiTableFeatureSelection } from '../config-item-render/default-feature-selection/table-feature-selection';
 
 import {
   getProject,
   getProjectDatatable,
 } from '@/services/secretpad/ProjectController';
+
+import { MultiTableFeatureSelection } from '../config-item-render/default-feature-selection/table-feature-selection';
 
 import styles from './index.less';
 

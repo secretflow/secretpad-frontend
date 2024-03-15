@@ -1,12 +1,13 @@
+import { message } from 'antd';
+import type { FilterValue } from 'antd/es/table/interface';
+import { parse } from 'query-string';
+import type { ChangeEvent } from 'react';
+
+import API from '@/services/secretpad';
 import { Model } from '@/util/valtio-helper';
 
+import type { ModelServingDetail } from './model-info/model-info.view';
 import { ModelStatus, type ModelServiceProtocol } from './types';
-import { FilterValue } from 'antd/es/table/interface';
-import { ChangeEvent } from 'react';
-import { parse } from 'query-string';
-import { ModelServingDetail } from './model-info/model-info.view';
-import API from '@/services/secretpad';
-import { message } from 'antd';
 
 export class ModelService extends Model implements ModelServiceProtocol {
   loading = false;

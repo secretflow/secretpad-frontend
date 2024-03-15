@@ -1,3 +1,4 @@
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import {
   Drawer,
   Button,
@@ -12,20 +13,20 @@ import {
   Alert,
 } from 'antd';
 import classnames from 'classnames';
+import { parse } from 'query-string';
 import { useEffect, useCallback, useMemo } from 'react';
 import { history } from 'umi';
+
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
+import { SubmitGraphService } from '@/modules/dag-submit/graph-service';
+import { DagLayoutMenu, DagLayoutView } from '@/modules/layout/dag-layout';
 import submissionLayoutStyle from '@/modules/layout/model-submission-layout/index.less';
 import { getModel, useModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
 import { PreviewSubmitNode } from './preview-submit-node';
 import { SubmissionDrawerService } from './submission-service';
-import { parse } from 'query-string';
 import { useFormValidateOnly } from './useFormValidateOnly';
-import { SubmitGraphService } from '@/modules/dag-submit/graph-service';
-import { DagLayoutMenu, DagLayoutView } from '@/modules/layout/dag-layout';
-import { QuestionCircleOutlined } from '@ant-design/icons';
 
 const WIDTH = 560;
 

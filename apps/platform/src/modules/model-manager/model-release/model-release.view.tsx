@@ -1,19 +1,18 @@
 import { Form, Drawer, Button, Space, Select, Empty, Row, Spin, Tag } from 'antd';
+import { parse } from 'query-string';
 import { useEffect } from 'react';
 import { useState } from 'react';
 
+import { Platform, hasAccess } from '@/components/platform-wrapper';
+import { LoginService } from '@/modules/login/login.service';
 import { useModel } from '@/util/valtio-helper';
 
 import { ModelService } from '../model-service';
 
 import type { FeaturesItem } from './common';
 import { FeatureTable, MatchTag, ToggleButton } from './common';
-import { ModelReleaseService } from './model-release.service';
-import { Platform, hasAccess } from '@/components/platform-wrapper';
-import { LoginService } from '@/modules/login/login.service';
-import { parse } from 'query-string';
-
 import styles from './index.less';
+import { ModelReleaseService } from './model-release.service';
 
 type ModelReleaseModalType = {
   visible: boolean;
