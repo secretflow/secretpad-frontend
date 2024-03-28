@@ -1,6 +1,5 @@
-const { spawn } = require('child_process');
-
 const { yellow } = require('colorette');
+const { spawn } = require('cross-spawn');
 const svgr = require('esbuild-plugin-svgr');
 const { defineConfig } = require('tsup');
 
