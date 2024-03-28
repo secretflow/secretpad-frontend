@@ -331,6 +331,9 @@ importers:
       colorette:
         specifier: ^2.0.19
         version: 2.0.20
+      cross-spawn:
+        specifier: ^7.0.3
+        version: 7.0.3
       esbuild-plugin-svgr:
         specifier: ^1.1.0
         version: 1.1.0
