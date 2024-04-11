@@ -32,3 +32,12 @@ jobs:
           name: Run linters and tests
           command: |
             pnpm run ci
+            
+workflows:
+  Code:_CI:
+    jobs:
+    - ci:
+        filters:
+          branches:
+            only:
+            - main
