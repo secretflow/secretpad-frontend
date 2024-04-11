@@ -1,8 +1,8 @@
 import { defineConfig } from 'dumi';
 
 export default defineConfig({
-  publicPath: '/secretpad-doc/',
-  base: '/secretpad-doc/',
+  publicPath: '/secretpad-frontend/',
+  base: '/secretpad-frontend/',
   themeConfig: {
     hd: { rules: [] },
     rtl: true,
