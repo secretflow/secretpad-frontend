@@ -1,11 +1,12 @@
 import { defineConfig } from 'dumi';
 
 export default defineConfig({
-  publicPath: '/public/',
+  publicPath: '/secretpad-doc/',
+  base: '/secretpad-doc/',
   themeConfig: {
     hd: { rules: [] },
     rtl: true,
-    name: 'SecretPad前端开发文档',
+    name: 'SecretPad前端开发',
     logo: 'https://avatars.githubusercontent.com/u/103737651?s=48&v=4',
     footer: `Open-source MIT Licensed | Copyright © 2023-present
 <br />
