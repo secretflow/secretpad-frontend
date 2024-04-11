@@ -1,4 +1,4 @@
-# sceretpad-doc
+# sceretpad DEV docs
 
 A static site base on [dumi](https://d.umijs.org).
 
