@@ -11,7 +11,7 @@ mobile: false
 
 平台后端带有 swagger 服务，部署后默认访问路径为 `${server_url}/swagger_ui.html`
 
-![swagger](/public/swagger.jpg)
+![swagger](/secretpad-frontend/swagger.jpg)
 
 点击上图箭头所示位置，得到 swagger.json 的地址。将地址配置到`config/openapi.config.js`的 SWAGGER_JSON_PATH 变量
 
