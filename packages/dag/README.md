@@ -17,6 +17,7 @@
 - 历史画布胶水层：支持和历史预览画布能力
 
 画布数据流
+
 ![image](https://github.com/secretflow/secretpad-frontend/assets/46579290/9b9374e0-dbe0-4258-8f03-f309fd350e40)
 
 
