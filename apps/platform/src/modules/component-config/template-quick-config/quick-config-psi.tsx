@@ -5,13 +5,12 @@ import { parse } from 'query-string';
 import type { Dispatch, SetStateAction } from 'react';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'umi';
+import { MultiTableFeatureSelection } from '../config-item-render/default-feature-selection/table-feature-selection';
 
 import {
   getProject,
   getProjectDatatable,
 } from '@/services/secretpad/ProjectController';
-
-import { MultiTableFeatureSelection } from '../config-item-render/default-feature-selection/table-feature-selection';
 
 import styles from './index.less';
 
@@ -39,6 +38,13 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
   const [senderCols, setSenderCols] = useState<{ value: string; label: string }[]>([]);
   const { search } = useLocation();
   const { projectId } = parse(search) as { projectId: string };
+
+  const [nodeOptions, setNodeOptions] = useState<
+    {
+      label: string;
+      value: string;
+    }[]
+  >([]);
 
   const [selectedTableInfo, setSelectedTableInfo] = useState<
     {
@@ -85,6 +91,14 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
     }[];
 
     if (tableSelected.length > 1) setSelectedTableInfo(tableSelected);
+    if (tableSelected.length > 0) {
+      setNodeOptions(
+        tableSelected.map((table) => ({
+          value: table.nodeId as string,
+          label: table.nodeName as string,
+        })),
+      );
+    }
   }, [selectedReceiver, selectedSender, projectId]);
 
   useEffect(() => {
@@ -279,7 +293,24 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
           ))
         }
       </Form.List>
-
+      {type === 'MPC' && (
+        <Form.Item
+          name={'leftSide'}
+          label={<div className={styles.configItemLabel}>左表节点</div>}
+          required
+          messageVariables={{ label: '左表节点' }}
+          valuePropName="value"
+          getValueProps={(value) => {
+            return { value: value?.ss };
+          }}
+          tooltip={'和允许求交键重复的求交类型搭配使用'}
+          getValueFromEvent={(value) => {
+            return { ss: [value] };
+          }}
+        >
+          <Select options={nodeOptions} />
+        </Form.Item>
+      )}
       {type === 'MPC' && (
         <Form.Item
           name="featureSelects"

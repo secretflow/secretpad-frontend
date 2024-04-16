@@ -26,11 +26,14 @@ import { ResultManagerService } from '../result-manager/result-manager.service';
 import styles from './index.less';
 import type { DataType, ResultComponentProps } from './types';
 import { formatTimestamp } from './utils';
+import { useLocation } from 'umi';
+import { openNewTab } from '@/util/path';
 
 export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef<InputRef>(null);
+  const { pathname } = useLocation();
   const { mode, projectId } = parse(window.location.search);
   const csvRef = useRef<{
     link: HTMLLinkElement;
@@ -215,10 +218,8 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
                       size="small"
                       style={{ paddingLeft: 20, fontSize: 12 }}
                       onClick={() => {
-                        const a = document.createElement('a');
-                        a.href = `/node?nodeId=${nodeId}&tab=result&resultName=${tableId}`;
-                        a.target = '_blank';
-                        a.click();
+                        const search = `nodeId=${nodeId}&tab=result&resultName=${tableId}`;
+                        openNewTab(pathname, '/node', search);
                       }}
                     >
                       查看结果

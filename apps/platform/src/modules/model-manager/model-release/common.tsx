@@ -11,6 +11,7 @@ import { useEffect } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 
 import styles from './index.less';
+import { Tooltip } from 'antd/lib';
 
 export const ToggleButton = (props: {
   disabled: boolean;
@@ -193,17 +194,25 @@ export const FeatureTable = (props: {
       key: 'online',
       render: (text: string, record: FeaturesItem) => {
         return (
-          <Select
-            placeholder="请手动选择"
-            className={classNames(styles.featureOnline, {
-              [styles.featureOnlineError]: !text,
-            })}
-            size="small"
-            value={text}
-            options={onlineOptionsFilter}
-            allowClear
-            onChange={(value) => handleFeatureOnlineChange(fieldKey, value, record)}
-          />
+          <Tooltip
+            title={
+              featuresValue?.[fieldKey]?.featureService === 'mock'
+                ? 'mock服务不允许修改'
+                : ''
+            }
+          >
+            <Select
+              placeholder="请手动选择"
+              className={classNames(styles.featureOnline, {
+                [styles.featureOnlineError]: !text,
+              })}
+              size="small"
+              value={text}
+              options={onlineOptionsFilter}
+              disabled={featuresValue?.[fieldKey]?.featureService === 'mock'}
+              onChange={(value) => handleFeatureOnlineChange(fieldKey, value, record)}
+            />
+          </Tooltip>
         );
       },
     },

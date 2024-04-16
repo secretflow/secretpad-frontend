@@ -1,5 +1,4 @@
 import { SearchOutlined } from '@ant-design/icons';
-import type { BadgeProps } from 'antd';
 import {
   Space,
   Input,
@@ -9,23 +8,25 @@ import {
   Badge,
   Typography,
   Popconfirm,
+  BadgeProps,
 } from 'antd';
 import { parse } from 'query-string';
 import { useEffect } from 'react';
 import { useLocation } from 'umi';
 
-import { Platform, hasAccess } from '@/components/platform-wrapper';
 import { formatTimestamp } from '@/modules/dag-result/utils';
-import { LoginService } from '@/modules/login/login.service';
 import { Model, useModel } from '@/util/valtio-helper';
 
-import { ModelStatusSelectOptions } from './actions';
-import styles from './index.less';
-import { ModelDetailModal } from './model-detail/model-detail.view';
 import { ModelReleaseInfoModal } from './model-info/model-info.view';
 import { ModelReleaseModal } from './model-release/model-release.view';
 import { ModelService } from './model-service';
 import { ModelStatus } from './types';
+import { ModelStatusSelectOptions } from './actions';
+
+import styles from './index.less';
+import { Platform, hasAccess } from '@/components/platform-wrapper';
+import { ModelDetailModal } from './model-detail/model-detail.view';
+import { LoginService } from '@/modules/login/login.service';
 
 const statusMap = {
   [ModelStatus.PENDING]: { status: 'warning', text: '待发布' },

@@ -1,12 +1,14 @@
 import { Descriptions, Drawer } from 'antd';
 import { useEffect } from 'react';
 
-import { PreviewGraphComponents } from '@/modules/result-details/graph';
-import { FullscreenGraphModalComponent } from '@/modules/result-details/graph-fullscreen-modal';
-import API from '@/services/secretpad';
 import { Model, useModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
+import { PreviewGraphComponents } from '@/modules/result-details/graph';
+import { FullscreenGraphModalComponent } from '@/modules/result-details/graph-fullscreen-modal';
+
+import API from '@/services/secretpad';
+import { ModelStatus } from '../types';
 
 type ModelDetail = {
   visible: boolean;
@@ -37,6 +39,19 @@ export const ModelDetailModal = (props: ModelDetail) => {
           <Descriptions.Item label="模型名称">{data.modelName}</Descriptions.Item>
           <Descriptions.Item label="模型ID">{data.modelId}</Descriptions.Item>
           <Descriptions.Item label="模型描述">{data.modelDesc}</Descriptions.Item>
+          {/* TODO: 已发布的才展示,待服务端联调 */}
+          {modelDetailService.modelDetail.modelStats === ModelStatus.PUBLISHED && (
+            <>
+              {(modelDetailService.modelDetail.servingDetails || []).map((item) => (
+                <Descriptions.Item
+                  key={item.nodeName}
+                  label={`${item.nodeName}模型路径`}
+                >
+                  {item?.sourcePath || '-'}
+                </Descriptions.Item>
+              ))}
+            </>
+          )}
         </Descriptions>
       </div>
       <div className={styles.dagBoxContent}>

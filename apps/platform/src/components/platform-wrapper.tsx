@@ -22,8 +22,8 @@ export const EdgeRouteWrapper = (props: { children?: React.ReactNode }) => {
  * 判断当前是不是p2p 的工作台页面
  * @returns boolean
  */
-export const isP2PWorkbench = () => {
-  const { pathname, search } = window.location;
+export const isP2PWorkbench = (pathname: string) => {
+  const { search } = window.location;
   const { tab } = parse(search);
   return pathname === '/edge' && tab === 'workbench';
 };

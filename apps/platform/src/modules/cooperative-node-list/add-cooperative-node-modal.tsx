@@ -11,6 +11,8 @@ import { useModel } from '@/util/valtio-helper';
 import { NodeState } from '../managed-node-list';
 
 import { CooperativeNodeService } from './cooperative-node.service';
+
+import { SelectBefore, getProtocol, replaceProtocol } from './slectBefore';
 import styles from './index.less';
 
 export const AddCooperativeNodeDrawer = ({
@@ -27,6 +29,8 @@ export const AddCooperativeNodeDrawer = ({
   const { computeNodeList, computeNodeLoading } = service;
   const [messageApi, contextHolder] = message.useMessage();
   const [submittable, setSubmittable] = useState(false);
+  const [serviceType, setServiceType] = useState('http://');
+  const [cooperativeServiceType, setCooperativeServiceType] = useState('http://');
 
   const [form] = Form.useForm();
 
@@ -37,6 +41,12 @@ export const AddCooperativeNodeDrawer = ({
 
   const { search } = useLocation();
   const { nodeId } = parse(search);
+
+  useEffect(() => {
+    if (service.nodeInfo.netAddress) {
+      setServiceType(getProtocol(service.nodeInfo.netAddress));
+    }
+  }, [service.nodeInfo.netAddress]);
 
   useEffect(() => {
     if (open) {
@@ -64,7 +74,11 @@ export const AddCooperativeNodeDrawer = ({
       const address = computeNodeList.find(
         (item) => item.controlNodeId === computeNodeId,
       )?.netAddress;
-      form.setFieldValue(['cooperativeNode', 'nodeAddress'], address);
+      form.setFieldValue(['cooperativeNode', 'nodeAddress'], replaceProtocol(address));
+      if (address) {
+        const protocol = getProtocol(address);
+        setCooperativeServiceType(protocol);
+      }
     }
     form.setFieldValue(['cooperativeNode', 'computeControlNodeId'], 'master');
   }, [computeNodeId]);
@@ -82,8 +96,8 @@ export const AddCooperativeNodeDrawer = ({
           dstNodeId: value.cooperativeNode.computeNodeId,
           name: value.cooperativeNode.computeNodeName,
           certText: value.cooperativeNode.cert,
-          srcNetAddress: value.selfNode.nodeAddress,
-          dstNetAddress: value.cooperativeNode.nodeAddress,
+          srcNetAddress: `${serviceType}${value.selfNode.nodeAddress}`,
+          dstNetAddress: `${cooperativeServiceType}${value.cooperativeNode.nodeAddress}`,
         });
         if (status && status.code !== 0) {
           message.error(status.msg);
@@ -99,8 +113,8 @@ export const AddCooperativeNodeDrawer = ({
           voteConfig: {
             srcNodeId: nodeId as string,
             desNodeId: value.cooperativeNode.computeNodeId,
-            srcNodeAddr: value.selfNode.nodeAddress,
-            desNodeAddr: value.cooperativeNode.nodeAddress,
+            srcNodeAddr: `${serviceType}${value.selfNode.nodeAddress}`,
+            desNodeAddr: `${cooperativeServiceType}${value.cooperativeNode.nodeAddress}`,
             isSingle: false,
             // isSingle: value.cooperativeNode.routeType === 'FullDuplex' ? false : true,
           },
@@ -130,6 +144,8 @@ export const AddCooperativeNodeDrawer = ({
 
   const handleClose = () => {
     form.resetFields();
+    setServiceType('http://');
+    setCooperativeServiceType('http://');
     onClose();
   };
 
@@ -156,12 +172,14 @@ export const AddCooperativeNodeDrawer = ({
         jsonObj.name &&
         jsonObj.dstNetAddress
       ) {
+        const protocol = getProtocol(jsonObj.dstNetAddress);
+        setCooperativeServiceType(protocol);
         form.setFieldsValue({
           cooperativeNode: {
             cert: jsonObj.certText,
             computeNodeId: jsonObj.dstNodeId,
             computeNodeName: jsonObj.name,
-            nodeAddress: jsonObj.dstNetAddress,
+            nodeAddress: replaceProtocol(jsonObj.dstNetAddress),
           },
         });
         setShowAlert(true);
@@ -307,7 +325,15 @@ export const AddCooperativeNodeDrawer = ({
                 },
               ]}
             >
-              <Input placeholder="127.0.0.1"></Input>
+              <Input
+                placeholder="127.0.0.1"
+                addonBefore={
+                  <SelectBefore
+                    serviceType={cooperativeServiceType}
+                    onChange={setCooperativeServiceType}
+                  />
+                }
+              ></Input>
             </Form.Item>
             <AccessWrapper accessType={{ type: [Platform.AUTONOMY] }}>
               <Form.Item
@@ -346,9 +372,14 @@ export const AddCooperativeNodeDrawer = ({
                   message: '请输入正确的通讯地址',
                 },
               ]}
-              initialValue={service.nodeInfo.netAddress}
+              initialValue={replaceProtocol(service.nodeInfo.netAddress)}
             >
-              <Input placeholder="请输入通讯地址"></Input>
+              <Input
+                addonBefore={
+                  <SelectBefore serviceType={serviceType} onChange={setServiceType} />
+                }
+                placeholder="请输入通讯地址"
+              ></Input>
             </Form.Item>
           </div>
         </Form>

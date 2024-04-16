@@ -1,5 +1,4 @@
 import type { GraphNode } from '@secretflow/dag';
-
 import {
   DefaultModalManager,
   ModalsEnum,

@@ -4,7 +4,7 @@ import { Select, Radio, Modal, Button, Tooltip } from 'antd';
 import classNames from 'classnames';
 import { parse } from 'query-string';
 import React from 'react';
-import { history } from 'umi';
+import { history, useLocation } from 'umi';
 
 import { getPadMode, isP2PWorkbench } from '@/components/platform-wrapper';
 import { useModel } from '@/util/valtio-helper';
@@ -141,6 +141,7 @@ export const confirmArchive = (props: {
 export const P2pProjectButtons = (props: { project: API.ProjectVO }) => {
   const { project } = props;
   const { nodeId } = parse(window.location.search);
+  const { pathname } = useLocation();
 
   const p2pProjectService = useModel(P2pProjectListService);
 
@@ -200,7 +201,7 @@ export const P2pProjectButtons = (props: { project: API.ProjectVO }) => {
                 }&type=${project.computeFunc || 'DAG'}`,
               },
               {
-                origin: isP2PWorkbench() ? 'workbench' : 'my-project',
+                origin: isP2PWorkbench(pathname) ? 'workbench' : 'my-project',
               },
             );
           }}

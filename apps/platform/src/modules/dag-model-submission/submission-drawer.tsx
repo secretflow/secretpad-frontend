@@ -1,11 +1,9 @@
-import { QuestionCircleOutlined } from '@ant-design/icons';
 import {
   Drawer,
   Button,
   Space,
   Form,
   Input,
-  Select,
   Empty,
   Spin,
   message,
@@ -13,20 +11,20 @@ import {
   Alert,
 } from 'antd';
 import classnames from 'classnames';
-import { parse } from 'query-string';
-import { useEffect, useCallback, useMemo } from 'react';
+import { useEffect, useCallback } from 'react';
 import { history } from 'umi';
-
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
-import { SubmitGraphService } from '@/modules/dag-submit/graph-service';
-import { DagLayoutMenu, DagLayoutView } from '@/modules/layout/dag-layout';
 import submissionLayoutStyle from '@/modules/layout/model-submission-layout/index.less';
 import { getModel, useModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
 import { PreviewSubmitNode } from './preview-submit-node';
 import { SubmissionDrawerService } from './submission-service';
+import { parse } from 'query-string';
 import { useFormValidateOnly } from './useFormValidateOnly';
+import { SubmitGraphService } from '@/modules/dag-submit/graph-service';
+import { DagLayoutMenu, DagLayoutView } from '@/modules/layout/dag-layout';
+import { NodeAddress } from './node-address';
 
 const WIDTH = 560;
 
@@ -51,8 +49,6 @@ export const SubmissionDrawer = () => {
   const [form] = Form.useForm();
 
   const { visible } = modalManager.modals[ModelSubmissionDrawerItem.id];
-
-  const addressFormData = Form.useWatch('address', form);
 
   const { submittable } = useFormValidateOnly(form);
 
@@ -93,36 +89,6 @@ export const SubmissionDrawer = () => {
     }
   };
 
-  const addressOptions = addressNodeList.map((item) => ({
-    value: item.nodeId,
-    label: item.nodeName,
-  }));
-
-  const getDataSourcePath = (key: number) => {
-    if (!addressFormData) return;
-    const formItem = addressFormData[key];
-    return addressNodeList.find((item) => item.nodeId === formItem.nodeName)
-      ?.dataSourcePath;
-  };
-
-  const nodeOptionsFilter = addressOptions.map((item) => {
-    if (
-      (addressFormData || []).some(
-        (v: { nodeName: string }) => v.nodeName === item.value,
-      )
-    ) {
-      return {
-        ...item,
-        disabled: true,
-      };
-    } else {
-      return {
-        ...item,
-        disabled: false,
-      };
-    }
-  });
-
   const getAddress = useCallback(
     async (modelId: string) => {
       await getModelNodesAddress(modelId);
@@ -131,18 +97,10 @@ export const SubmissionDrawer = () => {
   );
 
   useEffect(() => {
-    const initFormList = addressNodeList.map(() => ({}));
-    if (initFormList.length === 0) {
-      form.setFieldValue('address', [{}, {}]);
-    } else {
-      form.setFieldValue('address', initFormList);
-    }
-  }, [addressNodeList]);
-
-  useEffect(() => {
     if (!visible) return;
     if (isSubmitting) {
       form.setFieldsValue(currentSubmitParams);
+      submissionDrawerService.addressNodeList = currentSubmitParams.address;
     } else {
       form.resetFields();
       if (modelId) {
@@ -153,10 +111,6 @@ export const SubmissionDrawer = () => {
     }
   }, [visible, modelId, isSubmitting]);
 
-  const timestamp = useMemo(() => {
-    return Date.now();
-  }, [modelId, visible]);
-
   const goToModelManager = () => {
     history.push({
       pathname: '/dag',
@@ -166,22 +120,11 @@ export const SubmissionDrawer = () => {
     dagLayoutView.setModelManagerShow();
   };
 
-  const handlePathChange = (value: string) => {
-    // 当前只有一个文件地址路径，所以节点文件必须相同
-    const newFormAddress = addressFormData.map((item: { nodeName: string }) => ({
-      nodeName: item.nodeName,
-      path: value,
-    }));
-    form.setFieldsValue({
-      address: newFormAddress,
-    });
-  };
-
   const handleSubmit = async () => {
     const value = await form.validateFields();
     submissionDrawerService.currentSubmitParams = {
       ...value,
-      timestamp,
+      address: addressNodeList,
     };
     // 如果即有模型训练算子，也有模型预测算子，则modelComponent只提交模型预测算子.trainId提交模型训练算子id
     const submitNodes =
@@ -194,14 +137,11 @@ export const SubmissionDrawer = () => {
       graphNodeOutPutId: modelId,
       modelName: value.name,
       modelDesc: value.desc,
-      modelPartyConfig: value.address.map(
-        (item: { nodeName: string; path: string }) => ({
-          modelParty: item.nodeName,
-          modelDataName: `${item.path}_${timestamp}`,
-          modelDataSource: addressNodeList.find((node) => node.nodeId === item.nodeName)
-            ?.dataSourcePath,
-        }),
-      ),
+      modelPartyConfig: addressNodeList.map((item) => ({
+        modelParty: item.nodeId,
+        modelDataSource: item.dataSourcePath,
+        modelDataName: item.nodeName,
+      })),
       modelComponent: submitNodes.map((item) => ({
         graphNodeId: item.id,
         domain: item.nodeDef.domain,
@@ -293,7 +233,12 @@ export const SubmissionDrawer = () => {
         footer={
           <Space>
             <Button
-              disabled={submissionDrawerService.loading || !submittable || showAlert}
+              disabled={
+                submissionDrawerService.loading ||
+                !submittable ||
+                showAlert ||
+                addressNodeList.length === 0
+              }
               type="primary"
               loading={isSubmitting}
               onClick={handleSubmit}
@@ -340,7 +285,6 @@ export const SubmissionDrawer = () => {
           >
             <Input.TextArea placeholder="请输入" showCount maxLength={200} />
           </Form.Item>
-
           <Form.Item
             label={
               <div className={classnames(styles.formLabel, styles.itemMargin)}>
@@ -349,79 +293,10 @@ export const SubmissionDrawer = () => {
             }
             required
           >
-            <Form.List name="address" initialValue={[{}, {}]}>
-              {(fields) => {
-                return (
-                  <Spin spinning={submissionDrawerService.loading}>
-                    <div className={styles.itemBlock}>
-                      {fields.map(({ key, name, ...restField }) => {
-                        return (
-                          <div key={key}>
-                            <div className={styles.itemRowLabel}>
-                              {'存储节点' + (key + 1)}
-                            </div>
-                            <div className={styles.itemRow}>
-                              <Form.Item
-                                {...restField}
-                                key={'nodeName' + key}
-                                name={[name, 'nodeName']}
-                                dependencies={[['address', key, 'nodeName']]}
-                                rules={[
-                                  { required: true, message: '请选择' },
-                                  // {
-                                  //   validator: (_, value) => {
-                                  //     const nodeName = addressFormData.filter(
-                                  //       (i: any) => i?.nodeName === value,
-                                  //     );
-                                  //     if (nodeName.length > 1)
-                                  //       return Promise.reject('节点重复');
-                                  //     return Promise.resolve();
-                                  //   },
-                                  // },
-                                ]}
-                              >
-                                <Select
-                                  placeholder="请选择"
-                                  options={nodeOptionsFilter}
-                                  style={{ width: 140 }}
-                                  allowClear
-                                />
-                              </Form.Item>
-                              <Form.Item
-                                {...restField}
-                                key={'path' + key}
-                                name={[name, 'path']}
-                                rules={[
-                                  { required: true, message: '请输入' },
-                                  {
-                                    pattern: /^[\u4E00-\u9FA5A-Za-z0-9-_]+$/,
-                                    message: '只能包含中文/英文/数字/下划线/中划线',
-                                  },
-                                ]}
-                              >
-                                <Input
-                                  addonBefore={getDataSourcePath(key) || '暂无'}
-                                  placeholder="请选择节点后输入"
-                                  style={{ width: '100%' }}
-                                  onChange={(e) => handlePathChange(e.target.value)}
-                                  addonAfter={
-                                    isSubmitting
-                                      ? currentSubmitParams.timestamp
-                                      : timestamp
-                                  }
-                                />
-                              </Form.Item>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </Spin>
-                );
-              }}
-            </Form.List>
+            <Spin spinning={submissionDrawerService.loading}>
+              <NodeAddress addressList={addressNodeList} />
+            </Spin>
           </Form.Item>
-
           <Form.Item required label={<div className={styles.formLabel}>提交组件</div>}>
             <div className={styles.canvas}>
               {previewNodes.length === 0 ? (

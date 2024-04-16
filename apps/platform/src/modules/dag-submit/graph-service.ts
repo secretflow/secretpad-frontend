@@ -5,12 +5,12 @@ import { ActionType } from '@secretflow/dag';
 import { Emitter } from '@secretflow/utils';
 import { message } from 'antd';
 
-import { DefaultComponentTreeService } from '@/modules/component-tree/component-tree-service';
 import { dagLogDrawer } from '@/modules/dag-log/log.drawer.layout';
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import { ModelSubmissionDrawerItem } from '@/modules/dag-model-submission/submission-drawer';
 import type { ModelInfo } from '@/modules/dag-model-submission/submission-service';
 import { getModel, Model } from '@/util/valtio-helper';
+import { DefaultComponentTreeService } from '@/modules/component-tree/component-tree-service';
 
 import mainDag from './dag';
 import {

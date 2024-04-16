@@ -6,7 +6,8 @@
     "start": "pnpm run dev",
     "dev": "PORT=8001 dumi dev",
     "build": "dumi build",
-    "prepare": "dumi setup"
+    "prepare": "dumi setup",
+    "preview": "dumi preview"
   },
   "authors": [],
   "license": "MIT",

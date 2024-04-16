@@ -1,5 +1,5 @@
 import { Form } from 'antd';
-import type { FormInstance } from 'antd/lib';
+import { FormInstance } from 'antd/lib';
 import { useEffect, useState } from 'react';
 
 export const useFormValidateOnly = (form: FormInstance) => {

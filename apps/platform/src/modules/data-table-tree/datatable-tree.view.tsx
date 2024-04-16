@@ -1,5 +1,15 @@
 import { DatabaseOutlined, PlusOutlined, ProfileOutlined } from '@ant-design/icons';
-import { Alert, Space, Tree, Tooltip, Empty, Tour, Typography, Tag } from 'antd';
+import {
+  Alert,
+  Space,
+  Tree,
+  Tooltip,
+  Empty,
+  Tour,
+  Typography,
+  Tag,
+  Button,
+} from 'antd';
 import { parse } from 'query-string';
 import { useRef, useEffect } from 'react';
 import { useLocation } from 'umi';
@@ -13,6 +23,7 @@ import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { DatatableTreeService } from './datatable-tree.service';
 import styles from './index.less';
+import { openNewTab } from '@/util/path';
 
 const { Text } = Typography;
 
@@ -100,12 +111,16 @@ export const DatatableTreeComponent = () => {
               <Space>
                 <Tooltip title="查看详情">
                   <ProfileOutlined
-                    onClick={() => viewInstance.gotoNodeCenter(item.nodeId as string)}
+                    onClick={() =>
+                      viewInstance.gotoNodeCenter(item.nodeId as string, pathname)
+                    }
                   />
                 </Tooltip>
                 <Tooltip title="添加数据">
                   <PlusOutlined
-                    onClick={() => viewInstance.gotoNodeCenter(item.nodeId as string)}
+                    onClick={() =>
+                      viewInstance.gotoNodeCenter(item.nodeId as string, pathname)
+                    }
                   />
                 </Tooltip>
               </Space>
@@ -157,31 +172,42 @@ export const DatatableTreeComponent = () => {
                     {(item as API.NodeVO & { nodeType?: 'embedded' }).nodeType ===
                       'embedded' && (
                       <EdgeAuthWrapper>
-                        <a
-                          href={`/node?nodeId=${item.nodeId}&tab=data-management`}
-                          target="_blank"
-                          rel="noreferrer"
+                        <Button
+                          type="link"
+                          onClick={() => {
+                            openNewTab(
+                              pathname,
+                              '/node',
+                              `nodeId=${item.nodeId}&tab=data-management`,
+                            );
+                          }}
                           style={{
                             fontSize: 12,
                             color: '#0068fa',
                           }}
                         >
                           去节点中心添加
-                        </a>
+                        </Button>
                       </EdgeAuthWrapper>
                     )}
                     {item.nodeId === currentLoginNodeId &&
                       hasAccess({ type: [Platform.AUTONOMY] }) && (
-                        <a
-                          href={`/edge?nodeId=${item.nodeId}&tab=data-management`}
-                          rel="noreferrer"
+                        <Button
+                          type="link"
+                          onClick={() => {
+                            openNewTab(
+                              pathname,
+                              '/edge',
+                              `nodeId=${item.nodeId}&tab=data-management`,
+                            );
+                          }}
                           style={{
                             fontSize: 12,
                             color: '#0068fa',
                           }}
                         >
                           去数据管理添加
-                        </a>
+                        </Button>
                       )}
                   </div>
                 }
@@ -247,15 +273,14 @@ export class DatatableTreeView extends Model {
   datatableTreeService = getModel(DatatableTreeService);
   loginService = getModel(LoginService);
 
-  gotoNodeCenter(nodeId: string) {
+  gotoNodeCenter(nodeId: string, pathname: string) {
     // history.push(`node?nodeId=${nodeId}`);
     const isP2p = this.loginService.userInfo?.platformType === Platform.AUTONOMY;
-    const a = document.createElement('a');
-    a.href = isP2p
-      ? `/edge?tab=data-management&nodeId=${nodeId}`
-      : `/node?nodeId=${nodeId}&tab=data-management`;
-    a.target = '_blank';
-    a.click();
+    const search = isP2p
+      ? `tab=data-management&nodeId=${nodeId}`
+      : `nodeId=${nodeId}&tab=data-management`;
+    const router = isP2p ? '/edge' : '/node';
+    openNewTab(pathname, router, search);
   }
 
   async getDatatables() {

@@ -68,7 +68,7 @@ export const HeaderComponent = () => {
   const viewInstance = useModel(HeaderModel);
   const layoutService = useModel(HomeLayoutService);
   const loginService = useModel(LoginService);
-  const { search } = useLocation();
+  const { search, pathname } = useLocation();
   const { nodeId } = parse(search);
 
   const [avatarLink, setAvatarLink] = useState('');
@@ -104,7 +104,7 @@ export const HeaderComponent = () => {
       });
       viewInstance.nodeName = info.data?.nodeName || '';
     };
-    if (viewInstance.showMyNode()) {
+    if (viewInstance.showMyNode(pathname)) {
       getNodeName(nodeId as string);
     }
   }, []);
@@ -171,7 +171,7 @@ export const HeaderComponent = () => {
           </div>
         }
         <span className={styles.subTitle}>{layoutService.subTitle}</span>
-        {viewInstance.showMyNode() && (
+        {viewInstance.showMyNode(pathname) && (
           <>
             <span className={styles.line} />
             <div
@@ -204,7 +204,7 @@ export const HeaderComponent = () => {
           </>
         )} */}
 
-        {platformConfig.guide && viewInstance.showGuide() && (
+        {platformConfig.guide && viewInstance.showGuide(pathname) && (
           <div className={styles.contentHeaderRight}>
             <EdgeAuthWrapper>
               <Button
@@ -241,10 +241,10 @@ export const HeaderComponent = () => {
               <ReadOutlined />
               帮助中心
             </span>
-            {/* {viewInstance.showGoToHome() && <span className={styles.line} />} */}
+            {/* {viewInstance.showGoToHome(pathname) && <span className={styles.line} />} */}
           </>
         )}
-        {viewInstance.showMessage() && (
+        {viewInstance.showMessage(pathname) && (
           <>
             <span
               className={styles.community}
@@ -313,23 +313,23 @@ export class HeaderModel extends Model {
     a.click();
   }
 
-  showGoToHome = () => {
-    return window.location.pathname.startsWith('/node');
+  showGoToHome = (path: string) => {
+    return path.startsWith('/node');
   };
 
-  showMyNode = () => {
+  showMyNode = (path: string) => {
     const pathnameToShowNode = ['/node', '/message', '/edge'];
-    return pathnameToShowNode.indexOf(window.location.pathname) > -1;
+    return pathnameToShowNode.indexOf(path) > -1;
   };
 
-  showMessage = () => {
+  showMessage = (path: string) => {
     const pathnameToShowNode = ['/node', '/message', '/edge'];
-    return pathnameToShowNode.indexOf(window.location.pathname) > -1;
+    return pathnameToShowNode.indexOf(path) > -1;
   };
 
-  showGuide = () => {
+  showGuide = (path: string) => {
     const pathnameToShowGuide = ['/', '/home'];
-    return pathnameToShowGuide.indexOf(window.location.pathname) > -1;
+    return pathnameToShowGuide.indexOf(path) > -1;
   };
 
   showChangePassword = () => {

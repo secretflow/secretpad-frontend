@@ -8,6 +8,7 @@ import { P2pProjectListService } from '../p2p-project-list.service';
 
 import styles from './auth-project-tag.less';
 import { ProjectStatus } from './common';
+import { useLocation } from 'umi';
 
 interface IProps {
   currentNode: {
@@ -42,6 +43,7 @@ export const moveItemToFrontById = (array: API.PartyVoteInfoVO[], id: string) =>
 export const AuthProjectTag = (props: IProps) => {
   const { currentNode, project, simple } = props;
   const { partyVoteInfos = [], initiatorName, initiator, voteId } = project;
+  const { pathname } = useLocation();
   const applyList = [
     {
       name: initiatorName,
@@ -90,7 +92,9 @@ export const AuthProjectTag = (props: IProps) => {
                   <Space>
                     <div
                       className={styles.agree}
-                      onClick={() => viewInstance.process(StatusEnum.AGREE, voteId)}
+                      onClick={() =>
+                        viewInstance.process(StatusEnum.AGREE, voteId, pathname)
+                      }
                     >
                       同意
                     </div>
@@ -117,7 +121,9 @@ export const AuthProjectTag = (props: IProps) => {
                         danger: true,
                         ghost: true,
                       }}
-                      onConfirm={() => viewInstance.process(StatusEnum.REJECT, voteId)}
+                      onConfirm={() =>
+                        viewInstance.process(StatusEnum.REJECT, voteId, pathname)
+                      }
                     >
                       <div className={styles.reject}>拒绝</div>
                     </Popconfirm>

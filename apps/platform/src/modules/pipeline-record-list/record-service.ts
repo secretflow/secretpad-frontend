@@ -24,23 +24,6 @@ export class DefaultRecordService extends Model {
   onRecordListUpdatedEmitter = new Emitter<void>();
   onRecordListUpdated = this.onRecordListUpdatedEmitter.on;
 
-  constructor() {
-    super();
-    const { search, pathname } = window.location;
-    const { projectId, dagId } = parse(search);
-    const { pipelineId } = (history.location.state || {}) as {
-      pipelineId?: string;
-      pipelineName?: string;
-    };
-
-    this.getRecordList(
-      projectId as string,
-      pathname === '/dag' ? (dagId as string) : pipelineId,
-      5,
-      1,
-    );
-  }
-
   getRecordList = async (
     projectId: string,
     pipelineId?: string,

@@ -7,6 +7,8 @@ import { getProjectDatatable } from '@/services/secretpad/ProjectController';
 
 import styles from './datatable-preview.less';
 import { EdgeAuthWrapper } from './edge-wrapper-auth';
+import { useLocation } from 'umi';
+import { openNewTab } from '@/util/path';
 
 interface DatatablePreviewInterface {
   // tableInfo: Record<string, any>;
@@ -65,7 +67,7 @@ export const DatatablePreview = (props: DatatablePreviewInterface) => {
       getDatatableInfo(props.node?.nodeId || '', props?.datatableId || '');
     }
   }, [popoverOpen]);
-
+  const { pathname } = useLocation();
   const content = (
     <>
       <Table
@@ -79,10 +81,8 @@ export const DatatablePreview = (props: DatatablePreviewInterface) => {
         <EdgeAuthWrapper>
           <Link
             onClick={() => {
-              const a = document.createElement('a');
-              a.href = `/node?nodeId=${props.node.nodeId}&tab=data-management`;
-              a.target = '_blank';
-              a.click();
+              const serarch = `nodeId=${props.node.nodeId}&tab=data-management`;
+              openNewTab(pathname, '/node', serarch);
             }}
           >
             查看全部

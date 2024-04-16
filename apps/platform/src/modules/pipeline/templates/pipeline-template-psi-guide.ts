@@ -83,27 +83,58 @@ export class TemplateGuidePSI extends Model implements PipelineTemplateContribut
         {
           outputs: [`${graphId}-node-3-output-0`],
           nodeDef: {
-            domain: `data_prep`,
-            name: `psi`,
-            version: `0.0.2`,
+            domain: 'data_prep',
+            name: 'psi',
+            version: '0.0.4',
             attrPaths: [
               'input/receiver_input/key',
               'input/sender_input/key',
               'protocol',
+              'disable_alignment',
+              'skip_duplicates_check',
+              'check_hash_digest',
+              'left_side',
+              'join_type',
+              'missing_value',
               'ecdh_curve',
             ],
             attrs: [
               {
                 ss: ['id1'],
+                is_na: false,
               },
               {
                 ss: ['id2'],
+                is_na: false,
               },
               {
                 s: 'PROTOCOL_ECDH',
+                is_na: false,
+              },
+              {
+                is_na: true,
+              },
+              {
+                is_na: true,
+              },
+              {
+                is_na: true,
+              },
+              {
+                ss: ['alice'],
+                is_na: false,
+              },
+              {
+                s: 'ADVANCED_JOIN_TYPE_UNSPECIFIED',
+                is_na: false,
+              },
+              {
+                s: 'NA',
+                is_na: false,
               },
               {
                 s: 'CURVE_FOURQ',
+                is_na: false,
               },
             ],
           },

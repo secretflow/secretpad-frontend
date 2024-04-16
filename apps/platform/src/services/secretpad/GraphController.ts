@@ -134,6 +134,27 @@ export async function getGraphNodeOutput(
   );
 }
 
+/** Refresh node max index api
+@param request update graph node request
+@return successful SecretPadResponse with null data
+ POST /api/v1alpha1/graph/node/max_index */
+export async function graphNodeMaxIndexRefresh(
+  body?: API.GraphNodeMaxIndexRefreshRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.SecretPadResponse_GraphNodeMaxIndexRefreshVO_>(
+    '/api/v1alpha1/graph/node/max_index',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: body,
+      ...(options || {}),
+    },
+  );
+}
+
 /** List component international config api
 @return successful SecretPadResponse with component international config
  POST /api/v1alpha1/component/i18n */
