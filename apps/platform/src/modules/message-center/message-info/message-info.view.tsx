@@ -146,12 +146,18 @@ export const MessageInfoModal = ({
               }}
               onCancel={() => setComment('')}
             >
-              <Button loading={service.processLoading}>拒绝</Button>
+              <Button
+                loading={service.processLoading.rejectLoading}
+                disabled={service.processLoading.type === StatusEnum.AGREE}
+              >
+                拒绝
+              </Button>
             </Popconfirm>
             <Button
               type="primary"
               onClick={() => processMessage(StatusEnum.AGREE)}
-              loading={service.processLoading}
+              loading={service.processLoading.agreeLoading}
+              disabled={service.processLoading.type === StatusEnum.REJECT}
             >
               同意
             </Button>

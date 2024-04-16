@@ -16,8 +16,8 @@ import {
 } from 'antd';
 import classNames from 'classnames';
 import { parse } from 'query-string';
-import type { ChangeEvent, ReactNode } from 'react';
-import { history } from 'umi';
+import { useEffect, type ChangeEvent, type ReactNode } from 'react';
+import { history, useLocation } from 'umi';
 
 import { Platform, hasAccess, isP2PWorkbench } from '@/components/platform-wrapper';
 import { LoginService } from '@/modules/login/login.service';
@@ -88,6 +88,7 @@ export const MessagePageView = () => {
 
 export const MessageComponent: React.FC = () => {
   const viewInstance = useModel(MessageModel);
+  const { pathname } = useLocation();
   const { activeTab, changeTabs, messageService, filterState, nodeId } = viewInstance;
   const items: TabsProps['items'] = [
     {
@@ -111,13 +112,38 @@ export const MessageComponent: React.FC = () => {
   ];
   const { Link } = Typography;
 
-  const loadMore = isP2PWorkbench() && !!viewInstance.totalNum && (
+  useEffect(() => {
+    const onViewMount = async () => {
+      const { active, nodeId } = parse(window.location.search);
+      if (nodeId) {
+        viewInstance.nodeId = nodeId as string;
+      }
+      await changeTabs(
+        (active as MessageActiveTabType) || MessageActiveTabType.PROCESS,
+        pathname,
+      );
+      // P2P 工作台要求如果我处理的数量为0,则默认跳转到我发起的页面
+      if (
+        isP2PWorkbench(pathname) &&
+        activeTab === MessageActiveTabType.PROCESS &&
+        filterState === MessageState.ALL &&
+        viewInstance.selectType === SelectOptionsValueEnum.ALL &&
+        viewInstance.totalNum === 0
+      ) {
+        changeTabs(MessageActiveTabType.APPLY, pathname);
+      }
+      viewInstance.getProcessMessage();
+      viewInstance.p2pProjectListService.P2pProjectCallBack(viewInstance.getList);
+    };
+    viewInstance.pageSize = isP2PWorkbench(pathname) ? 5 : 10;
+    onViewMount();
+  }, [pathname]);
+
+  const loadMore = isP2PWorkbench(pathname) && !!viewInstance.totalNum && (
     <div className={styles.showAll}>
       <Link
         onClick={() => {
-          const a = document.createElement('a');
-          a.href = `/message?active=${activeTab}&nodeId=${nodeId}`;
-          a.click();
+          history.push(`/message?active=${activeTab}&nodeId=${nodeId}`);
         }}
       >
         查看全部
@@ -158,7 +184,7 @@ export const MessageComponent: React.FC = () => {
   return (
     <div
       className={classNames(styles.messageContent, {
-        [styles.p2pMessageContent]: isP2PWorkbench(),
+        [styles.p2pMessageContent]: isP2PWorkbench(pathname),
       })}
     >
       <div className={styles.tabsHeader}>
@@ -166,14 +192,14 @@ export const MessageComponent: React.FC = () => {
           defaultActiveKey={MessageActiveTabType.PROCESS}
           items={items}
           onChange={(e) => {
-            changeTabs(e as MessageActiveTabType);
+            changeTabs(e as MessageActiveTabType, pathname);
             viewInstance.showMessageInfoDrawer = false;
           }}
           type="card"
           activeKey={activeTab}
           tabBarExtraContent={
             <div className={styles.tabContent}>
-              {!isP2PWorkbench() && (
+              {!isP2PWorkbench(pathname) && (
                 <Radio.Group
                   defaultValue={MessageState.PENDING}
                   style={{ marginBottom: 16 }}
@@ -194,8 +220,9 @@ export const MessageComponent: React.FC = () => {
                   <Radio.Button value={MessageState.PROCESS}>已处理</Radio.Button>
                 </Radio.Group>
               )}
-              {((isP2PWorkbench() && activeTab !== MessageActiveTabType.APPLY) ||
-                !isP2PWorkbench()) && (
+              {((isP2PWorkbench(pathname) &&
+                activeTab !== MessageActiveTabType.APPLY) ||
+                !isP2PWorkbench(pathname)) && (
                 <Select
                   defaultValue={SelectOptionsValueEnum.ALL}
                   style={{ width: 120 }}
@@ -204,13 +231,13 @@ export const MessageComponent: React.FC = () => {
                     viewInstance.getList();
                   }}
                   options={
-                    isP2PWorkbench() || hasAccess({ type: [Platform.AUTONOMY] })
+                    isP2PWorkbench(pathname) || hasAccess({ type: [Platform.AUTONOMY] })
                       ? P2PSelectMessageOptions
                       : SelectMessageOptions
                   }
                 />
               )}
-              {!isP2PWorkbench() && (
+              {!isP2PWorkbench(pathname) && (
                 <Input
                   placeholder="搜索关键字"
                   onChange={(e) => viewInstance.searchNode(e)}
@@ -235,7 +262,7 @@ export const MessageComponent: React.FC = () => {
       >
         <List
           pagination={
-            isP2PWorkbench()
+            isP2PWorkbench(pathname)
               ? false
               : {
                   hideOnSinglePage: viewInstance.pageSize > 10 ? false : true,
@@ -280,7 +307,9 @@ export const MessageComponent: React.FC = () => {
                             }&type=${item?.voteTypeMessage?.computeFunc || 'DAG'}`,
                           },
                           {
-                            origin: isP2PWorkbench() ? 'workbench' : 'my-project',
+                            origin: isP2PWorkbench(pathname)
+                              ? 'workbench'
+                              : 'my-project',
                           },
                         )
                       }
@@ -297,7 +326,11 @@ export const MessageComponent: React.FC = () => {
                       type="primary"
                       size="small"
                       onClick={() =>
-                        viewInstance.processMessage(StatusEnum.AGREE, item.voteID!)
+                        viewInstance.processMessage(
+                          StatusEnum.AGREE,
+                          item.voteID!,
+                          pathname,
+                        )
                       }
                     >
                       同意
@@ -326,7 +359,11 @@ export const MessageComponent: React.FC = () => {
                         ghost: true,
                       }}
                       onConfirm={async () => {
-                        viewInstance.processMessage(StatusEnum.REJECT, item.voteID!);
+                        viewInstance.processMessage(
+                          StatusEnum.REJECT,
+                          item.voteID!,
+                          pathname,
+                        );
                       }}
                     >
                       <Button type="default" size="small">
@@ -368,30 +405,6 @@ export class MessageModel extends Model {
     this.p2pProjectListService = getModel(P2pProjectListService);
   }
 
-  async onViewMount() {
-    const { active, nodeId } = parse(window.location.search);
-    if (nodeId) {
-      this.nodeId = nodeId as string;
-    }
-    await this.changeTabs(
-      (active as MessageActiveTabType) || MessageActiveTabType.PROCESS,
-    );
-    // P2P 工作台要求如果我处理的数量为0,则默认跳转到我发起的页面
-    if (
-      isP2PWorkbench() &&
-      this.activeTab === MessageActiveTabType.PROCESS &&
-      this.filterState === MessageState.ALL &&
-      this.selectType === SelectOptionsValueEnum.ALL &&
-      this.totalNum === 0
-    ) {
-      this.changeTabs(MessageActiveTabType.APPLY);
-    }
-
-    this.getProcessMessage();
-
-    this.p2pProjectListService.P2pProjectCallBack(this.getList);
-  }
-
   onViewUnMount(): void {
     this.showMessageInfoDrawer = false;
   }
@@ -406,7 +419,7 @@ export class MessageModel extends Model {
 
   pageNumber = 1;
 
-  pageSize = isP2PWorkbench() ? 5 : 10;
+  pageSize = 10;
 
   totalNum = 0;
 
@@ -420,9 +433,9 @@ export class MessageModel extends Model {
 
   nodeId: string | undefined = undefined;
 
-  resetPagination = () => {
+  resetPagination = (pathname: string) => {
     this.pageNumber = 1;
-    this.pageSize = isP2PWorkbench() ? 5 : 10;
+    this.pageSize = isP2PWorkbench(pathname) ? 5 : 10;
   };
 
   changeSelect = (value: SelectOptionsValueEnum) => {
@@ -433,10 +446,9 @@ export class MessageModel extends Model {
     this.filterState = value;
   };
 
-  changeTabs = async (key: MessageActiveTabType) => {
+  changeTabs = async (key: MessageActiveTabType, pathname: string) => {
     this.activeTab = key;
     const locationSearch = parse(window.location.search);
-    const { pathname } = window.location;
     const searchObj = {
       ...locationSearch,
       active: key,
@@ -444,7 +456,7 @@ export class MessageModel extends Model {
     const search = Object.entries(searchObj).reduce((pre, cur, index) => {
       return `${pre}${index === 0 ? '' : '&'}${cur[0]}=${cur[1]}`;
     }, '');
-    if (!isP2PWorkbench()) {
+    if (!isP2PWorkbench(pathname)) {
       history.replace({
         pathname,
         search,
@@ -456,7 +468,7 @@ export class MessageModel extends Model {
       // this.changefilterState(MessageState.PENDING);
       this.changefilterState(MessageState.ALL);
     }
-    this.resetPagination();
+    this.resetPagination(pathname);
     await this.getList();
   };
 
@@ -497,7 +509,7 @@ export class MessageModel extends Model {
     this.getProcessMessage();
   };
 
-  processMessage = async (action: StatusEnum, id: string) => {
+  processMessage = async (action: StatusEnum, id: string, pathname: string) => {
     const { status } = await this.messageService.process({
       action,
       reason: this.comment,
@@ -509,7 +521,7 @@ export class MessageModel extends Model {
     } else {
       message.success('处理成功');
       this.refreshList();
-      if (isP2PWorkbench()) {
+      if (isP2PWorkbench(pathname)) {
         this.p2pProjectListService.getListProject();
       }
     }

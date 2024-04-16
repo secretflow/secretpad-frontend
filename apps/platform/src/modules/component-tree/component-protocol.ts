@@ -14,7 +14,8 @@ export type AtomicParameterType =
   | 'AT_BOOLS'
   // Special types.
   // | 'ATTR_TYPE_UNSPECIFIED'
-  | 'AT_SF_TABLE_COL';
+  | 'AT_SF_TABLE_COL'
+  | 'AT_PARTY';
 
 // export const ColSelectionParameter = 'AT_SF_TABLE_COL';
 

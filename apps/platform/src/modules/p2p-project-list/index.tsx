@@ -7,7 +7,7 @@ import { parse } from 'query-string';
 import type { ChangeEvent } from 'react';
 import { useEffect, useState } from 'react';
 import React from 'react';
-import { history } from 'umi';
+import { history, useLocation } from 'umi';
 
 import { EdgeRouteWrapper, isP2PWorkbench } from '@/components/platform-wrapper';
 import { P2PCreateProjectModal } from '@/modules/create-project/p2p-create-project/p2p-create-project.view';
@@ -44,6 +44,8 @@ export const P2pProjectListComponent: React.FC = () => {
   const projectListModel = useModel(ProjectListModel);
   const p2pProjectService = useModel(P2pProjectListService);
 
+  const { pathname } = useLocation();
+
   const { handleCreateProject } = projectListModel;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,7 +66,7 @@ export const P2pProjectListComponent: React.FC = () => {
 
   const { Link } = Typography;
 
-  const loadMore = isP2PWorkbench() && projectList.length > 6 && (
+  const loadMore = isP2PWorkbench(pathname) && projectList.length > 6 && (
     <div className={styles.showAll}>
       <Link
         style={{ color: 'rgba(0,0,0,0.45)' }}
@@ -94,12 +96,12 @@ export const P2pProjectListComponent: React.FC = () => {
   return (
     <div
       className={classNames(styles.projectList, {
-        [styles.p2pProjectList]: isP2PWorkbench(),
+        [styles.p2pProjectList]: isP2PWorkbench(pathname),
       })}
     >
       <EdgeRouteWrapper>
         <div className={styles.projectListHeader}>
-          {isP2PWorkbench() ? (
+          {isP2PWorkbench(pathname) ? (
             <div className={styles.headerTitle}>我的项目</div>
           ) : (
             <Space size="middle" wrap>
@@ -153,10 +155,10 @@ export const P2pProjectListComponent: React.FC = () => {
       ) : (
         <div
           className={classNames(styles.content, {
-            [styles.p2pContent]: isP2PWorkbench(),
+            [styles.p2pContent]: isP2PWorkbench(pathname),
           })}
         >
-          {(isP2PWorkbench() ? projectList.slice(0, 6) : projectList).map(
+          {(isP2PWorkbench(pathname) ? projectList.slice(0, 6) : projectList).map(
             (item, index) => {
               return (
                 <div
@@ -284,7 +286,7 @@ export const P2pProjectListComponent: React.FC = () => {
               );
             },
           )}
-          {!isP2PWorkbench() && (
+          {!isP2PWorkbench(pathname) && (
             <>
               <i></i>
               <i></i>

@@ -106,6 +106,10 @@ export class DefaultConfigRender implements ConfigRenderProtocol {
         canHandle: (node: AtomicConfigNode) => (node.type === 'AT_STRING' ? 1 : false),
         component: DefaultInput,
       },
+      {
+        canHandle: (node: AtomicConfigNode) => (node.type === 'AT_PARTY' ? 1 : false),
+        component: DefaultNodeSelect,
+      },
     ];
   }
 }

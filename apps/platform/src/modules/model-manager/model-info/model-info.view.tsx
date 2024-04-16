@@ -88,6 +88,9 @@ export const ModelReleaseInfoModal = (props: ModelInfoModalType) => {
     >
       <div className={styles.modelDesc}>
         <Descriptions column={1}>
+          <Descriptions.Item label="服务ID">
+            {modelService.modelServingDetail.servingId || '-'}
+          </Descriptions.Item>
           <Descriptions.Item label="模型ID">
             {modelService.modelServingDetail.modelId || '-'}
           </Descriptions.Item>

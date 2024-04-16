@@ -34,7 +34,15 @@ export class MessageService extends Model {
   /**
    * Message process loading
    */
-  processLoading = false;
+  processLoading: {
+    rejectLoading: boolean;
+    agreeLoading: boolean;
+    type: string | undefined;
+  } = {
+    rejectLoading: false,
+    agreeLoading: false,
+    type: undefined,
+  };
 
   /**
    * Messages list
@@ -61,9 +69,17 @@ export class MessageService extends Model {
    * @param Agree or reject
    */
   process = async (params: API.VoteReplyRequest) => {
-    this.processLoading = true;
+    this.processLoading = {
+      type: params.action,
+      rejectLoading: params.action === StatusEnum.REJECT ? true : false,
+      agreeLoading: params.action === StatusEnum.AGREE ? true : false,
+    };
     const res = await reply(params);
-    this.processLoading = false;
+    this.processLoading = {
+      rejectLoading: false,
+      agreeLoading: false,
+      type: undefined,
+    };
     return res;
   };
 

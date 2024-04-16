@@ -1,7 +1,7 @@
 import { FundProjectionScreenOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import { parse } from 'query-string';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation } from 'umi';
 
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
@@ -16,8 +16,16 @@ import styles from './index.less';
 
 export const RecordComponent: React.FC = () => {
   const viewInstance = useModel(RecordView);
-  const { search } = useLocation();
+  const { search, pathname } = useLocation();
   const dagId = parse(search)?.dagId as string;
+
+  useEffect(() => {
+    if (!dagId) return;
+    if (pathname === '/record') {
+      viewInstance.showDrawer = true;
+    }
+  }, [pathname, dagId]);
+
   return (
     <div className={`${styles.toolbar} toolbar2-for-guide-tour`}>
       <Button
@@ -36,14 +44,6 @@ export class RecordView extends Model {
   showDrawer = false;
 
   modalManager = getModel(DefaultModalManager);
-
-  onViewMount(): void {
-    const { dagId } = parse(window.location.search);
-    if (!dagId) return;
-    if (window.location.pathname === '/record') {
-      this.showDrawer = true;
-    }
-  }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onClick(dagId: string) {

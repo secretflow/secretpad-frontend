@@ -3,7 +3,6 @@ import { Badge, Descriptions, message, Space, Tabs } from 'antd';
 import { Drawer } from 'antd';
 import type { TabsProps } from 'antd';
 import React, { useEffect } from 'react';
-
 import { DataSheetType } from '@/modules/data-manager/data-manager.service';
 import { getDatatable } from '@/services/secretpad/DatatableController';
 import { Model, useModel } from '@/util/valtio-helper';

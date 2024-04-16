@@ -8,6 +8,8 @@
 pnpm bootstrap
 pnpm dev
 ```
-想了解更多开发和部署细节， 请参考 🛠 [Dev Guidelines](https://secretflow.github.io/secretpad-frontend/dev-doc)
+
+想了解更多开发和部署细节， 请参考 🛠
+[Dev Guidelines](https://secretflow.github.io/secretpad-frontend/dev-doc)
 
 见 [CONTRIBUTING.md](CONTRIBUTING.zh-Hans.md).

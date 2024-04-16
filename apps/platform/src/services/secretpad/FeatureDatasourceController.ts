@@ -17,24 +17,6 @@ export async function createFeatureDatasource(
   });
 }
 
-/** 此处后端没有提供注释 POST /api/v1alpha1/feature_datasource/list */
-export async function featureDatasourceList(
-  body?: API.ListFeatureDatasourceRequest,
-  options?: { [key: string]: any },
-) {
-  return request<API.SecretPadResponse_List_FeatureDataSourceVO__>(
-    '/api/v1alpha1/feature_datasource/list',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      data: body,
-      ...(options || {}),
-    },
-  );
-}
-
 /** 此处后端没有提供注释 POST /api/v1alpha1/feature_datasource/auth/list */
 export async function projectFeatureTableList(
   body?: API.ListProjectFeatureDatasourceRequest,

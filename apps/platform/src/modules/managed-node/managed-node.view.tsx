@@ -7,19 +7,21 @@ import {
 } from '@ant-design/icons';
 import { Button, Popover, Typography, List, Space, Spin, Row, Col } from 'antd';
 import React, { useEffect } from 'react';
-import { history } from 'umi';
+import { history, useLocation } from 'umi';
 
 import { NodeService } from '@/modules/node';
 import { ResultManagerService } from '@/modules/result-manager/result-manager.service';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
+import { openNewTab } from '@/util/path';
 
 type NodeDatatableVO = API.NodeDatatableVO;
 type NodeResultsVO = API.NodeResultsVO;
 
 export const ManagedNodeComponent: React.FC = () => {
   const viewInstance = useModel(ManagedNodeView);
+  const { pathname } = useLocation();
 
   const [showDetailsBtn, setShowDetailsBtn] = React.useState(-1);
 
@@ -105,10 +107,8 @@ export const ManagedNodeComponent: React.FC = () => {
                 onMouseLeave={() => setShowDetailsBtn(-1)}
                 className={styles.nodeInfo}
                 onClick={() => {
-                  const a = document.createElement('a');
-                  a.href = `/node?nodeId=${item.nodeId}&tab=data-management`;
-                  a.target = '_blank';
-                  a.click();
+                  const search = `nodeId=${item.nodeId}&tab=data-management`;
+                  openNewTab(pathname, '/node', search);
                 }}
               >
                 {/* 上半部份 */}
@@ -168,7 +168,9 @@ export const ManagedNodeComponent: React.FC = () => {
                         </div>
                         <div
                           className={styles.ItemNumber}
-                          onClick={() => viewInstance.gotoNodePage(item.nodeId || '')}
+                          onClick={() =>
+                            viewInstance.gotoNodePage(pathname, item.nodeId || '')
+                          }
                         >
                           <Popover
                             content={getTableContent(
@@ -190,7 +192,10 @@ export const ManagedNodeComponent: React.FC = () => {
                                 <PlusOutlined
                                   style={{ cursor: 'point', color: '#1677FF' }}
                                   onClick={() =>
-                                    viewInstance.gotoNodePage(item.nodeId || '')
+                                    viewInstance.gotoNodePage(
+                                      pathname,
+                                      item.nodeId || '',
+                                    )
                                   }
                                 />
                               </div>
@@ -205,7 +210,11 @@ export const ManagedNodeComponent: React.FC = () => {
                         className={styles.nodeInfoBootomItem}
                         onClick={(e) => {
                           e.stopPropagation();
-                          viewInstance.gotoNodePage(item.nodeId || '', 'result');
+                          viewInstance.gotoNodePage(
+                            pathname,
+                            item.nodeId || '',
+                            'result',
+                          );
                         }}
                       >
                         <div className={styles.ItemName}>
@@ -252,11 +261,9 @@ export class ManagedNodeView extends Model {
     this.nodeList = (await this.nodeService.listNode()) as API.NodeVO[];
   }
 
-  async gotoNodePage(nodeId: string, tab = 'data-management') {
-    const a = document.createElement('a');
-    a.href = `/node?nodeId=${nodeId}&tab=${tab}`;
-    a.target = '_blank';
-    a.click();
+  async gotoNodePage(pathname: string, nodeId: string, tab = 'data-management') {
+    const search = `nodeId=${nodeId}&tab=${tab}`;
+    openNewTab(pathname, '/node', search);
   }
 
   async loadResultList(nodeId: string) {

@@ -1,9 +1,8 @@
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Divider, Button, Alert, Tooltip } from 'antd';
+import { Divider, Button, Alert, Tooltip, Breadcrumb, Popconfirm } from 'antd';
 import classNames from 'classnames';
 import { history } from 'umi';
 
-import { Platform } from '@/components/platform-wrapper';
 import { Log } from '@/modules/dag-log/log-viewer.view';
 import { DagLogDrawer } from '@/modules/dag-log/log.drawer.layout';
 import { DagLog } from '@/modules/dag-log/log.view';
@@ -14,40 +13,52 @@ import {
   SubmissionDrawer,
 } from '@/modules/dag-model-submission';
 import { ModelSubmissionDrawerItem } from '@/modules/dag-model-submission/submission-drawer';
-import { SubmissionDrawerService } from '@/modules/dag-model-submission/submission-service';
 import { SubmitGraphComponent } from '@/modules/dag-submit/graph';
 import { ToolbuttonComponent } from '@/modules/dag-submit/toolbutton';
-import { LoginService } from '@/modules/login/login.service';
 import { Model, useModel, getModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
+import { SubmissionDrawerService } from '@/modules/dag-model-submission/submission-service';
 
 const RIGHT_DIST = 20;
 
 export const ModelSubmissionLayout = () => {
   const viewInstance = useModel(ModelSubmissionView);
-  const loginService = useModel(LoginService);
 
   const goBack = async () => {
     viewInstance.submissionDrawerService.cancelSubmitTimer();
-    const userInfo = await loginService.getUserInfo();
-    if (userInfo.platformType === Platform.AUTONOMY) {
-      history.push(`/edge?nodeId=${userInfo.ownerId}`);
-    } else {
-      history.push('/home?tab=project-management');
-    }
+    history.push({
+      pathname: '/dag',
+      search: window.location.search,
+    });
   };
 
   return (
     <div className={styles.wrap}>
       <div className={styles.header}>
-        <span className={styles.back} onClick={goBack}>
-          <Tooltip title="退出模型提交则会中断提交进程，如需提交需重新发起">
+        <Popconfirm
+          placement="right"
+          title="退出模型提交则会中断提交进程"
+          description="如需提交需重新发起"
+          okText="确认"
+          cancelText="取消"
+          onConfirm={goBack}
+        >
+          <span className={styles.back}>
             <ArrowLeftOutlined />
-          </Tooltip>
-        </span>
+          </span>
+        </Popconfirm>
         <Divider type="vertical" />
-        <span className={styles.title}>项目空间</span>
+        <Breadcrumb
+          items={[
+            {
+              title: '项目空间',
+            },
+            {
+              title: '模型提交',
+            },
+          ]}
+        />
         <span className={styles.slot}></span>
       </div>
       <div className={styles.content}>
@@ -70,16 +81,7 @@ export const ModelSubmissionLayout = () => {
             </div>
             <div className={styles.right}>
               <Tooltip title="退出模型提交则会中断提交进程，如需提交需重新发起">
-                <Button
-                  type="link"
-                  onClick={() => {
-                    viewInstance.submissionDrawerService.cancelSubmitTimer();
-                    history.push({
-                      pathname: '/dag',
-                      search: window.location.search,
-                    });
-                  }}
-                >
+                <Button type="link" onClick={goBack}>
                   退出模型提交
                 </Button>
               </Tooltip>

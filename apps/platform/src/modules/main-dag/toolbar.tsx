@@ -153,6 +153,7 @@ export const ToolbarComponent: React.FC = () => {
                   tool.type === ActionType.runAll &&
                   viewInstance.projectEditService.canEdit.toolbarDisabled,
                 [styles.notRunAll]: tool.type !== ActionType.runAll,
+                [styles.disabledBtn]: !viewInstance.isToolBarEnabled(tool.type),
               })}
             >
               {tool.label}
@@ -178,6 +179,7 @@ export const ToolbarComponent: React.FC = () => {
             className={classnames({
               [styles.active]: viewInstance.isToolBarActive(tool.type),
               [styles.notRunAll]: tool.type !== ActionType.runAll,
+              [styles.disabledBtn]: !viewInstance.isToolBarEnabled(tool.type),
             })}
           >
             {viewInstance.getToolBarLabel(tool.type, tool.label)}

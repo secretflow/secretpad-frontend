@@ -19,6 +19,7 @@ export class TemplatePSI extends Model implements PipelineTemplateContribution {
       receiverKey,
       senderKey,
       featureSelects,
+      leftSide,
     } = quickConfigs || {};
     return {
       edges: [
@@ -90,18 +91,23 @@ export class TemplatePSI extends Model implements PipelineTemplateContribution {
         {
           outputs: [`${graphId}-node-3-output-0`],
           nodeDef: {
-            ...(receiverKey && senderKey
+            ...(receiverKey && senderKey && leftSide
               ? {
-                  attrPaths: ['input/receiver_input/key', 'input/sender_input/key'],
+                  attrPaths: [
+                    'input/receiver_input/key',
+                    'input/sender_input/key',
+                    'left_side',
+                  ],
                   attrs: [
                     { ...receiverKey, is_na: false },
                     { ...senderKey, is_na: false },
+                    { ...leftSide, is_na: false },
                   ],
                 }
               : {}),
             domain: `data_prep`,
             name: `psi`,
-            version: `0.0.2`,
+            version: `0.0.4`,
           },
           inputs: [`${graphId}-node-1-output-0`, `${graphId}-node-2-output-0`],
           codeName: `data_prep/psi`,

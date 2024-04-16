@@ -341,7 +341,6 @@ export const MyNodeComponent: React.FC = () => {
                 {isEdit ? (
                   <Input
                     ref={inputRef}
-                    addonBefore="Http://"
                     style={{ width: '300px' }}
                     onBlur={() => {
                       setIsEdit(false);
@@ -366,6 +365,9 @@ export const MyNodeComponent: React.FC = () => {
                     <EditOutlined onClick={() => setIsEdit(true)} />
                   </div>
                 )}
+              </Descriptions.Item>
+              <Descriptions.Item label="通讯协议">
+                {nodeInfo?.protocol}
               </Descriptions.Item>
               {hasAccess({ type: [Platform.CENTER] }) && (
                 <Descriptions.Item label="节点证书">

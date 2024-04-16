@@ -10,6 +10,7 @@ import { ResultManagerService } from '../result-manager/result-manager.service';
 import style from './index.less';
 import type { ResultComponentProps } from './types';
 import { formatTimestamp } from './utils';
+import { openNewTab } from '@/util/path';
 
 const { Paragraph } = Typography;
 
@@ -19,6 +20,7 @@ export const ResultRuleComponent = (props: ResultComponentProps<'rule'>) => {
   const { gmtCreate, meta, jobId, taskId, type } = data;
   const { rows } = meta;
   const resultManagerService = getModel(ResultManagerService);
+  const { pathname } = useLocation();
 
   return (
     <div className={style.report}>
@@ -55,10 +57,8 @@ export const ResultRuleComponent = (props: ResultComponentProps<'rule'>) => {
                     size="small"
                     style={{ paddingLeft: 20 }}
                     onClick={() => {
-                      const a = document.createElement('a');
-                      a.href = `/node?nodeId=${nodeId}&tab=result&resultName=${path}`;
-                      a.target = '_blank';
-                      a.click();
+                      const search = `nodeId=${nodeId}&tab=result&resultName=${path}`;
+                      openNewTab(pathname, '/node', search);
                     }}
                   >
                     查看结果

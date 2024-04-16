@@ -48,6 +48,7 @@ export const typesMap: Record<AtomicParameterType, keyof AtomicParameter> = {
   AT_FLOATS: 'fs',
   AT_INTS: 'i64s',
   AT_STRINGS: 'ss',
+  AT_PARTY: 'ss',
   AT_SF_TABLE_COL: 'ss',
   // AT_UNDEFINED: undefined,
 };

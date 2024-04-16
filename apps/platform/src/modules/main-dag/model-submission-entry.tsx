@@ -2,13 +2,13 @@ import { Button, Tooltip } from 'antd';
 import { useEffect } from 'react';
 import { history } from 'umi';
 
-import { Platform, hasAccess } from '@/components/platform-wrapper';
-import { ProjectEditService } from '@/modules/layout/header-project-list/project-edit.service';
 import { Model, useModel } from '@/util/valtio-helper';
 
 import mainDag from './dag';
 import type { IGraphNodeType } from './graph.protocol';
 import styles from './index.less';
+import { Platform, hasAccess } from '@/components/platform-wrapper';
+import { ProjectEditService } from '@/modules/layout/header-project-list/project-edit.service';
 
 export const ModelSubmissionEntry = () => {
   const viewInstance = useModel(ModelSubmissionEntryView);

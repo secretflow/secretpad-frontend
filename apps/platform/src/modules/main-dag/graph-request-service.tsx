@@ -24,6 +24,7 @@ import {
   listGraphNodeStatus,
   startGraph,
   stopGraphNode,
+  graphNodeMaxIndexRefresh,
 } from '@/services/secretpad/GraphController';
 import { getImgLink } from '@/util/tracert-helper';
 import { getModel } from '@/util/valtio-helper';
@@ -304,20 +305,28 @@ export class GraphRequestService extends DefaultRequestService {
   }
 
   async getMaxNodeIndex(dagId: string) {
-    const { data = {} } = await getGraphDetail({
+    let currentIndex = undefined;
+    const { data: graphData = {} } = await getGraphDetail({
       projectId: getProjectId(),
       graphId: dagId,
     });
-
-    const { nodes } = data;
-    const nodeIndices = nodes?.map((node) => {
+    const nodeIndices = graphData?.nodes?.map((node) => {
       const { graphNodeId } = node;
       if (!graphNodeId) return 0;
       const [, , id] = graphNodeId.split('-');
       return parseInt(id) || 0;
     });
-    if (!nodeIndices || nodeIndices.length === 0) return 0;
-    return Math.max(...nodeIndices);
+    if (nodeIndices && nodeIndices.length !== 0) {
+      currentIndex = Math.max(...nodeIndices);
+    }
+    const { data = {} } = await graphNodeMaxIndexRefresh({
+      projectId: getProjectId(),
+      graphId: dagId,
+      currentIndex,
+    });
+    const { maxIndex } = data;
+    // 与服务端约定默认值从32开始，即使通过模版创建训练流，最大ID也会超出模版算子的ID
+    return maxIndex || 32;
   }
 
   async fetchGraph() {

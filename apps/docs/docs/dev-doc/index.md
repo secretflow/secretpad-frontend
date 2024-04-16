@@ -1,6 +1,6 @@
 ---
 nav:
-  title: 文档
+  title: 开发文档
   order: -1
 group:
   title: 入门

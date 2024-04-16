@@ -1,7 +1,7 @@
 import { DownOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Select, Tag } from 'antd';
 import React from 'react';
-import { history, useSearchParams } from 'umi';
+import { history, useLocation, useSearchParams } from 'umi';
 
 import { DagLayoutView } from '@/modules/layout/dag-layout';
 import { StatusEnum } from '@/modules/p2p-project-list/components/auth-project-tag';
@@ -21,6 +21,7 @@ export type ProjectVO = API.ProjectVO;
 export const ProjectListComponent: React.FC = () => {
   const viewInstance = useModel(HeaderProjectListView);
   const [searchParams] = useSearchParams();
+  const { pathname } = useLocation();
   React.useEffect(() => {
     viewInstance.selectValue = searchParams.get('projectId') || '';
   }, [searchParams, viewInstance.projectList]);
@@ -29,7 +30,7 @@ export const ProjectListComponent: React.FC = () => {
     <div className={styles.projectWrapper}>
       <Select
         disabled={viewInstance.projectList.length === 0}
-        onChange={viewInstance.changeProjectList}
+        onChange={(value: string) => viewInstance.changeProjectList(value, pathname)}
         value={viewInstance.loading ? '加载中...' : viewInstance.selectValue}
         suffixIcon={viewInstance.loading ? <LoadingOutlined /> : <DownOutlined />}
         popupClassName={styles.projectDropdown}
@@ -110,9 +111,8 @@ export class HeaderProjectListView extends Model {
     this.loading = false;
   };
 
-  changeProjectList = (value: string) => {
+  changeProjectList = (value: string, pathname: string) => {
     this.selectValue = value;
-    const pathname = window.location.pathname;
     const project = this.projectList?.find((item) => item.projectId === value);
 
     if (!project) {

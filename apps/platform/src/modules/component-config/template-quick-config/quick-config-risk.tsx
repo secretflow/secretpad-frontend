@@ -104,38 +104,12 @@ export const QuickConfigRisk = () => {
 
   return (
     <>
-      <QuickConfigPSIComponent tables={tables} tableList={tableList} form={form} />
-
-      <Form.Item
-        name="featureSelects"
-        label={<div className={styles.configItemLabel}>选择特征</div>}
-        required
-        messageVariables={{ msg: '请选择特征列' }}
-        rules={[
-          {
-            required: true,
-            message: '${msg}',
-            validator: (_, val) => {
-              if (!val || val.length === 0) return Promise.reject(new Error('${msg}'));
-
-              return Promise.resolve();
-            },
-          },
-        ]}
-        getValueProps={(value) => {
-          return { value: value?.ss };
-        }}
-        getValueFromEvent={(value) => {
-          return { ss: value };
-        }}
-      >
-        <MultiTableFeatureSelection
-          tableKeys={selectedTableInfo}
-          size={'small'}
-          rules={{ min: 1 }}
-        />
-      </Form.Item>
-
+      <QuickConfigPSIComponent
+        type="MPC"
+        tables={tables}
+        tableList={tableList}
+        form={form}
+      />
       <Form.Item
         name="labelSelects"
         label={<div className={styles.configItemLabel}>选择标签</div>}

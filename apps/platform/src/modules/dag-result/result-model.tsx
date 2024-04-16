@@ -10,6 +10,8 @@ import { Download } from './apply-download';
 import styles from './index.less';
 import type { ResultComponentProps } from './types';
 import { formatTimestamp } from './utils';
+import { openNewTab } from '@/util/path';
+import { useLocation } from 'umi';
 
 const { Paragraph } = Typography;
 
@@ -19,6 +21,7 @@ export const ResultModelComponent = (props: ResultComponentProps<'model'>) => {
   const { gmtCreate, meta, jobId, taskId, type } = data;
   const { rows } = meta;
   const resultManagerService = getModel(ResultManagerService);
+  const { pathname } = useLocation();
 
   return (
     <div className={styles.report}>
@@ -53,10 +56,8 @@ export const ResultModelComponent = (props: ResultComponentProps<'model'>) => {
                     size="small"
                     style={{ paddingLeft: 20 }}
                     onClick={() => {
-                      const a = document.createElement('a');
-                      a.href = `/node?nodeId=${nodeId}&tab=result&resultName=${path}`;
-                      a.target = '_blank';
-                      a.click();
+                      const search = `nodeId=${nodeId}&tab=result&resultName=${path}`;
+                      openNewTab(pathname, '/node', search);
                     }}
                   >
                     查看结果

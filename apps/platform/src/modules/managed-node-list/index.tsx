@@ -20,11 +20,14 @@ import { formatTimestamp } from '../dag-result/utils';
 import { CreateNodeModal } from './create-node/create-node.view';
 import styles from './index.less';
 import { NodeInfoDrawer } from './node-info/node-info.view';
+import { openNewTab } from '@/util/path';
+import { useLocation } from 'umi';
 
 export const ManagedNodeListComponent = () => {
   const viewInstance = useModel(ManagedNodeView);
   const [messageApi, contextHolder] = message.useMessage();
   const { showCreateNode } = viewInstance;
+  const { pathname } = useLocation();
   const columns: ColumnsType<API.NodeVO> = [
     {
       title: '节点名称',
@@ -116,10 +119,8 @@ export const ManagedNodeListComponent = () => {
                 type="link"
                 style={{ padding: 0 }}
                 onClick={() => {
-                  const a = document.createElement('a');
-                  a.href = `/node?nodeId=${record.nodeId}`;
-                  a.target = '_blank';
-                  a.click();
+                  const search = `nodeId=${record.nodeId}`;
+                  openNewTab(pathname, '/node', search);
                 }}
               >
                 进入节点

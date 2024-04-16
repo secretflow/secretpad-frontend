@@ -130,12 +130,10 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
   interface CreateModelServingRequest {
     modelId?: string;
     projectId?: string;
-    partyConfigs?: Array<CreateModelServingRequestPartyConfig>;
+    partyConfigs?: Array<OrgSecretflowSecretpadServiceModelModelCreateModelServingRequestPartyConfig>;
   }
 
   type CreateModelServingRequest$PartyConfig = Record<string, any>;
-
-  type CreateModelServingRequestPartyConfig = Record<string, any>;
 
   interface CreateNodeRequest {
     /** Node name, the value cannot be empty and can be the same */
@@ -303,7 +301,13 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     columns?: Array<TableColumnVO>;
   }
 
-  type FeatureTableErrorCode = 202012301 | 'FEATURE_TABLE_NOT_EXIST';
+  type FeatureTableErrorCode =
+    | 202012301
+    | 'FEATURE_TABLE_NOT_EXIST'
+    | 202012302
+    | 'FEATURE_TABLE_IP_FILTER'
+    | 202012303
+    | 'FEATURE_TABLE_IP_NOT_KNOWN';
 
   type FileMeta = Record<string, any>;
 
@@ -363,13 +367,6 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     /** Datatable id, it can not be blank */
     datatableId?: string;
     type?: string;
-  }
-
-  interface GetProjectGraphRequest {
-    /** Project id, it can not be blank */
-    projectId?: string;
-    /** graphId, it can not be blank */
-    graphId?: string;
   }
 
   interface GetProjectGraphRequest {
@@ -544,6 +541,17 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     graphNodeId?: string;
   }
 
+  interface GraphNodeMaxIndexRefreshRequest {
+    /** Project id, it can not be blank */
+    projectId?: string;
+    /** Graph id, it can not be blank */
+    graphId?: string;
+  }
+
+  interface GraphNodeMaxIndexRefreshVO {
+    maxIndex?: number;
+  }
+
   interface GraphNodeOutputRequest {
     /** Project id, it can not be blank */
     projectId?: string;
@@ -645,10 +653,6 @@ Unavailable：Datatables that filter unavailable status Other values or null：A
     nodeId?: string;
     /** Tee node id, it can be blank and has default value */
     teeNodeId?: string;
-  }
-
-  interface ListFeatureDatasourceRequest {
-    nodeId?: string;
   }
 
   interface ListGraphNodeStatusRequest {
@@ -808,16 +812,16 @@ waiting approved
   }
 
   interface ModelPackDetailVO {
-    parties?: Array<ModelPackDetailVOParties>;
+    parties?: Array<OrgSecretflowSecretpadServiceModelModelModelPackDetailVOParties>;
   }
 
   type ModelPackDetailVO$Parties = Record<string, any>;
 
-  type ModelPackDetailVOParties = Record<string, any>;
-
   interface ModelPackInfoVO {
     graphDetailVO?: GraphDetailVO;
     modelGraphDetail?: Array<string>;
+    modelStats?: string;
+    servingDetails?: Array<OrgSecretflowSecretpadServiceModelServingServingDetailVOServingDetail>;
   }
 
   interface ModelPackListVO {
@@ -834,16 +838,15 @@ waiting approved
     modelName?: string;
     modelDesc?: string;
     modelStats?: string;
-    createTime?: string;
+    gmtCreate?: string;
+    ownerId?: string;
   }
 
   interface ModelPartiesVO {
-    parties?: Array<ModelPartiesVOParty>;
+    parties?: Array<OrgSecretflowSecretpadServiceModelModelModelPartiesVOParty>;
   }
 
   type ModelPartiesVO$Party = Record<string, any>;
-
-  type ModelPartiesVOParty = Record<string, any>;
 
   interface ModelPartyConfig {
     modelParty?: string;
@@ -1111,10 +1114,18 @@ result management list interface */
     data?: OrgSecretflowSecretpadCommonDtoSecretPadResponse_SyncDataDTO;
   }
 
-  type OrgSecretflowSecretpadServiceModelApprovalParticipantVoteInfo = Record<
+  type OrgSecretflowSecretpadServiceModelApprovalParticipantVoteInfo = Record<string, any>;
+
+  type OrgSecretflowSecretpadServiceModelModelCreateModelServingRequestPartyConfig = Record<
     string,
     any
   >;
+
+  type OrgSecretflowSecretpadServiceModelModelModelPackDetailVOParties = Record<string, any>;
+
+  type OrgSecretflowSecretpadServiceModelModelModelPartiesVOParty = Record<string, any>;
+
+  type OrgSecretflowSecretpadServiceModelServingServingDetailVOServingDetail = Record<string, any>;
 
   interface P2pCreateNodeRequest {
     /** Node name, the value cannot be empty and can be the same */
@@ -1541,6 +1552,11 @@ result management list interface */
     data?: GraphDetailVO;
   }
 
+  interface SecretPadResponse_GraphNodeMaxIndexRefreshVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: GraphNodeMaxIndexRefreshVO;
+  }
+
   interface SecretPadResponse_GraphNodeOutputVO_ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: GraphNodeOutputVO;
@@ -1725,12 +1741,11 @@ result management list interface */
 
   interface ServingDetailVO {
     modelId?: string;
-    servingDetails?: Array<ServingDetailVOServingDetail>;
+    servingDetails?: Array<OrgSecretflowSecretpadServiceModelServingServingDetailVOServingDetail>;
+    servingId?: string;
   }
 
   type ServingDetailVO$ServingDetail = Record<string, any>;
-
-  type ServingDetailVOServingDetail = Record<string, any>;
 
   type SseEmitter = Record<string, any>;
 
@@ -1797,7 +1812,9 @@ result management list interface */
     | 202011110
     | 'SYNC_ERROR'
     | 2020111011
-    | 'REMOTE_CALL_ERROR';
+    | 'REMOTE_CALL_ERROR'
+    | 2020111012
+    | 'REQUEST_FREQUENCY_ERROR';
 
   interface TableColumnConfigParam {
     /** Column name, it can not be blank */
@@ -1939,15 +1956,7 @@ create operation */
     voteParticipantID?: string;
   }
 
-  type VoteStatusEnum =
-    | 0
-    | 'REVIEWING'
-    | 1
-    | 'APPROVED'
-    | 2
-    | 'REJECTED'
-    | 3
-    | 'NOT_INITIATED';
+  type VoteStatusEnum = 0 | 'REVIEWING' | 1 | 'APPROVED' | 2 | 'REJECTED' | 3 | 'NOT_INITIATED';
 
   interface VoteSyncRequest {
     /** vote request vote result

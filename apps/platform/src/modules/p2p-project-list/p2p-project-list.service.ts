@@ -60,7 +60,7 @@ export class P2pProjectListService extends Model {
    * @param action c
    * @param id
    */
-  process = async (action: StatusEnum, id: string) => {
+  process = async (action: StatusEnum, id: string, pathname: string) => {
     const { status } = await API.MessageController.reply({
       action,
       reason: this.comment,
@@ -72,7 +72,7 @@ export class P2pProjectListService extends Model {
     } else {
       message.success('处理成功');
       this.getListProject();
-      if (isP2PWorkbench()) {
+      if (isP2PWorkbench(pathname)) {
         if (this.messageGetList) {
           await this.messageGetList();
         }
