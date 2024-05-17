@@ -10,15 +10,23 @@ jobs:
       # look for existing cache and restore if found
       - restore_cache:
           key: npm-dependencies-{{ checksum "pnpm-lock.yaml" }}
+      # pnpm version
+      - run:
+         name: Install pnpm package manager
+         command: |
+          corepack enable
+          corepack prepare pnpm@8.8 --activate
+          pnpm config set store-dir .pnpm-store
       # install dependencies
       - run:
           name: install dependencies
           command: pnpm install
       # save any changes to the cache
       - save_cache:
-          key: npm-dependencies-{{ checksum "pnpm-lock.yaml" }}
-          paths:
-            - node_modules
+         name: Save pnpm Package Cache
+         key: pnpm-packages-{{ checksum "pnpm-lock.yaml" }}
+         paths:
+            - .pnpm-store
       - run:
           name: Run lint and tests
           command: pnpm run ci
