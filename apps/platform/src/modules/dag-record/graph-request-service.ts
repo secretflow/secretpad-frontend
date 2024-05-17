@@ -95,6 +95,20 @@ export class GraphRecordRequestService extends GraphRequestService {
     const node = nodes?.find((n) => n.graphNodeId === nodeId);
     return node;
   }
+
+  // 获取算子参与方
+  async getNodeParties(graphNodeId: string) {
+    const { search } = window.location;
+    const { projectId, dagId } = parse(search) as { projectId: string; dagId: string };
+    if (!graphNodeId || !projectId || !dagId) return [];
+    const { data } = await getJob({
+      projectId: getProjectId(),
+      jobId: dagId,
+      graphNodeId,
+    });
+    const nodes = data?.graph?.nodes || [];
+    return nodes.find((item) => item.graphNodeId === graphNodeId)?.parties || [];
+  }
 }
 
 const getProjectId = () => {

@@ -6,6 +6,8 @@ import { ModelStatus } from '../types';
 export class ModelReleaseService extends Model {
   loading = false;
 
+  toggle = false;
+
   // 预测节点
   // 根据模型获取节点
   predictionNodes: Array<API.ModelPackDetailVOParties> = [];
@@ -88,5 +90,13 @@ export class ModelReleaseService extends Model {
         this.onlineFeatures[id] = newColumns;
       });
     }
+  };
+
+  setToggle = () => {
+    this.toggle = !this.toggle;
+  };
+
+  changeToggle = (value: boolean) => {
+    this.toggle = value;
   };
 }

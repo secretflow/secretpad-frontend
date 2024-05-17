@@ -78,6 +78,31 @@ declare namespace API {
     gmtCreate?: string;
   }
 
+  interface CloudGraphNodeTaskLogsVO {
+    /** Graph node task status */
+    status?: GraphNodeTaskStatus;
+    /** Task logs */
+    logs?: Array<string>;
+    config?: boolean;
+  }
+
+  interface ComponentVersion {
+    /** teeDmImage */
+    teeDmImage?: string;
+    /** teeAppImage */
+    teeAppImage?: string;
+    /** capsuleManagerImage */
+    capsuleManagerSimImage?: string;
+    /** secretpadImage */
+    secretpadImage?: string;
+    /** secretflowServingImage */
+    secretflowServingImage?: string;
+    /** kusciaImage */
+    kusciaImage?: string;
+    /** secretflowImage */
+    secretflowImage?: string;
+  }
+
   interface CreateApprovalRequest {
     nodeID?: string;
     voteType?: string;
@@ -320,6 +345,8 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     nodes?: Array<GraphNodeInfo>;
     /** Graph edge list */
     edges?: Array<GraphEdge>;
+    /** Graph max parallelism */
+    maxParallelism?: number;
   }
 
   interface GetComponentRequest {
@@ -419,6 +446,8 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     nodes?: Array<GraphNodeDetail>;
     /** Graph edge list */
     edges?: Array<GraphEdge>;
+    /** Graph max parallelism */
+    maxParallelism?: number;
   }
 
   interface GraphEdge {
@@ -486,6 +515,12 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     status?: GraphNodeTaskStatus;
   }
 
+  interface GraphNodeCloudLogsRequest {
+    /** Project id, it can not be blank */
+    projectId?: string;
+    graphNodeId?: string;
+  }
+
   interface GraphNodeDetail {
     /** Graph code name */
     codeName?: string;
@@ -546,6 +581,8 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     projectId?: string;
     /** Graph id, it can not be blank */
     graphId?: string;
+    /** max node index in current graph */
+    currentIndex?: number;
   }
 
   interface GraphNodeMaxIndexRefreshVO {
@@ -633,7 +670,9 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     | 202011903
     | 'PROJECT_JOB_TASK_NOT_EXISTS'
     | 202011904
-    | 'PROJECT_JOB_DELETE_ERROR';
+    | 'PROJECT_JOB_DELETE_ERROR'
+    | 202011905
+    | 'PROJECT_JOB_CLOUD_LOG_ERROR';
 
   type KusciaGrpcErrorCode = 202012101 | 'RPC_ERROR';
 
@@ -1086,6 +1125,8 @@ waiting approved
     /** The count of node results. The detailed result information needs to be obtained through the
 result management list interface */
     resultCount?: number;
+    /** kuscia api protocol */
+    protocol?: string;
   }
 
   type OneApiResult_object_ = Record<string, any>;
@@ -1102,6 +1143,28 @@ result management list interface */
     any
   >;
 
+  interface OrgSecretflowSecretpadCommonDtoSecretPadResponse_ComponentVersion {
+    /** teeDmImage */
+    teeDmImage?: string;
+    /** teeAppImage */
+    teeAppImage?: string;
+    /** capsuleManagerImage */
+    capsuleManagerSimImage?: string;
+    /** secretpadImage */
+    secretpadImage?: string;
+    /** secretflowServingImage */
+    secretflowServingImage?: string;
+    /** kusciaImage */
+    kusciaImage?: string;
+    /** secretflowImage */
+    secretflowImage?: string;
+  }
+
+  interface OrgSecretflowSecretpadCommonDtoSecretPadResponse_ComponentVersion_ {
+    status?: OrgSecretflowSecretpadCommonDtoSecretPadResponseSecretPadResponseStatus;
+    data?: OrgSecretflowSecretpadCommonDtoSecretPadResponse_ComponentVersion;
+  }
+
   interface OrgSecretflowSecretpadCommonDtoSecretPadResponse_SyncDataDTO {
     tableName?: string;
     lastUpdateTime?: string;
@@ -1114,18 +1177,25 @@ result management list interface */
     data?: OrgSecretflowSecretpadCommonDtoSecretPadResponse_SyncDataDTO;
   }
 
-  type OrgSecretflowSecretpadServiceModelApprovalParticipantVoteInfo = Record<string, any>;
-
-  type OrgSecretflowSecretpadServiceModelModelCreateModelServingRequestPartyConfig = Record<
+  type OrgSecretflowSecretpadServiceModelApprovalParticipantVoteInfo = Record<
     string,
     any
   >;
 
-  type OrgSecretflowSecretpadServiceModelModelModelPackDetailVOParties = Record<string, any>;
+  type OrgSecretflowSecretpadServiceModelModelCreateModelServingRequestPartyConfig =
+    Record<string, any>;
+
+  type OrgSecretflowSecretpadServiceModelModelModelPackDetailVOParties = Record<
+    string,
+    any
+  >;
 
   type OrgSecretflowSecretpadServiceModelModelModelPartiesVOParty = Record<string, any>;
 
-  type OrgSecretflowSecretpadServiceModelServingServingDetailVOServingDetail = Record<string, any>;
+  type OrgSecretflowSecretpadServiceModelServingServingDetailVOServingDetail = Record<
+    string,
+    any
+  >;
 
   interface P2pCreateNodeRequest {
     /** Node name, the value cannot be empty and can be the same */
@@ -1525,6 +1595,11 @@ result management list interface */
   interface SecretPadResponse_Boolean_ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: boolean;
+  }
+
+  interface SecretPadResponse_CloudGraphNodeTaskLogsVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: CloudGraphNodeTaskLogsVO;
   }
 
   interface SecretPadResponse_CreateGraphVO_ {
@@ -1956,7 +2031,15 @@ create operation */
     voteParticipantID?: string;
   }
 
-  type VoteStatusEnum = 0 | 'REVIEWING' | 1 | 'APPROVED' | 2 | 'REJECTED' | 3 | 'NOT_INITIATED';
+  type VoteStatusEnum =
+    | 0
+    | 'REVIEWING'
+    | 1
+    | 'APPROVED'
+    | 2
+    | 'REJECTED'
+    | 3
+    | 'NOT_INITIATED';
 
   interface VoteSyncRequest {
     /** vote request vote result

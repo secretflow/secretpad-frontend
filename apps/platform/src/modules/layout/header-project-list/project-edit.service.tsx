@@ -5,11 +5,6 @@ import { Model, getModel } from '@/util/valtio-helper';
 export class ProjectEditService extends Model {
   loginService = getModel(LoginService);
 
-  constructor() {
-    super();
-    this.loginService.getUserInfo();
-  }
-
   canEdit: CanEditType = {
     configFormDisabled: false,
     menuContextDisabled: false,
@@ -63,7 +58,8 @@ export class ProjectEditService extends Model {
   /**
    * @returns 判断是不是 P2P 模式。P2P 下才有这个需求
    */
-  isP2pMode = () => {
+  isP2pMode = async () => {
+    await this.loginService.getUserInfo();
     return this.loginService.userInfo?.platformType === Platform.AUTONOMY;
   };
 }

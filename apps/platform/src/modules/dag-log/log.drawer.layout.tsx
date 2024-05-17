@@ -4,13 +4,17 @@ import classnames from 'classnames';
 import { parse } from 'query-string';
 import React from 'react';
 
+import { Platform } from '@/components/platform-wrapper';
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import dagLayoutStyle from '@/modules/layout/dag-layout/index.less';
 import recordLayoutStyle from '@/modules/layout/record-layout/index.less';
 import { getModel, useModel } from '@/util/valtio-helper';
 
+import { LoginService } from '../login/login.service';
+
 import { DagLogService } from './dag-log.service';
 import styles from './index.less';
+import { SlsService } from './sls-service';
 
 const CONFIG_MIN_WIDTH = 30;
 const CONFIG_MAX_WIDTH = 600;
@@ -21,6 +25,8 @@ interface IDagLogDrawer {
 
 export const DagLogDrawer = ({ children }: IDagLogDrawer) => {
   const service = useModel(DagLogService);
+  const slsService = useModel(SlsService);
+  const loginService = useModel(LoginService);
 
   const modalManager = useModel(DefaultModalManager);
 
@@ -44,10 +50,38 @@ export const DagLogDrawer = ({ children }: IDagLogDrawer) => {
     const { search } = window.location;
     const { projectId, dagId } = parse(search);
 
-    const { nodeData, from } = data;
+    const { nodeData, from, nodeParties } = data;
+    // P2P 模式下不需要进行参与方选择，只需要展示自己的
+    if (loginService?.userInfo?.platformType === Platform.AUTONOMY) {
+      if (nodeData.codeName === 'read_data/datatable') {
+        slsService.nodePartiesList = nodeParties;
+      } else {
+        slsService.nodePartiesList =
+          nodeParties?.filter(
+            (item: { nodeId: string | undefined }) =>
+              item.nodeId === loginService?.userInfo?.ownerId,
+          ) || [];
+      }
+    } else {
+      slsService.nodePartiesList = nodeParties || [];
+    }
+    slsService.currentNodePartiesId = slsService.nodePartiesList[0]?.nodeId;
 
     if (visible) {
       service.getLogContent(nodeData, projectId as string, dagId as string, from);
+      slsService.slsRequestParams = {
+        data: nodeData,
+        projectId: projectId as string,
+        graphId: dagId as string,
+        from,
+      };
+      slsService.getSlsLogContent(
+        nodeData,
+        projectId as string,
+        dagId as string,
+        from,
+        slsService.currentNodePartiesId,
+      );
     }
   }, [data, visible]);
 

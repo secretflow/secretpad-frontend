@@ -9,5 +9,6 @@ export type RequestService = {
   saveDag: (dagId: string, model: GraphModel) => Promise<void>;
   startRun: (dagId: string, componentIds: string[]) => Promise<void>;
   stopRun: (dagId: string, componentId?: string) => Promise<void>;
+  continueRun: (dagId: string, componentId?: string) => Promise<void>;
   getMaxNodeIndex: (dagId: string) => Promise<number>;
 };

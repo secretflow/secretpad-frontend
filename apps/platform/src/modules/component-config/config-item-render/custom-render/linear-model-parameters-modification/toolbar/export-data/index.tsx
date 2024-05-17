@@ -4,35 +4,32 @@ import { cloneDeep } from 'lodash';
 
 import { useModel } from '@/util/valtio-helper';
 
-import { BinModificationsRenderView } from '../..';
-import type { Bin } from '../../types';
+import { LinearModelParamsModificationsRenderView } from '../..';
+import type { ParametersDatum } from '../../types';
 import styles from '../index.less';
 
 import { csv } from './csv-export';
 
 export const ExportData = () => {
-  const coreService = useModel(BinModificationsRenderView);
-  const { binningData, node } = coreService;
+  const coreService = useModel(LinearModelParamsModificationsRenderView);
+  const { parametersData, node } = coreService;
 
   // 0. init columns
   const columns = [
     {
-      title: '特征',
-      dataIndex: 'feature',
-      key: 'feature',
+      title: 'feature',
+      dataIndex: 'featureName',
+      key: 'featureName',
     },
-    { title: '类型', dataIndex: 'type', key: 'type' },
+    { title: '所属节点', dataIndex: 'party', key: 'party' },
+    { title: 'weight', dataIndex: 'featureWeight', key: 'featureWeight' },
   ];
 
-  columns.push({ title: '分箱数', dataIndex: 'binCount', key: 'binCount' });
-  columns.push({ title: 'partyName', dataIndex: 'partyName', key: 'partyName' });
-
   const handleExport = () => {
-    const data = cloneDeep(binningData?.variableBins);
+    const data = cloneDeep(parametersData?.featureWeights);
 
     // 初始化表头
     const cols = columns.map(({ title }) => title);
-    cols.push(...['序号', '区间', '数量']);
 
     const exportData = data?.reduce(
       (tempRes, info) => {
@@ -40,7 +37,7 @@ export const ExportData = () => {
           return info[dataIndex];
         });
 
-        const binsInfo = getBinsInfo(info.bins);
+        const binsInfo = getBinsInfo(info);
 
         tempRes.push(row);
 
@@ -52,28 +49,25 @@ export const ExportData = () => {
       [cols],
     );
 
-    const isIncludeUnderline = binningData?.modelHash.includes('_');
+    const isIncludeUnderline = parametersData?.modelHash.includes('_');
 
     const _modelHash = isIncludeUnderline
-      ? binningData?.modelHash
-      : `${binningData?.modelHash}_${node?.graphNode.graphNodeId}`;
+      ? parametersData?.modelHash
+      : `${parametersData?.modelHash}_${node?.graphNode.graphNodeId}`;
 
-    csv([[`modelHash:${_modelHash}`], ...exportData], { name: _modelHash });
+    csv(
+      [[`modelHash:${_modelHash}`], [`bias:${parametersData?.bias}`], ...exportData],
+      {
+        name: _modelHash,
+      },
+    );
   };
 
   // 获取 bins 的 row
-  const getBinsInfo = (bins: Bin[]) => {
+  const getBinsInfo = (bins: ParametersDatum[]) => {
     if (bins && bins.length) {
       return bins.map((item) => {
-        return [
-          '',
-          '',
-          '',
-          '',
-          `${item.order}`,
-          `"${item.label}"`,
-          `${item.totalCount}`,
-        ];
+        return [`${item.featureName}`, `"${item.party}"`, `${item.featureWeight}`];
       });
     }
     return null;

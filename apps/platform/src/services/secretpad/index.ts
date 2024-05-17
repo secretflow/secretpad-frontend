@@ -1,11 +1,13 @@
 /* eslint-disable */
-// API 更新时间：2024-03-21 10:50:26
-// API 唯一标识：65fba07274d99af691b91c74
+// API 更新时间：2024-04-29 18:01:44
+// API 唯一标识：662f7008734197dac4a0fb67
 // 该文件由 OneAPI 自动生成，请勿手动修改！
 
 import * as ApprovalController from './ApprovalController';
 import * as AuthController from './AuthController';
 import * as CenterDataSyncController from './CenterDataSyncController';
+import * as CloudLogController from './CloudLogController';
+import * as ComponentVersionController from './ComponentVersionController';
 import * as DataController from './DataController';
 import * as DataSyncController from './DataSyncController';
 import * as DatatableController from './DatatableController';
@@ -28,6 +30,8 @@ export default {
   ApprovalController,
   AuthController,
   CenterDataSyncController,
+  CloudLogController,
+  ComponentVersionController,
   DataController,
   DataSyncController,
   DatatableController,

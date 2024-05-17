@@ -39,6 +39,8 @@ export class ModelService extends Model implements ModelServiceProtocol {
 
   isProjectArchive = false;
 
+  toggle = false;
+
   onViewUnMount() {
     this.search = '';
   }
@@ -139,6 +141,7 @@ export class ModelService extends Model implements ModelServiceProtocol {
           endpoints: item.endpoints,
           isMock: item.isMock,
           sourcePath: item.sourcePath,
+          resources: item.resources?.[0] || {},
         };
       });
     } else {
@@ -188,5 +191,9 @@ export class ModelService extends Model implements ModelServiceProtocol {
         'ARCHIVED';
     }
     return this.projectList;
+  };
+
+  setToggle = () => {
+    this.toggle = !this.toggle;
   };
 }

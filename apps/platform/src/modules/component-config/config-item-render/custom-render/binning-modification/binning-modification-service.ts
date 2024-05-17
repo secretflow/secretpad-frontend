@@ -1,5 +1,4 @@
 import { ActionType } from '@secretflow/dag';
-import { message } from 'antd';
 import { parse } from 'query-string';
 
 import type {
@@ -7,35 +6,23 @@ import type {
   CustomConfigNode,
   NodeDef,
 } from '@/modules/component-config/component-config-protocol';
-import { DefaultComponentConfigService } from '@/modules/component-config/component-config-service';
 import type {
   Attribute,
   ComputeMode,
 } from '@/modules/component-tree/component-protocol';
 import mainDag from '@/modules/main-dag/dag';
-import {
-  getGraphNodeOutput,
-  updateGraphNode,
-} from '@/services/secretpad/GraphController';
-import { Model, getModel } from '@/util/valtio-helper';
+import { getGraphNodeOutput } from '@/services/secretpad/GraphController';
 
 import type { NodeAllInfo } from '../../config-render-protocol';
+import { ParametersModificationService } from '../parameters-modification/parameters-modification-service';
 
-import type { BinningData, Record } from './types';
-import { DefaultUndoService } from './undo-service';
+import type { BinningData } from './types';
 
 import { binModificationsSerializer, binModificationsUnSerializer } from '.';
 
 /** 希望 binning service 有哪些能力 */
-export class DefaultBinningModificationService extends Model {
-  /** 分箱数据 */
-  binningDatas?: BinningData[];
-
-  componentConfigService = getModel(DefaultComponentConfigService);
-
-  undoService = getModel(DefaultUndoService<BinningData>);
-
-  private convertToBinningConfig = (binningData: BinningData, node: NodeAllInfo) => {
+export class DefaultBinningModificationService extends ParametersModificationService<BinningData> {
+  convertToConfig = (parametersData: BinningData, node: NodeAllInfo) => {
     const params: { attrPaths: string[]; attrs: Attribute[] } = {
       attrPaths: [],
       attrs: [],
@@ -63,7 +50,7 @@ export class DefaultBinningModificationService extends Model {
       const { type } = _node as AtomicConfigNode | CustomConfigNode;
 
       if (type === 'AT_CUSTOM_PROTOBUF') {
-        const formattedVal = binModificationsSerializer(binningData);
+        const formattedVal = binModificationsSerializer(parametersData);
 
         params.attrs.push({
           s: JSON.stringify(formattedVal),
@@ -88,41 +75,12 @@ export class DefaultBinningModificationService extends Model {
     };
   };
 
-  /** 更新 binning config
-   * 更新组件配置，会变更组件状态为 default
-   */
-  public saveBinningConfig = async (binningData: BinningData, node: NodeAllInfo) => {
-    const config = this.convertToBinningConfig(binningData, node);
-
-    this.componentConfigService.saveComponentConfig(config);
-  };
-
-  /** 更新 binning config
-   * 与 saveBinningConfig 区别：单纯地更新组件配置，不会变更组件状态为 default
-   * 目的：不让用户感知不必要的状态变化，如「合并」操作
-   */
-  public updateBinningConfig = async (binningData: BinningData, node: NodeAllInfo) => {
-    const config = this.convertToBinningConfig(binningData, node);
-
-    const { nodeDef, graphNodeId } = config.node;
-
-    const { status } = await updateGraphNode(config);
-
-    if (status && status.code === 0) {
-      mainDag.graphManager.executeAction(ActionType.changeNodeData, graphNodeId, {
-        nodeDef,
-      });
-    } else {
-      message.error(status?.msg || '更新失败');
-    }
-  };
-
   /** 获取 binning（目前：by output）
    * return [0, 1]
    * 0: 上游输出的结果表信息
    * 1: 最新的结果表信息
    */
-  public getBinningDatas = async (nodeId: string, outputId: string) => {
+  getParametersDatas = async (nodeId: string, outputId: string) => {
     if (outputId) {
       const { search } = window.location;
       const { projectId, dagId } = parse(search);
@@ -134,52 +92,28 @@ export class DefaultBinningModificationService extends Model {
         projectId: projectId as string,
       });
 
-      const data = output.data?.tabs;
+      const dataListString = output.data?.tabs;
 
-      if (!data) return;
+      if (!dataListString) return;
 
-      const parseDatas = JSON.parse(data);
+      const parseDataList = JSON.parse(dataListString);
 
-      if (parseDatas.length) {
-        this.binningDatas = parseDatas.map((data) =>
+      if (parseDataList.length) {
+        this.parametersDatas = parseDataList.map((data) =>
           binModificationsUnSerializer(JSON.parse(data)),
         );
 
-        return this.binningDatas;
+        return this.parametersDatas;
       }
     }
   };
 
   /** 合并 binning */
-  public merge = (binningData: BinningData, node: NodeAllInfo) => {
-    this.updateBinningConfig(binningData, node);
+  public merge = (parametersData: BinningData, node: NodeAllInfo) => {
+    this.updateConfig(parametersData, node);
     setTimeout(() => {
       this.execBinningCal(node.graphNode?.graphNodeId);
     }, 1000);
-  };
-
-  /** 撤销 binning */
-  public undo = () => {
-    const { undo } = this.undoService;
-    const snapshot = undo();
-
-    return snapshot;
-  };
-
-  /** redo binning */
-  public redo = () => {
-    const { redo } = this.undoService;
-    const snapshot = redo();
-
-    return snapshot;
-  };
-
-  /** 重做 binning */
-  public reset = () => {
-    const { reset } = this.undoService;
-    reset();
-
-    return [];
   };
 
   /** 引擎执行真正的 计算 */

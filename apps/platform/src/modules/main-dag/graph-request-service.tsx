@@ -18,6 +18,7 @@ import type {
   ComputeMode,
 } from '@/modules/component-tree/component-protocol';
 import { DefaultComponentTreeService } from '@/modules/component-tree/component-tree-service';
+import { getCloudLog } from '@/services/secretpad/CloudLogController';
 import {
   fullUpdateGraph,
   getGraphDetail,
@@ -59,6 +60,16 @@ const dagSuccessTracertMapping: Omit<IDagSuccessMapping, 'EDGE'> = {
     localStorageKey: 'autonomy_dag-success',
   },
 };
+
+/**
+ * 训练组件(SecureBoost训练 / SSGLM训练 / SS-XGB训练)支持断点续传
+ * 需要在算子 nodeDef 中添加 checkpoint_uri，值为 outputs[0]
+ */
+const mlTrainCodeNames = [
+  'ml.train/sgb_train',
+  'ml.train/ss_glm_train',
+  'ml.train/ss_xgb_train',
+];
 
 export class GraphRequestService extends DefaultRequestService {
   // 只有画布更新了，queryDag才会去重新请求接口
@@ -180,6 +191,10 @@ export class GraphRequestService extends DefaultRequestService {
         codeName,
         id: graphNodeId,
         status: graphNodeStatus,
+        styles: {
+          // 目前只支持 (SecureBoost训练 SSGLM训练 SS-XGB训练) 算子才可 继续执行
+          isContinueRun: mlTrainCodeNames.includes(codeName as string),
+        },
       };
     });
 
@@ -205,7 +220,6 @@ export class GraphRequestService extends DefaultRequestService {
   async saveDag(dagId: string, model: GraphModel) {
     const { nodes: n, edges: e } = model;
     const { mode } = parse(window.location.search);
-
     const nodes = await Promise.all(
       n.map(async (i) => {
         const { id, codeName, nodeDef, ...restNodes } = i;
@@ -223,10 +237,19 @@ export class GraphRequestService extends DefaultRequestService {
           },
           mode as ComputeMode,
         );
-
         const { outputs } = component as Component;
         const outputPorts = outputs?.map((_, index) => `${id}-output-${index}`);
 
+        const getNewNodeDef = () => {
+          const newNodeDef = nodeDef || { domain, name, version };
+          if (mlTrainCodeNames.includes(codeName)) {
+            return {
+              ...newNodeDef,
+              checkpoint_uri: outputPorts?.[0],
+            };
+          }
+          return newNodeDef;
+        };
         return id
           ? {
               ...restNodes,
@@ -234,7 +257,7 @@ export class GraphRequestService extends DefaultRequestService {
               codeName,
               inputs: [],
               outputs: outputPorts,
-              nodeDef: nodeDef || { domain, name, version },
+              nodeDef: getNewNodeDef(),
             }
           : i;
       }),
@@ -304,6 +327,22 @@ export class GraphRequestService extends DefaultRequestService {
     }
   }
 
+  async continueRun(dagId: string, componentId?: string) {
+    if (!componentId) return;
+    const { status } = await startGraph({
+      projectId: getProjectId(),
+      graphId: dagId,
+      nodes: [componentId],
+      breakpoint: true,
+    });
+
+    if (status?.code === 0) {
+      message.success('开始继续执行');
+    } else {
+      message.error(status?.msg || '执行失败');
+    }
+  }
+
   async getMaxNodeIndex(dagId: string) {
     let currentIndex = undefined;
     const { data: graphData = {} } = await getGraphDetail({
@@ -361,6 +400,19 @@ export class GraphRequestService extends DefaultRequestService {
     const node = nodes?.find((n) => n.graphNodeId === nodeId);
     return node;
   }
+
+  // 获取算子参与方
+  async getNodeParties(graphNodeId: string) {
+    const { search } = window.location;
+    const { projectId } = parse(search) as { projectId: string };
+    if (!graphNodeId || !projectId) return [];
+    const { data } = await getCloudLog({
+      queryParties: true,
+      projectId,
+      graphNodeId,
+    });
+    return data?.nodeParties || [];
+  }
 }
 
 const getProjectId = () => {
@@ -371,26 +423,40 @@ const getProjectId = () => {
 
 const isConfigFinished = (node: API.GraphNodeDetail, configs: AtomicConfigNode[]) => {
   const { nodeDef } = node;
-  const { attrPaths = [], attrs = [] } = nodeDef || {};
+  const { attrPaths, attrs } = nodeDef || {};
 
-  const isFinished = true;
+  /** 有 isRequired，但是确实没配置过 = 未配置状态 */
   for (let i = 0; i < configs.length; i++) {
     const config = configs[i];
+    if (config.isRequired && !attrPaths && !attrs) {
+      return false;
+    }
+  }
+
+  /** 有 isRequired，配置过 = 就会去检查配置过的里边，确认必填项值是否为空 */
+  for (let i = 0; i < configs.length; i++) {
+    const config = configs[i];
+    const { prefixes = [], name } = config;
+    const configName =
+      prefixes && prefixes.length > 0 ? prefixes.join('/') + '/' + name : name;
+
+    if (!attrPaths?.includes(configName)) break;
+
     if (config.isRequired) {
-      const { prefixes = [], name } = config;
-      const configName =
-        prefixes && prefixes.length > 0 ? prefixes.join('/') + '/' + name : name;
-      const attrIdx = (attrPaths as string[]).indexOf(configName);
+      const attrIdx = attrPaths.indexOf(configName);
+
       if (attrIdx < 0) {
         return false;
       }
 
       const attrVal = attrs[attrIdx];
       if (!attrVal) return false;
+
       const { is_na = false } = attrVal;
       if (is_na) return false;
     }
   }
 
-  return isFinished;
+  /** 没有 isRequired，没配置过 = 已配置状态 */
+  return true;
 };

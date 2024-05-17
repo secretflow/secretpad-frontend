@@ -8,13 +8,13 @@ import { Model, getModel, useModel } from '@/util/valtio-helper';
 import { BinModificationsRenderView } from '../..';
 import type { BinningData } from '../../types';
 import { CurrOperationEnum } from '../../types';
-import { DefaultUndoService } from '../../undo-service';
 import styles from '../index.less';
+import { DefaultRedoUndoService } from '../../../redo-undo/redo-undo-service';
 
 export const MergeOperation = () => {
   const {
     selectedRowKeys,
-    binningData,
+    parametersData,
     merge,
     setCurrOperation,
     disabled,
@@ -24,12 +24,12 @@ export const MergeOperation = () => {
   useModel(MergeBtnView);
 
   const handleMergeRow = async () => {
-    if (!binningData || selectedRowKeys.length <= 1) return;
+    if (!parametersData || selectedRowKeys.length <= 1) return;
 
     setCurrOperation(CurrOperationEnum.Merge);
 
     // 1. 标记要合并的 桶
-    const markedbinningData = binningData?.variableBins?.map((record) => {
+    const markedParametersData = parametersData?.variableBins?.map((record) => {
       return {
         ...record,
         bins: record.bins?.map((bin) => {
@@ -41,11 +41,11 @@ export const MergeOperation = () => {
       };
     });
 
-    // 2. 更新右侧面板配置 update nodeDef: updateBinningTable(markedbinningData);
+    // 2. 更新右侧面板配置 update nodeDef: updateBinningTable(markedParametersData);
     // 3. 执行算子 run single:execBinningCal();
     merge({
-      modelHash: binningData.modelHash,
-      variableBins: markedbinningData,
+      modelHash: parametersData.modelHash,
+      variableBins: markedParametersData,
     });
   };
 
@@ -73,7 +73,7 @@ export const MergeOperation = () => {
 
 export class MergeBtnView extends Model {
   graphService = getModel(GraphService);
-  undoService = getModel(DefaultUndoService<BinningData>);
+  undoService = getModel(DefaultRedoUndoService<BinningData>);
   binningModificationView = getModel(BinModificationsRenderView);
 
   prevStatus?: NodeStatus;
@@ -109,13 +109,13 @@ export class MergeBtnView extends Model {
             this.prevStatus !== currNodeStatus
           ) {
             // 拿到合并后的数据
-            const binningData = await this.binningModificationView.refreshData();
+            const parametersData = await this.binningModificationView.refreshData();
 
-            if (binningData) {
+            if (parametersData) {
               message.success('合并成功');
               this.prevStatus = currNodeStatus;
 
-              this.undoService.record(binningData);
+              this.undoService.record(parametersData);
               this.binningModificationView.setSelectedRowKeys([]);
             }
           }

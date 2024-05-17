@@ -15,15 +15,11 @@ import {
   groupbyUnserializer,
 } from './custom-render/groupby-render/serializer';
 import {
-  unionSerializer,
-  unionUnserializer,
-} from './custom-render/union-render/serializer';
+  modelModificationsSerializer,
+  modelModificationsUnSerializer,
+} from './custom-render/linear-model-parameters-modification';
 
 export const customSerializerRegistry = {
-  union: {
-    serializer: unionSerializer,
-    unserializer: unionUnserializer,
-  },
   'case_when_rules_pb2.CaseWhenRule': {
     serializer: caseWhenSerializer,
     unserializer: caseWhenUnserializer,
@@ -31,6 +27,10 @@ export const customSerializerRegistry = {
   Binning_modifications: {
     serializer: binModificationsSerializer,
     unserializer: binModificationsUnSerializer,
+  },
+  linear_model_pb2: {
+    serializer: modelModificationsSerializer,
+    unserializer: modelModificationsUnSerializer,
   },
   'calculate_rules_pb2.CalculateOpRules': {
     serializer: calculateSerializer,

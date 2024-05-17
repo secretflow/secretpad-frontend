@@ -6,7 +6,6 @@ import { CalculateOpRender } from './custom-render/calculate-op-render';
 import { CaseWhenRender } from './custom-render/case-when-render';
 import { GroupByRender } from './custom-render/groupby-render';
 import { LinearModelParametersModificationRender } from './custom-render/linear-model-parameters-modification';
-import { UnionRender } from './custom-render/union-render';
 import { DefaultColSelection } from './defalt-col-selection-template';
 import { DefaultMultiTableFeatureSelection } from './default-feature-selection/default-feature-selection';
 import { DefaultNodeSelect } from './default-node-selection-template';
@@ -16,6 +15,7 @@ import {
   DefaultInput,
   DefaultSelect,
   DefaultUnion,
+  DefaultStruct,
 } from './default-render-template';
 import { DefaultSQLEditor } from './default-sql-editor';
 import { DefaultTableSelect } from './default-table-selection-temple';
@@ -24,21 +24,28 @@ export class DefaultConfigRender implements ConfigRenderProtocol {
   registerConfigRenders() {
     return [
       {
-        canHandle: (node: CustomConfigNode) =>
-          node.type === 'AT_CUSTOM_PROTOBUF' && node.custom_protobuf_cls === 'union'
-            ? 1
-            : false,
-        component: UnionRender,
-      },
-      {
         canHandle: (node: AtomicConfigNode) =>
           node.type === 'AT_UNION_GROUP' ? 1 : false,
         component: DefaultUnion,
       },
       {
+        canHandle: (node: AtomicConfigNode) => {
+          return node.type === 'AT_STRUCT_GROUP' ? 1 : false;
+        },
+        component: DefaultStruct,
+      },
+      {
         canHandle: (node: CustomConfigNode) =>
           node.type === 'AT_CUSTOM_PROTOBUF' &&
           node.custom_protobuf_cls === 'Binning_modifications'
+            ? 1
+            : false,
+        component: BinModificationsRender,
+      },
+      {
+        canHandle: (node: CustomConfigNode) =>
+          node.type === 'AT_CUSTOM_PROTOBUF' &&
+          node.custom_protobuf_cls === 'linear_model_pb2'
             ? 1
             : false,
         component: LinearModelParametersModificationRender,
@@ -59,7 +66,6 @@ export class DefaultConfigRender implements ConfigRenderProtocol {
             : false,
         component: CalculateOpRender,
       },
-
       {
         canHandle: (node: CustomConfigNode) =>
           node.type === 'AT_CUSTOM_PROTOBUF' &&

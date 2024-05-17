@@ -3,8 +3,21 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useModel } from '@/util/valtio-helper';
 
-import { DagLogService } from './dag-log.service';
+import { DagLogService, LogTextMap } from './dag-log.service';
 import './monaco-log';
+import { Space, Tag } from 'antd';
+
+export const LogLabel: React.FC = () => {
+  const dagLogService = useModel(DagLogService);
+  return (
+    <Space style={{ height: 32 }}>
+      平台日志
+      <Tag color={LogTextMap[dagLogService.logTipContent.status]?.color}>
+        {LogTextMap[dagLogService.logTipContent.status]?.text}
+      </Tag>
+    </Space>
+  );
+};
 
 export const Log: React.FC = () => {
   const editorRef = useRef<HTMLDivElement>(null);

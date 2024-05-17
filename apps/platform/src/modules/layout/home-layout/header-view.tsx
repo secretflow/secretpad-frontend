@@ -6,10 +6,10 @@ import {
   LogoutOutlined,
   DatabaseOutlined,
 } from '@ant-design/icons';
-import { Avatar, Badge, Button, Dropdown, Space } from 'antd';
+import { Avatar, Badge, Button, Dropdown, Empty, Popover, Space, Spin } from 'antd';
 import classNames from 'classnames';
 import { parse } from 'query-string';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { history, useLocation } from 'umi';
 
 import centerOfflineImgLink from '@/assets/center-offline.png';
@@ -31,6 +31,7 @@ import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import { HomeLayoutService } from './home-layout.service';
 import styles from './index.less';
+import { VersionService } from './version-service';
 
 type IAvatarMapping = Record<
   Platform,
@@ -68,6 +69,8 @@ export const HeaderComponent = () => {
   const viewInstance = useModel(HeaderModel);
   const layoutService = useModel(HomeLayoutService);
   const loginService = useModel(LoginService);
+  const versionService = useModel(VersionService);
+
   const { search, pathname } = useLocation();
   const { nodeId } = parse(search);
 
@@ -84,7 +87,42 @@ export const HeaderComponent = () => {
     history.push('/login');
   };
 
+  const content = (
+    <Spin spinning={versionService.loading}>
+      <div className={styles.headerDropdown}>
+        {versionService.versionList.length === 0 ? (
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        ) : (
+          <Space direction="vertical">
+            {versionService.versionList.map((item) => {
+              return <div key={item.name}>{`${item.name}版本：${item.version}`}</div>;
+            })}
+          </Space>
+        )}
+      </div>
+    </Spin>
+  );
+
+  const handleOpenChange = async (open: boolean) => {
+    if (open) {
+      await versionService.getVersion();
+    }
+  };
+
   const items = [
+    {
+      key: 'version',
+      label: (
+        <Popover
+          content={content}
+          trigger="hover"
+          placement="left"
+          onOpenChange={handleOpenChange}
+        >
+          组件版本
+        </Popover>
+      ),
+    },
     {
       key: 'changePassword',
       label: <div onClick={viewInstance.showChangePassword}>修改密码</div>,

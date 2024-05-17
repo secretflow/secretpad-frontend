@@ -65,6 +65,10 @@ export class DefaultRequestService extends DAGContext implements RequestService 
     return;
   }
 
+  async continueRun(dagId: string, componentId?: string) {
+    return;
+  }
+
   async getMaxNodeIndex(dagId: string) {
     return 2;
   }

@@ -66,10 +66,12 @@ export class RecordGraphService extends Model implements GraphEventHandlerProtoc
     const { id } = data;
 
     const graphNode = await this.graphRecordRequestService.getGraphNode(id);
+    const nodeParties = await this.graphRecordRequestService.getNodeParties(id);
 
     const logparam: LogParam = {
       nodeData: { ...data, id: graphNode?.taskId as string },
       from: 'record',
+      nodeParties,
     };
 
     if (
@@ -84,7 +86,6 @@ export class RecordGraphService extends Model implements GraphEventHandlerProtoc
 
     const upstreamNodes = await this.dataService.getUpstreamNodes(id);
     const inputNodes = await this.dataService.getInputsNodes();
-
     this.modalManager.openModal(componentConfigDrawer.id, {
       ...data,
       graphNode,

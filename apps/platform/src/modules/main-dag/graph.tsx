@@ -1,5 +1,5 @@
-import type { DAG } from '@secretflow/dag';
-import { splitPortId, Portal, ShowMenuContext } from '@secretflow/dag';
+import type { Node } from '@antv/x6';
+import { Portal, ShowMenuContext, splitPortId } from '@secretflow/dag';
 import { useSize } from 'ahooks';
 import { Empty, Tooltip } from 'antd';
 import classnames from 'classnames';
@@ -21,7 +21,7 @@ import { RecordListDrawerItem } from '../pipeline-record-list/record-list-drawer
 
 import mainDag from './dag';
 import styles from './index.less';
-import { createPortTooltip } from './util';
+import { createPortTooltip, validateConnection } from './util';
 
 // const ProgressContext = React.createContext(30);
 const X6ReactPortalProvider = Portal.getProvider(); // 注意，一个 graph 只能申明一个 portal provider
@@ -152,6 +152,40 @@ export class GraphView extends Model {
                 'main-widget-tooltip',
               );
             }
+          },
+          connecting: {
+            snap: {
+              radius: 50,
+            },
+            allowBlank: false,
+            allowLoop: false,
+            highlight: true,
+            connector: 'dag-connector',
+            connectionPoint: 'anchor',
+            anchor: 'center',
+            validateMagnet({ magnet }) {
+              return magnet.getAttribute('port-group') !== 'top';
+            },
+            validateConnection({ sourceCell, targetCell, sourceMagnet, targetMagnet }) {
+              return validateConnection(
+                sourceCell as Node,
+                targetCell as Node,
+                sourceMagnet!,
+                targetMagnet!,
+                this.getEdges(),
+              );
+            },
+            createEdge() {
+              return this.createEdge({
+                shape: 'dag-edge',
+                attrs: {
+                  line: {
+                    strokeDasharray: '5 5',
+                  },
+                },
+                zIndex: -1,
+              });
+            },
           },
         },
         menuContext,

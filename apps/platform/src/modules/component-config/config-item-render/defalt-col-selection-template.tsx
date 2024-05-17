@@ -1,4 +1,5 @@
 import { PlusCircleFilled, DeleteOutlined } from '@ant-design/icons';
+import { useDeepCompareEffect } from 'ahooks';
 import { Form, Select } from 'antd';
 import classnames from 'classnames';
 import { parse } from 'query-string';
@@ -42,7 +43,7 @@ export const DefaultColSelection: React.FC<RenderProp<string>> = (config) => {
     projectId: string;
     dagId: string;
   };
-  useEffect(() => {
+  useDeepCompareEffect(() => {
     const getTables = async () => {
       const dataTableList: IDataTable[] = [];
 

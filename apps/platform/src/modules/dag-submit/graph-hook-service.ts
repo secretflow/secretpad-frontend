@@ -91,7 +91,7 @@ export class GraphHookService extends DefaultHookService {
         ports.push({
           id: `${nodeId}-output-${index}`,
           group: 'bottom',
-          type: output.types[0],
+          type: output.types,
           attrs: {
             circle: {
               magnet: false,

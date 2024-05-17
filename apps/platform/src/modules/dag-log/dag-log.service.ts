@@ -1,4 +1,5 @@
 import type { GraphNode } from '@secretflow/dag';
+
 import {
   DefaultModalManager,
   ModalsEnum,
@@ -13,7 +14,7 @@ const MAXHEIGHT = 432;
 
 type DagCustomStatus = 'OTHER' | 'STAGING';
 
-const StatusMap: Record<API.GraphNodeTaskStatus | DagCustomStatus, string> = {
+export const StatusMap: Record<API.GraphNodeTaskStatus | DagCustomStatus, string> = {
   SUCCEED: 'success',
   RUNNING: 'running',
   FAILED: 'failed',
@@ -53,6 +54,7 @@ export const LogTextMap = {
 export interface LogParam {
   nodeData: GraphNode;
   from: 'record' | 'pipeline';
+  nodeParties?: { nodeName: string; nodeId: string }[];
 }
 
 export type StatusType = 'success' | 'running' | 'failed' | 'other';

@@ -83,19 +83,14 @@ export class TemplateGuidePSI extends Model implements PipelineTemplateContribut
         {
           outputs: [`${graphId}-node-3-output-0`],
           nodeDef: {
-            domain: 'data_prep',
-            name: 'psi',
-            version: '0.0.4',
             attrPaths: [
               'input/receiver_input/key',
               'input/sender_input/key',
               'protocol',
-              'disable_alignment',
-              'skip_duplicates_check',
-              'check_hash_digest',
-              'left_side',
-              'join_type',
-              'missing_value',
+              'sort_result',
+              'allow_duplicate_keys',
+              'allow_duplicate_keys/no/skip_duplicates_check',
+              'fill_value_int',
               'ecdh_curve',
             ],
             attrs: [
@@ -108,7 +103,15 @@ export class TemplateGuidePSI extends Model implements PipelineTemplateContribut
                 is_na: false,
               },
               {
-                s: 'PROTOCOL_ECDH',
+                s: 'PROTOCOL_RR22',
+                is_na: false,
+              },
+              {
+                b: true,
+                is_na: false,
+              },
+              {
+                s: 'no',
                 is_na: false,
               },
               {
@@ -116,27 +119,15 @@ export class TemplateGuidePSI extends Model implements PipelineTemplateContribut
               },
               {
                 is_na: true,
-              },
-              {
-                is_na: true,
-              },
-              {
-                ss: ['alice'],
-                is_na: false,
-              },
-              {
-                s: 'ADVANCED_JOIN_TYPE_UNSPECIFIED',
-                is_na: false,
-              },
-              {
-                s: 'NA',
-                is_na: false,
               },
               {
                 s: 'CURVE_FOURQ',
                 is_na: false,
               },
             ],
+            domain: 'data_prep',
+            name: 'psi',
+            version: '0.0.5',
           },
           inputs: [`${graphId}-node-1-output-0`, `${graphId}-node-2-output-0`],
           codeName: `data_prep/psi`,

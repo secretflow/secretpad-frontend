@@ -42,7 +42,7 @@ const defaultColumnsType = [
 ];
 
 export const BinningTable = () => {
-  const { binningData, type } = useModel(BinModificationsRenderView);
+  const { parametersData, type } = useModel(BinModificationsRenderView);
 
   const columns =
     type === TableTypeEnum.WoeBinning ? woeColumnsType : defaultColumnsType;
@@ -57,7 +57,7 @@ export const BinningTable = () => {
             return <ExpandedTable bins={record?.bins || []} />;
           },
         }}
-        dataSource={binningData?.variableBins}
+        dataSource={parametersData?.variableBins}
       />
     </div>
   );

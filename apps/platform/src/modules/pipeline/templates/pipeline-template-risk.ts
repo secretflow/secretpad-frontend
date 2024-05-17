@@ -22,7 +22,6 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
       labelSelects,
       receiver,
       pred,
-      leftSide,
     } = quickConfigs || {};
     return {
       edges: [
@@ -197,7 +196,7 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           status: `STAGING`,
         },
         {
-          outputs: [`${graphId}-node-11-output-0`],
+          outputs: [`${graphId}-node-11-output-0`, `${graphId}-node-11-output-1`],
           nodeDef: {
             domain: `ml.train`,
             name: `ss_sgd_train`,
@@ -254,7 +253,7 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
 
             domain: `ml.predict`,
             name: `ss_sgd_predict`,
-            version: `0.0.1`,
+            version: `0.0.2`,
           },
           inputs: [`${graphId}-node-11-output-0`, `${graphId}-node-8-output-0`],
           codeName: `ml.predict/ss_sgd_predict`,
@@ -336,23 +335,59 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
         {
           outputs: [`${graphId}-node-3-output-0`],
           nodeDef: {
-            ...(receiverKey && senderKey && leftSide
+            ...(receiverKey && senderKey
               ? {
                   attrPaths: [
                     'input/receiver_input/key',
                     'input/sender_input/key',
-                    'left_side',
+                    'protocol',
+                    'sort_result',
+                    'allow_duplicate_keys',
+                    'allow_duplicate_keys/no/skip_duplicates_check',
+                    'fill_value_int',
+                    'ecdh_curve',
                   ],
                   attrs: [
-                    { ...receiverKey, is_na: false },
-                    { ...senderKey, is_na: false },
-                    { ...leftSide, is_na: false },
+                    {
+                      ...receiverKey,
+                      is_na: false,
+                    },
+                    {
+                      ...senderKey,
+                      is_na: false,
+                    },
+                    {
+                      s: 'PROTOCOL_RR22',
+                      is_na: false,
+                    },
+                    {
+                      b: true,
+                      is_na: false,
+                    },
+                    {
+                      s: 'no',
+                      is_na: false,
+                    },
+                    {
+                      is_na: true,
+                    },
+                    {
+                      is_na: true,
+                    },
+                    {
+                      s: 'CURVE_FOURQ',
+                      is_na: false,
+                    },
                   ],
+                  domain: 'data_prep',
+                  name: 'psi',
+                  version: '0.0.5',
                 }
-              : {}),
-            domain: `data_prep`,
-            name: `psi`,
-            version: `0.0.4`,
+              : {
+                  domain: 'data_prep',
+                  name: 'psi',
+                  version: '0.0.5',
+                }),
           },
           inputs: [`${graphId}-node-1-output-0`, `${graphId}-node-2-output-0`],
           codeName: `data_prep/psi`,

@@ -185,7 +185,7 @@ export class TemplateGuideRisk extends Model implements PipelineTemplateContribu
         status: `STAGING`,
       },
       {
-        outputs: [`${graphId}-node-11-output-0`],
+        outputs: [`${graphId}-node-11-output-0`, `${graphId}-node-11-output-1`],
         nodeDef: {
           attrPaths: [
             'input/train_dataset/feature_selects',
@@ -271,26 +271,43 @@ export class TemplateGuideRisk extends Model implements PipelineTemplateContribu
       {
         outputs: [`${graphId}-node-13-output-0`],
         nodeDef: {
-          attrPaths: ['batch_size', 'receiver', 'pred_name', 'save_ids', 'save_label'],
+          attrPaths: [
+            'input/feature_dataset/saved_features',
+            'batch_size',
+            'receiver',
+            'pred_name',
+            'save_ids',
+            'save_label',
+          ],
           attrs: [
+            {
+              ss: ['contact_cellular'],
+              is_na: false,
+            },
             {
               i64: 1024,
               is_na: false,
             },
             {
+              ss: ['bob'],
               is_na: false,
-              s: 'bob',
             },
             {
-              is_na: false,
               s: 'pred',
+              is_na: false,
             },
-            { b: true, is_na: false },
-            { b: true, is_na: false },
+            {
+              b: true,
+              is_na: false,
+            },
+            {
+              b: true,
+              is_na: false,
+            },
           ],
           domain: 'ml.predict',
           name: 'ss_sgd_predict',
-          version: '0.0.1',
+          version: '0.0.2',
         },
         inputs: [`${graphId}-node-11-output-0`, `${graphId}-node-8-output-0`],
         codeName: `ml.predict/ss_sgd_predict`,
@@ -365,19 +382,14 @@ export class TemplateGuideRisk extends Model implements PipelineTemplateContribu
       {
         outputs: [`${graphId}-node-3-output-0`],
         nodeDef: {
-          domain: 'data_prep',
-          name: 'psi',
-          version: '0.0.4',
           attrPaths: [
             'input/receiver_input/key',
             'input/sender_input/key',
             'protocol',
-            'disable_alignment',
-            'skip_duplicates_check',
-            'check_hash_digest',
-            'left_side',
-            'join_type',
-            'missing_value',
+            'sort_result',
+            'allow_duplicate_keys',
+            'allow_duplicate_keys/no/skip_duplicates_check',
+            'fill_value_int',
             'ecdh_curve',
           ],
           attrs: [
@@ -390,7 +402,15 @@ export class TemplateGuideRisk extends Model implements PipelineTemplateContribu
               is_na: false,
             },
             {
-              s: 'PROTOCOL_ECDH',
+              s: 'PROTOCOL_RR22',
+              is_na: false,
+            },
+            {
+              b: true,
+              is_na: false,
+            },
+            {
+              s: 'no',
               is_na: false,
             },
             {
@@ -398,27 +418,15 @@ export class TemplateGuideRisk extends Model implements PipelineTemplateContribu
             },
             {
               is_na: true,
-            },
-            {
-              is_na: true,
-            },
-            {
-              ss: ['alice'],
-              is_na: false,
-            },
-            {
-              s: 'ADVANCED_JOIN_TYPE_UNSPECIFIED',
-              is_na: false,
-            },
-            {
-              s: 'NA',
-              is_na: false,
             },
             {
               s: 'CURVE_FOURQ',
               is_na: false,
             },
           ],
+          domain: 'data_prep',
+          name: 'psi',
+          version: '0.0.5',
         },
         inputs: [`${graphId}-node-1-output-0`, `${graphId}-node-2-output-0`],
         codeName: `data_prep/psi`,

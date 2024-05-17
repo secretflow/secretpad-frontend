@@ -3,18 +3,16 @@ import { Button } from 'antd';
 
 import { useModel } from '@/util/valtio-helper';
 
-import { BinModificationsRenderView } from '../..';
-import type { BinningData } from '../../types';
-import { CurrOperationEnum } from '../../types';
-import { DefaultUndoService } from '../../undo-service';
+import { LinearModelParamsModificationsRenderView } from '../..';
+import { DefaultRedoUndoService } from '../../../redo-undo/redo-undo-service';
+import type { ParametersData } from '../../types';
 import styles from '../index.less';
 
 export const RedoOperation = () => {
-  const viewInstance = useModel(BinModificationsRenderView);
-  const undoService = useModel(DefaultUndoService<BinningData>);
+  const viewInstance = useModel(LinearModelParamsModificationsRenderView);
+  const undoService = useModel(DefaultRedoUndoService<ParametersData>);
 
   const handleRedo = async () => {
-    viewInstance.setCurrOperation(CurrOperationEnum.Redo);
     viewInstance.redo();
   };
 

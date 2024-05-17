@@ -13,7 +13,7 @@ import { csv } from './csv-export';
 
 export const ExportData = () => {
   const coreService = useModel(BinModificationsRenderView);
-  const { binningData, type, node } = coreService;
+  const { parametersData, type, node } = coreService;
 
   // 0. init columns
   const columns = [
@@ -33,7 +33,7 @@ export const ExportData = () => {
   columns.push({ title: 'partyName', dataIndex: 'partyName', key: 'partyName' });
 
   const handleExport = () => {
-    const data = cloneDeep(binningData?.variableBins);
+    const data = cloneDeep(parametersData?.variableBins);
 
     // 初始化表头
     const cols = columns.map(({ title }) => title);
@@ -61,11 +61,11 @@ export const ExportData = () => {
       [cols],
     );
 
-    const isIncludeUnderline = binningData?.modelHash.includes('_');
+    const isIncludeUnderline = parametersData?.modelHash.includes('_');
 
     const _modelHash = isIncludeUnderline
-      ? binningData?.modelHash
-      : `${binningData?.modelHash}_${node?.graphNode.graphNodeId}`;
+      ? parametersData?.modelHash
+      : `${parametersData?.modelHash}_${node?.graphNode.graphNodeId}`;
 
     csv([[`modelHash:${_modelHash}`], ...exportData], { name: _modelHash });
   };

@@ -3,7 +3,7 @@ import { Divider, Button, Alert, Tooltip, Breadcrumb, Popconfirm } from 'antd';
 import classNames from 'classnames';
 import { history } from 'umi';
 
-import { Log } from '@/modules/dag-log/log-viewer.view';
+import { Log, LogLabel } from '@/modules/dag-log/log-viewer.view';
 import { DagLogDrawer } from '@/modules/dag-log/log.drawer.layout';
 import { DagLog } from '@/modules/dag-log/log.view';
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
@@ -104,9 +104,16 @@ export const ModelSubmissionLayout = () => {
       </div>
       <SubmissionDrawer />
       <DagLogDrawer>
-        <DagLog>
-          <Log />
-        </DagLog>
+        <DagLog
+          items={[
+            {
+              key: '1',
+              label: <LogLabel />,
+              children: <Log />,
+              disabled: false,
+            },
+          ]}
+        />
       </DagLogDrawer>
     </div>
   );

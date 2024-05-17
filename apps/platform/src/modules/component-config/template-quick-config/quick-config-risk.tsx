@@ -174,11 +174,11 @@ export const QuickConfigRisk = () => {
         messageVariables={{ label: '接收方' }}
         valuePropName="value"
         getValueProps={(value) => {
-          return { value: value?.s };
+          return { value: value?.ss };
         }}
         tooltip={'逻辑回归预测结果的接收方'}
         getValueFromEvent={(value) => {
-          return { s: value };
+          return { ss: [value] };
         }}
         rules={[
           {

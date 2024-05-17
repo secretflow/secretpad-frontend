@@ -21,6 +21,7 @@ import { SelectNodeAction } from './select-node';
 import { ShowResultAction } from './show-result';
 import { StopAllAction } from './stop-all';
 import { StopRunAction } from './stop-run';
+import { ContinueRunAction } from './continue-run';
 import { TidyLayoutAction, tidyLayoutActionHotKey } from './tidy-layout';
 import { ToggleSelectionAction, toggleSelectionActionHotKey } from './toggle-selection';
 import { ChangeNodeDataAction } from './update-node-data';
@@ -48,6 +49,7 @@ export const Actions = [
   RunSingleAction,
   RunUpAction,
   StopRunAction,
+  ContinueRunAction,
   ZoomInAction,
   ZoomOutAction,
   SelectNodeAction,

@@ -1,4 +1,5 @@
-import { Descriptions, Drawer, Table, Tag } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
+import { Descriptions, Drawer, Space, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect } from 'react';
 
@@ -103,6 +104,9 @@ export const ModelReleaseInfoModal = (props: ModelInfoModalType) => {
       </div>
       <div className={styles.featureTitle}>特征匹配</div>
       <Table
+        pagination={{
+          hideOnSinglePage: true,
+        }}
         columns={columns}
         expandable={{
           expandedRowRender: (record) => (
@@ -120,6 +124,44 @@ export const ModelReleaseInfoModal = (props: ModelInfoModalType) => {
         rowKey={(record) => record.nodeId}
         className={styles.tableContent}
       />
+      <div className={styles.featureTitle}>
+        <Space>
+          资源配置
+          <Space onClick={modelService.setToggle} className={styles.configToggle}>
+            <DownOutlined
+              style={{
+                transform: modelService.toggle ? `rotate(180deg)` : `rotate(0)`,
+              }}
+            />
+            {modelService.toggle ? '收起' : '展开'}
+          </Space>
+        </Space>
+      </div>
+      <div style={{ display: modelService.toggle ? 'block' : 'none' }}>
+        {modelService.modelServingDetailList.map((item) => {
+          return (
+            <div className={styles.config} key={item.nodeId}>
+              <div className={styles.configLabel}>{item.nodeName}</div>
+              <div className={styles.configContent}>
+                <Descriptions column={4} className={styles.descriptionClass}>
+                  <Descriptions.Item label="最小CPU">
+                    {`${item.resources.minCPU}核`}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="最大CPU">
+                    {`${item.resources.maxCPU}核`}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="最小Memory">
+                    {`${item.resources.minMemory}`}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="最大Memory">
+                    {`${item.resources.maxMemory}`}
+                  </Descriptions.Item>
+                </Descriptions>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </Drawer>
   );
 };

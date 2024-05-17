@@ -1,5 +1,6 @@
 import { Form, Button, Space, Alert } from 'antd';
 // import { debounce } from 'lodash';
+import type { FormInstance } from 'antd/lib';
 import { parse } from 'query-string';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'umi';
@@ -28,6 +29,8 @@ import {
   getUpstreamKey,
   codeNameRenderIndex,
   codeNameRenderKey,
+  advancedConfigIndex,
+  hideCodeNameIndex,
 } from './component-config-protocol';
 import { ComponentConfigRegistry } from './component-config-registry';
 import { DefaultComponentConfigService } from './component-config-service';
@@ -45,6 +48,13 @@ const layout = {
     span: 24,
   },
 };
+
+const hideSaveBtnCustomProtobufClsList = [
+  // 分箱修改算子
+  'Binning_modifications',
+  // 线性模型参数修改算子
+  'linear_model_pb2',
+];
 
 interface IConfigFormComponent {
   node: NodeAllInfo;
@@ -80,6 +90,9 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
   const exif = {
     renderKey: codeNameRenderKey[nodeName as keyof typeof codeNameRenderKey],
     renderIndex: codeNameRenderIndex[nodeName as keyof typeof codeNameRenderIndex],
+    hideIndex: hideCodeNameIndex[nodeName as keyof typeof hideCodeNameIndex],
+    advancedConfigIndex:
+      advancedConfigIndex[nodeName as keyof typeof advancedConfigIndex],
     upstreamTables:
       nodeName in getUpstreamKey
         ? getUpstreamKey[nodeName as keyof typeof getUpstreamKey](
@@ -99,7 +112,6 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
         node,
         mode as ComputeMode,
       );
-
       setConfig(configNode);
     };
     const getTranslation = () => {
@@ -146,6 +158,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
       if (attrPaths && attrs) form.setFieldsValue(getGraphNodeAttrs(attrPaths, attrs));
     };
 
+    // fetch 组件信息 所需 （2）getGraphNodeAttrs
     const getGraphNodeAttrs = (attrPaths: string[], attrs: Attribute[]) => {
       const ret: Record<string, Attribute> = {};
 
@@ -170,12 +183,14 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
         }
       });
 
+      // { output/output_ds: [] }
       return ret;
     };
 
     fetchGraphNode();
   }, [graphNode, form]);
 
+  // fetch 组件信息 所需 （1）initFormVal
   const initFormVal = async () => {
     const params: { attrPaths: string[]; attrs: Attribute[] } = {
       attrPaths: [],
@@ -193,7 +208,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
         params.attrPaths.push(name);
         const { type } = node;
 
-        if (node.custom_protobuf_cls === 'Binning_modifications') {
+        if (hideSaveBtnCustomProtobufClsList.includes(node.custom_protobuf_cls)) {
           setIsShowSaveBtn(false);
         } else {
           setIsShowSaveBtn(true);
@@ -211,15 +226,19 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
           params.attrs.push(param as Attribute);
         } else {
           const param: Record<string, ValueOf<Attribute>> = {};
+          // typeKey = ss
           const typeKey = typesMap[type];
 
+          // attrVal = []
           let attrVal: ValueOf<AtomicParameter> | undefined =
             typeKey === 'ss' ? [] : undefined;
 
           if (node.default_value) attrVal = node.default_value[typeKey];
 
+          // {ss: []}
           param[typeKey] = attrVal;
 
+          // attrs: [{ss: []}]
           params.attrs.push(param as Attribute);
         }
       }
@@ -230,22 +249,28 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
 
   /** 2. 把表单格式，serializer 序列化，转换成 node info */
   const onSaveConfig = async (val: Record<string, ValueOf<Attribute> | undefined>) => {
+    /** （1）处理成传给服务端的配置 */
     const params: { attrPaths: string[]; attrs: Attribute[] } = {
       attrPaths: [],
       attrs: [],
     };
+
+    /** （2）校验配置是否完成 */
     // serialize the params according to type
     let isFinished = true;
 
-    componentConfig?.map((_node) => {
+    const valKeys = Object.keys(val);
+    componentConfig?.forEach((_node) => {
+      const { type } = _node as AtomicConfigNode | CustomConfigNode;
+
       const name =
         _node.prefixes && _node.prefixes.length > 0
           ? _node.prefixes.join('/') + '/' + _node.name
           : _node.name;
 
-      params.attrPaths.push(name);
+      if (!valKeys.includes(name)) return;
 
-      const { type } = _node as AtomicConfigNode | CustomConfigNode;
+      params.attrPaths.push(name);
 
       if (type === 'AT_CUSTOM_PROTOBUF') {
         const { custom_protobuf_cls } = _node as unknown as CustomConfigNode;
@@ -253,6 +278,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
         const formattedVal = serializer(val[name], custom_protobuf_cls);
 
         params.attrs.push(formattedVal as Attribute);
+
         isFinished = true;
         return;
       }
@@ -275,7 +301,13 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
       if (Array.isArray(formedAttrVal) && formedAttrVal.length === 0) {
         isNA = true;
       }
-      if ((_node as AtomicConfigNode).isRequired && isNA) isFinished = false;
+
+      /**
+       * 假如当前配置节点是 isRequired，但是数据为空 isNA，就是未配置状态：isFinished = false
+       */
+      if ((_node as AtomicConfigNode).isRequired && isNA) {
+        isFinished = false;
+      }
 
       param['is_na'] = isNA;
 
@@ -302,7 +334,6 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
   };
 
   const onFormFinished = (val: Record<string, ValueOf<Attribute> | undefined>) => {
-    console.log(val, 'valvalvalval');
     onSaveConfig(val);
     // close config drawer
     onClose();
@@ -315,14 +346,18 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
   //   500,
   // );
 
+  const [advancedConfigOpen, setAdvancedConfigOpen] = useState(false);
+
   return (
     <div className={styles.configForm}>
       {componentConfig && componentConfig.length > 0 && isEditable && (
         <Alert
+          key={'warning'}
           message="修改的内容需要保存才能生效，未保存退出则恢复至上次保存的配置"
           type="warning"
         />
       )}
+
       {componentConfig && componentConfig.length > 0 && (
         <Form
           {...layout}
@@ -336,30 +371,133 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
         >
           {renderIndex
             ? renderIndex.map((order) => {
-                return (
-                  <ConfigurationNodeRender
-                    config={componentConfig[order]}
-                    node={node}
-                    key={order}
-                    index={order}
-                    exif={exif}
-                    translation={translation}
-                    disabled={!isEditable}
-                  />
-                );
+                // 开启了高级配置
+                if (advancedConfigOpen) {
+                  return (
+                    <div key={order}>
+                      {exif.advancedConfigIndex?.[0] === order ? (
+                        <Button
+                          type="link"
+                          style={{ padding: 0, margin: '8px 0' }}
+                          onClick={() => {
+                            setAdvancedConfigOpen(!advancedConfigOpen);
+                          }}
+                        >
+                          高级配置
+                        </Button>
+                      ) : null}
+                      {exif.hideIndex?.includes(order) ? null : (
+                        <ConfigurationNodeRender
+                          form={form}
+                          componentConfig={componentConfig}
+                          config={componentConfig[order]}
+                          node={node}
+                          key={order}
+                          index={order}
+                          exif={exif}
+                          translation={translation}
+                          disabled={!isEditable}
+                        />
+                      )}
+                    </div>
+                  );
+                } else {
+                  return exif.hideIndex?.includes(order) ? null : (
+                    <div key={order}>
+                      {exif.advancedConfigIndex?.[0] === order ? (
+                        <Button
+                          type="link"
+                          style={{ padding: 0, margin: '8px 0' }}
+                          onClick={() => {
+                            setAdvancedConfigOpen(!advancedConfigOpen);
+                          }}
+                        >
+                          高级配置
+                        </Button>
+                      ) : null}
+                      <ConfigurationNodeRender
+                        style={{
+                          display: !exif.advancedConfigIndex?.includes(order)
+                            ? 'block'
+                            : 'none',
+                        }}
+                        form={form}
+                        componentConfig={componentConfig}
+                        config={componentConfig[order]}
+                        node={node}
+                        key={order}
+                        index={order}
+                        exif={exif}
+                        translation={translation}
+                        disabled={!isEditable}
+                      />
+                    </div>
+                  );
+                }
               })
-            : componentConfig.map((config, index) => {
-                return (
-                  <ConfigurationNodeRender
-                    config={config}
-                    node={node}
-                    key={index}
-                    index={index}
-                    exif={exif}
-                    translation={translation}
-                    disabled={!isEditable}
-                  />
-                );
+            : componentConfig.map((_, index) => {
+                if (advancedConfigOpen) {
+                  return (
+                    <div key={index}>
+                      {exif.advancedConfigIndex?.[0] === index ? (
+                        <Button
+                          type="link"
+                          style={{ padding: 0, margin: '8px 0' }}
+                          onClick={() => {
+                            setAdvancedConfigOpen(!advancedConfigOpen);
+                          }}
+                        >
+                          高级配置
+                        </Button>
+                      ) : null}
+                      {exif.hideIndex?.includes(index) ? null : (
+                        <ConfigurationNodeRender
+                          form={form}
+                          componentConfig={componentConfig}
+                          config={componentConfig[index]}
+                          node={node}
+                          key={index}
+                          index={index}
+                          exif={exif}
+                          translation={translation}
+                          disabled={!isEditable}
+                        />
+                      )}
+                    </div>
+                  );
+                } else {
+                  return exif.hideIndex?.includes(index) ? null : (
+                    <div key={index}>
+                      <ConfigurationNodeRender
+                        style={{
+                          display: !exif.advancedConfigIndex?.includes(index)
+                            ? 'block'
+                            : 'none',
+                        }}
+                        form={form}
+                        componentConfig={componentConfig}
+                        config={componentConfig[index]}
+                        node={node}
+                        key={index}
+                        index={index}
+                        exif={exif}
+                        translation={translation}
+                        disabled={!isEditable}
+                      />
+                      {exif.advancedConfigIndex?.[0] === index ? (
+                        <Button
+                          type="link"
+                          style={{ padding: 0, margin: '8px 0' }}
+                          onClick={() => {
+                            setAdvancedConfigOpen(!advancedConfigOpen);
+                          }}
+                        >
+                          高级配置
+                        </Button>
+                      ) : null}
+                    </div>
+                  );
+                }
               })}
 
           {isEditable && isShowSaveBtn && (
@@ -380,19 +518,25 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
 };
 
 export const ConfigurationNodeRender = ({
+  form,
   node,
   config,
   exif,
   index,
   translation,
+  style,
   disabled = false,
+  componentConfig,
 }: {
+  form: FormInstance;
   config: AtomicConfigNode;
   node: NodeAllInfo;
   exif: Record<string, any>;
   index: number;
   translation: Record<string, string>;
   disabled?: boolean;
+  style?: Record<any, any>;
+  componentConfig: ConfigItem[];
 }) => {
   const configRenderRegistry = useModel(ConfigRenderRegistry);
   const Render = configRenderRegistry.getRender(config, exif);
@@ -403,13 +547,15 @@ export const ConfigurationNodeRender = ({
   const [value, setValue] = useState(defaultVal);
 
   return Render ? (
-    <div className={styles.defaultRender}>
+    <div className={styles.defaultRender} style={{ ...style }}>
       <Render
+        form={form}
         value={value}
         defaultVal={defaultVal}
+        componentConfig={componentConfig}
         node={config}
         nodeAllInfo={node}
-        type={node.type}
+        type={config.type}
         onChange={(val: ValueOf<Attribute> | undefined | null) => {
           setValue(val);
         }}

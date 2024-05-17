@@ -5,12 +5,13 @@ import { parse } from 'query-string';
 import type { Dispatch, SetStateAction } from 'react';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'umi';
-import { MultiTableFeatureSelection } from '../config-item-render/default-feature-selection/table-feature-selection';
 
 import {
   getProject,
   getProjectDatatable,
 } from '@/services/secretpad/ProjectController';
+
+import { MultiTableFeatureSelection } from '../config-item-render/default-feature-selection/table-feature-selection';
 
 import styles from './index.less';
 
@@ -293,24 +294,6 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
           ))
         }
       </Form.List>
-      {type === 'MPC' && (
-        <Form.Item
-          name={'leftSide'}
-          label={<div className={styles.configItemLabel}>左表节点</div>}
-          required
-          messageVariables={{ label: '左表节点' }}
-          valuePropName="value"
-          getValueProps={(value) => {
-            return { value: value?.ss };
-          }}
-          tooltip={'和允许求交键重复的求交类型搭配使用'}
-          getValueFromEvent={(value) => {
-            return { ss: [value] };
-          }}
-        >
-          <Select options={nodeOptions} />
-        </Form.Item>
-      )}
       {type === 'MPC' && (
         <Form.Item
           name="featureSelects"

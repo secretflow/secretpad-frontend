@@ -1,20 +1,22 @@
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Breadcrumb, Divider } from 'antd';
-import { history } from 'umi';
 import { parse, stringify } from 'query-string';
+import { history } from 'umi';
 
 import { Platform, hasAccess } from '@/components/platform-wrapper';
 import { ComponentConfigDrawer } from '@/modules/component-config/config-modal';
-import { Log } from '@/modules/dag-log/log-viewer.view';
+import { Log, LogLabel } from '@/modules/dag-log/log-viewer.view';
 import { DagLogDrawer } from '@/modules/dag-log/log.drawer.layout';
 import { DagLog } from '@/modules/dag-log/log.view';
+import { SlsLog, SlsLogLabel } from '@/modules/dag-log/sls-log-viewer.view';
+import { SlsService } from '@/modules/dag-log/sls-service';
 import { RecordGraphComponent } from '@/modules/dag-record/graph';
 import { PipelineTitleComponent } from '@/modules/dag-record/pipeline-title-view';
 import { RecordResultComponent } from '@/modules/dag-record/record-result-view';
 import { RecordGuideTourComponent } from '@/modules/dag-record-guide-tour/record-guide-tour.view';
 import { ResultDrawer } from '@/modules/dag-result/result-modal';
 import { RecordComponent } from '@/modules/main-dag/record';
-import { Model } from '@/util/valtio-helper';
+import { Model, useModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
 
@@ -29,6 +31,7 @@ export enum RecordArea {
 }
 
 export const RecordLayout = () => {
+  const slsLogService = useModel(SlsService);
   const goBack = async () => {
     const searchDagParams = window.location.search;
     const { projectId, mode, type } = parse(searchDagParams);
@@ -100,9 +103,22 @@ export const RecordLayout = () => {
       <ResultDrawer />
       <ComponentConfigDrawer />
       <DagLogDrawer>
-        <DagLog>
-          <Log />
-        </DagLog>
+        <DagLog
+          items={[
+            {
+              key: '1',
+              label: <LogLabel />,
+              children: <Log />,
+              disabled: false,
+            },
+            {
+              key: '2',
+              label: <SlsLogLabel />,
+              disabled: !slsLogService.slsLogIsConfig,
+              children: <SlsLog />,
+            },
+          ]}
+        />
       </DagLogDrawer>
       <RecordGuideTourComponent />
     </div>

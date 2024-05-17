@@ -31,6 +31,13 @@ export const isPost = (node: Node) => {
   return domain === 'postprocessing';
 };
 
+/** 判断是不是线性模型参数修改算子 */
+export const isModelParamsModification = (node: Node) => {
+  const { nodeDef = {} } = node.getData();
+  const { name } = nodeDef;
+  return name === 'model_param_modifications';
+};
+
 /** 将模型算子进行前后排序 */
 export const sortNodes = (nodes: Node[]) => {
   const graph = mainDag.graphManager.getGraphInstance();
@@ -67,7 +74,7 @@ export const highlightSelectionByIds = (ids: string[]) => {
 
 /**
  * 重置画布展示样式
- * 只有成功的模型训练算子才可点击
+ * 只有成功的模型训练算子以及(模型预测算子并且上游有线性模型参数修改算子)才可点击
  * */
 export const resetGraphStyles = () => {
   const graph = mainDag.graphManager.getGraphInstance();
@@ -75,19 +82,40 @@ export const resetGraphStyles = () => {
   const graphNodeList = graph.getNodes();
   graphNodeList.forEach((node) => {
     const nodeData = node.getData();
-    const hasEdge = (graph.getIncomingEdges(node) || []).length !== 0;
     const data = {
       ...nodeData,
       styles: {
-        isOpaque:
-          nodeData?.nodeDef?.domain === 'ml.train' && nodeData.status === 0 && hasEdge
-            ? false
-            : true,
+        isOpaque: !nodeCanOpaque(node),
         isHighlighted: false,
       },
     };
     node.setData(data);
   });
+};
+
+/**
+ * 成功的模型训练算子高亮
+ * 成功的模型预测算子并且上游有线性模型参数修改算子高亮
+ */
+export const nodeCanOpaque = (node: Node) => {
+  const graph = mainDag.graphManager.getGraphInstance();
+  if (!graph) return;
+  const nodeData = node.getData();
+  const {
+    status,
+    nodeDef: { domain },
+  } = nodeData;
+  if (status !== 0 || (graph.getIncomingEdges(node) || []).length === 0) return false;
+  if (domain === 'ml.predict') {
+    const predecessors = graph.getPredecessors(node) || [];
+    const modelParamsModificationNode = predecessors.find(
+      (item) =>
+        item.getData().nodeDef?.name === 'model_param_modifications' &&
+        item.getData().status === 0,
+    );
+    return !!modelParamsModificationNode;
+  }
+  return domain === 'ml.train';
 };
 
 /**
@@ -256,12 +284,19 @@ export const getModelSameBranchNodes = (node: Node) => {
       // 获取前处理算子
       const preNodesResult = getPreNodes(modelNode as Node);
       result.preNodes = [...result.preNodes, ...preNodesResult];
+      // 获取线性模型参数修改,将其也作为前处理提交
+      const modelParamsModificationList = predecessors.filter((n) => {
+        const { status } = n.getData();
+        if (status === 0 && isModelParamsModification(n as Node)) return n;
+      }) as Node[];
+      if (modelParamsModificationList.length !== 0) {
+        result.preNodes = [...result.preNodes, ...modelParamsModificationList];
+      }
     }
 
     // 获取后处理算子 只有模型预测算子，才可以获取后处理算子
     const postNodesResult = getPostNodes(node);
     result.nextNodes = [...result.nextNodes, ...postNodesResult];
   }
-
   return result;
 };

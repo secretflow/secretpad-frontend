@@ -4,22 +4,22 @@ import { Button } from 'antd';
 import { useModel } from '@/util/valtio-helper';
 
 import { BinModificationsRenderView } from '../..';
+import { DefaultRedoUndoService } from '../../../redo-undo/redo-undo-service';
 import type { BinningData, Record } from '../../types';
 import { CurrOperationEnum } from '../../types';
-import { DefaultUndoService } from '../../undo-service';
 import styles from '../index.less';
 
 export const ResetOperation = () => {
-  const { undoStack, redoStack } = useModel(DefaultUndoService<BinningData>);
+  const { undoStack, redoStack } = useModel(DefaultRedoUndoService<BinningData>);
   const viewInstance = useModel(BinModificationsRenderView);
 
   const handleReset = async () => {
     viewInstance.reset();
     viewInstance.setCurrOperation(CurrOperationEnum.Reset);
 
-    viewInstance.setBinningData({
-      modelHash: viewInstance.binningData?.modelHash as string,
-      variableBins: viewInstance.binningData?.variableBins?.map((record) => {
+    viewInstance.setParametersData({
+      modelHash: viewInstance.parametersData?.modelHash as string,
+      variableBins: viewInstance.parametersData?.variableBins?.map((record) => {
         return {
           ...record,
           bins: record.bins?.map((bin) => {

@@ -1,6 +1,7 @@
+import { useDeepCompareEffect } from 'ahooks';
 import { Form } from 'antd';
 import { parse } from 'query-string';
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 
 import {
   getProject,
@@ -35,7 +36,7 @@ export const DefaultMultiTableFeatureSelection: React.FC<RenderProp<string>> = (
   const [tables, setTables] = useState<IDataTable[]>([]);
   const [outputTables, setOutputTables] = useState<IOutputDataTable[]>([]);
 
-  useEffect(() => {
+  useDeepCompareEffect(() => {
     const getTables = async () => {
       const dataTableList: IDataTable[] = [];
       const { search } = window.location;

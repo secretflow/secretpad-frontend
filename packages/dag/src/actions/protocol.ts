@@ -20,6 +20,7 @@ export enum ActionType {
   runUp = 'runUp',
   stopRun = 'stopRun',
   stopAll = 'stopAll',
+  continueRun = 'continueRun',
 
   copy = 'copy',
   paste = 'paste',

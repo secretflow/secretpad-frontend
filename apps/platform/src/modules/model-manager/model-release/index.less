@@ -3,12 +3,51 @@
   opacity: 0.4;
 }
 
+.configToggle {
+  color: #1677ff;
+  cursor: pointer;
+}
+
+.nodeSettingContent {
+  min-height: 92px;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: 2px;
+  background: rgb(0 0 0 / 2%);
+
+  :global(.ant-input-number-group-addon) {
+    color: rgb(0 0 0 / 45%);
+    font-size: 14px;
+    line-height: 22px;
+  }
+}
+
+.configToggleDisabled {
+  color: rgb(0 0 0 / 25%);
+  cursor: not-allowed;
+  font-size: 14px;
+  line-height: 22px;
+  pointer-events: none;
+}
+
+.nodeOptionsTitle {
+  margin-top: 16px;
+  margin-bottom: 8px;
+  color: rgb(0 0 0 / 88%);
+  font-size: 14px;
+  line-height: 22px;
+}
+
 .featuresTitle {
   margin-bottom: 8px;
   color: rgb(0 0 0 / 88%);
   font-size: 14px;
   font-weight: 500;
   line-height: 22px;
+}
+
+.featureContent {
+  margin-bottom: 14px;
 }
 
 .emptyFeature {
