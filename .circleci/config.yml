@@ -13,7 +13,7 @@ jobs:
       # install dependencies
       - run:
           name: install dependencies
-          command: pnpm install --ignore-scripts
+          command: pnpm install
       # save any changes to the cache
       - save_cache:
           key: npm-dependencies-{{ checksum "pnpm-lock.yaml" }}
