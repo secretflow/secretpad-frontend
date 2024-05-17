@@ -1,0 +1,49 @@
+.configDrawer {
+  position: absolute;
+
+  :global {
+    .ant-drawer-content-wrapper {
+      box-shadow: 0 1px 4px 0 rgb(0 0 0 / 15%);
+    }
+
+    .ant-drawer-title {
+      font-size: 14px;
+    }
+
+    .ant-drawer-body {
+      padding: 0 12px;
+    }
+
+    .ant-drawer-header {
+      padding: 10px 12px 20px;
+      border-bottom-color: transparent;
+    }
+
+    .ant-form-item {
+      margin-bottom: 16px;
+    }
+
+    .ant-alert-message {
+      color: rgb(0 0 0 / 45%);
+      font-size: 12px;
+    }
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  .footer {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    height: 52px;
+    background-color: white;
+  }
+
+  .task {
+    color: rgb(0 0 0 / 88%);
+    font-size: 12px !important;
+    line-height: 20px;
+  }
+}

@@ -11,19 +11,19 @@ export const EditDefaultWoe = () => {
     type,
     disabled,
     defaultWoeValue,
-    binningData,
+    parametersData,
     setDefaultWoeValue,
     setCurrOperation,
-    setBinningData,
+    setParametersData,
   } = useModel(BinModificationsRenderView);
 
   const handleChange = (value: number | null) => {
     setDefaultWoeValue(value as number);
 
-    if (binningData) {
+    if (parametersData) {
       setCurrOperation(CurrOperationEnum.EditDefaultWoe);
 
-      const changedBinningData = binningData?.variableBins?.map((record) => {
+      const changedBinningData = parametersData?.variableBins?.map((record) => {
         return {
           ...record,
           bins: record.bins?.map((bin) => {
@@ -39,9 +39,9 @@ export const EditDefaultWoe = () => {
         };
       });
 
-      if (changedBinningData && binningData) {
-        setBinningData({
-          modelHash: binningData.modelHash as string,
+      if (changedBinningData && parametersData) {
+        setParametersData({
+          modelHash: parametersData.modelHash as string,
           variableBins: changedBinningData,
         });
       }
@@ -49,14 +49,14 @@ export const EditDefaultWoe = () => {
   };
 
   useEffect(() => {
-    const elseBin = binningData?.variableBins?.[0]?.bins?.find(
+    const elseBin = parametersData?.variableBins?.[0]?.bins?.find(
       (bin) => bin.label === 'ELSE',
     );
 
     if (elseBin?.woe) {
       setDefaultWoeValue(elseBin.woe);
     }
-  }, [binningData]);
+  }, [parametersData]);
 
   return type === TableTypeEnum.WoeBinning ? (
     <div style={{ display: 'flex', alignItems: 'center' }}>

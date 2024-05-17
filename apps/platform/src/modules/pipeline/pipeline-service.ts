@@ -27,6 +27,7 @@ import { getPipelineTemplates } from '.';
 
 const CUSTOM_COMPONENT = {
   BinningModification: 'feature/binning_modifications',
+  ModelParamModification: 'preprocessing/model_param_modifications',
 };
 
 export class DefaultPipelineService extends Model {
@@ -76,7 +77,7 @@ export class DefaultPipelineService extends Model {
     return data as Pipeline[];
   }
 
-  setCurrentPipeline = (pipelineId: string, pipelineName?: string) => {
+  setCurrentPipeline = async (pipelineId: string, pipelineName?: string) => {
     // origin 标识是从工作台点击进入项目还是项目列表点击进入项目
     const { origin } = (history.location.state as { origin: string }) || {};
     if (!pipelineId) {
@@ -84,7 +85,7 @@ export class DefaultPipelineService extends Model {
       history.replace(
         {
           pathname: '/dag',
-          search: this.projectEditService.isP2pMode()
+          search: (await this.projectEditService.isP2pMode())
             ? `projectId=${projectId}&mode=${mode}&type=${type}`
             : `projectId=${projectId}&mode=${mode}`,
         },
@@ -117,7 +118,7 @@ export class DefaultPipelineService extends Model {
    */
   changePipelineCanEdit = async (pipelineId?: string) => {
     const { projectId } = parse(window.location.search);
-    if (this.projectEditService.isP2pMode()) {
+    if (await this.projectEditService.isP2pMode()) {
       if (this.projectListService.projectList.length === 0) {
         await this.projectListService.getListProject();
       }
@@ -308,7 +309,12 @@ export class DefaultPipelineService extends Model {
 
       /** 粘贴训练流时，清空 分箱修改 配置 */
       let newNodeDef = nodeDef;
-      if (codeName === CUSTOM_COMPONENT.BinningModification) {
+      if (
+        [
+          CUSTOM_COMPONENT.BinningModification,
+          CUSTOM_COMPONENT.ModelParamModification,
+        ].includes(codeName)
+      ) {
         const { domain, name, version } = nodeDef as {
           domain: string;
           name: string;

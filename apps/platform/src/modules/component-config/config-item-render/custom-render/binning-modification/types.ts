@@ -1,8 +1,3 @@
-export enum SourceTypeEnum {
-  'Latest',
-  'Upstream',
-}
-
 export type Bin = {
   key: string;
   label: string;

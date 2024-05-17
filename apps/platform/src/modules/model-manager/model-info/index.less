@@ -23,6 +23,8 @@
     font-weight: 500;
     line-height: 20px;
   }
+
+  margin-bottom: 16px;
 }
 
 .mockStyle {
@@ -47,5 +49,40 @@
 
   :global(.ant-descriptions .ant-descriptions-row > td) {
     padding-bottom: 8px !important;
+  }
+}
+
+.configToggle {
+  color: #1677ff;
+  cursor: pointer;
+}
+
+.config {
+  margin-top: 12px;
+
+  :global {
+    .ant-descriptions-item-label {
+      font-size: 12px !important;
+      line-height: 22px;
+    }
+
+    .ant-descriptions-item-content {
+      font-size: 12px !important;
+      line-height: 22px;
+    }
+  }
+
+  .configLabel {
+    padding-bottom: 8px;
+    color: rgb(0 0 0 / 88%);
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  .configContent {
+    height: 54px;
+    box-sizing: border-box;
+    padding: 16px;
+    background: rgb(0 0 0 / 2%);
   }
 }

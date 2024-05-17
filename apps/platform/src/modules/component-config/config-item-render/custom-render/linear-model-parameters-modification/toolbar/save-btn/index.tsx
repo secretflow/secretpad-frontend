@@ -2,29 +2,30 @@ import { Button } from 'antd';
 
 import { useModel } from '@/util/valtio-helper';
 
-import { BinModificationsRenderView } from '../..';
-import { BinningResultDrawerView } from '../../drawer';
+import { LinearModelParamsModificationsRenderView } from '../..';
+import { ParametersResultDrawerView } from '../../drawer';
 import styles from '../../index.less';
 
 const SaveBtn = () => {
-  const { saveComponentConfig, binningData, resetBinningTable } = useModel(
-    BinModificationsRenderView,
+  const { saveComponentConfig, parametersData, disabled } = useModel(
+    LinearModelParamsModificationsRenderView,
   );
 
-  const { setVisible } = useModel(BinningResultDrawerView);
+  const { setVisible } = useModel(ParametersResultDrawerView);
 
   return (
     <div className={styles.saveBtnArea}>
-      <Button
-        type="primary"
-        onClick={() => {
-          setVisible(false);
-          resetBinningTable();
-          saveComponentConfig(binningData!);
-        }}
-      >
-        保存模型参数
-      </Button>
+      {disabled ? null : (
+        <Button
+          type="primary"
+          onClick={() => {
+            setVisible(false);
+            saveComponentConfig(parametersData!);
+          }}
+        >
+          保存模型参数
+        </Button>
+      )}
     </div>
   );
 };

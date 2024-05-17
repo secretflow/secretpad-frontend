@@ -15,8 +15,7 @@ export type AtomicParameterType =
   // Special types.
   // | 'ATTR_TYPE_UNSPECIFIED'
   | 'AT_SF_TABLE_COL'
-  | 'AT_PARTY'
-  | 'AT_UNION_GROUP';
+  | 'AT_PARTY';
 
 // export const ColSelectionParameter = 'AT_SF_TABLE_COL';
 
@@ -67,7 +66,7 @@ export type Attribute = OneOf<AtomicParameter> & { is_na?: boolean };
 export type AtomicParameterDef = {
   // If True, when Atomic Attr is not provided or is_na, default_value would
   // be used. Else, Atomic Attr must be provided.
-  is_optional: boolean;
+  is_optional?: boolean;
 
   // A reasonable default for this attribute if the user does not supply a
   // value
@@ -97,16 +96,17 @@ export type AtomicParameterNode = {
   type: AtomicParameterType;
   atomic: AtomicParameterDef;
 };
+
 export type UnionParameterNode = {
   type: 'AT_UNION_GROUP';
   union: ParameterUnionDef;
 };
 
-type StructParameterNode = {
+export type StructParameterNode = {
   type: 'AT_STRUCT_GROUP';
 };
 
-type CustomParameterNode = {
+export type CustomParameterNode = {
   type: 'AT_CUSTOM_PROTOBUF';
   custom_protobuf_cls: string;
 };

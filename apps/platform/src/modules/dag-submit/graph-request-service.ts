@@ -48,20 +48,22 @@ export class GraphSubmitRequestService extends GraphRequestService {
       if (graphNodeStatus === NodeStatus.default) {
         graphNodeStatus = NodeStatus.unfinished;
       }
-      const { domain } = nodeDef;
       return {
         ...options,
         codeName,
         id: graphNodeId,
         status: graphNodeStatus,
-        // 初始化 只有成功的模型训练并且有输入边才可提交
+        /**
+         * 初始化可以点击提交的算子
+         *   1. 成功的模型训练并且有输入边
+         *   2. 成功的模型预测并且有输入边并且上游还有线性模型参数修改算子
+         * 注意：目前模型提交逻辑，能提交 模型训练算子和 模型预测算子
+         * 提交模型训练算子，自动勾选上游预处理组件
+         * 提交模型预测算子，自动勾选上游的线性模型参数修改算子，以及模型训练算子上游的预处理组件算子
+         * 目前暂无 模型预测后面连接的后处理算子
+         *  */
         styles: {
-          isOpaque:
-            domain === 'ml.train' &&
-            nodehasInputEdge(graphNodeId, edges) &&
-            status === 'SUCCEED'
-              ? false
-              : true,
+          isOpaque: !nodeCanOpaque(n, nodes),
           isHighlighted: false,
         },
         nodeDef,
@@ -95,7 +97,27 @@ const getProjectId = () => {
   return projectId as string;
 };
 
-const nodehasInputEdge = (nodeId?: string, edges: API.GraphEdge[] = []) => {
-  if (!nodeId) return false;
-  return edges.some((edge) => edge.target === nodeId);
+const nodeCanOpaque = (node: API.GraphNodeDetail, nodes: API.GraphNode[]) => {
+  const { inputs = [], nodeDef = {}, status } = node;
+  const { domain } = nodeDef;
+
+  if (status !== 'SUCCEED' || inputs.length === 0) return false;
+  if (domain === 'ml.predict') {
+    // 判断上游有没有线性模型参数修改
+    const inputId = inputs[0].split('-').slice(0, 3).join('-');
+    const modelParamsModificationNode = nodes.find(
+      (item) => item.graphNodeId === inputId,
+    ) as API.GraphNodeDetail;
+    if (!modelParamsModificationNode) return false;
+    const { status: modelParamsStatus, nodeDef: modelParamsNodeDef } =
+      modelParamsModificationNode;
+    if (
+      modelParamsStatus === 'SUCCEED' &&
+      modelParamsNodeDef?.name === 'model_param_modifications'
+    ) {
+      return true;
+    }
+    return false;
+  }
+  return domain === 'ml.train';
 };

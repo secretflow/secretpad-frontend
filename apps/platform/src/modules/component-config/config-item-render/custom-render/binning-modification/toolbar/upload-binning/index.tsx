@@ -4,9 +4,9 @@ import { Button, message, Tooltip, Upload } from 'antd';
 import { useModel } from '@/util/valtio-helper';
 
 import { BinModificationsRenderView } from '../..';
+import { DefaultRedoUndoService } from '../../../redo-undo/redo-undo-service';
 import type { BinningData, Record } from '../../types';
 import { CurrOperationEnum, TableTypeEnum } from '../../types';
-import { DefaultUndoService } from '../../undo-service';
 import styles from '../index.less';
 
 const checkFeaturesIsEqual = (
@@ -38,13 +38,13 @@ const checkFeaturesIsEqual = (
 export const UploadBinning = () => {
   const {
     setSelectedRowKeys,
-    binningData,
+    parametersData,
     setCurrOperation,
-    setBinningData,
+    setParametersData,
     type,
     disabled,
   } = useModel(BinModificationsRenderView);
-  const { init } = useModel(DefaultUndoService);
+  const { init } = useModel(DefaultRedoUndoService);
 
   /**
    * woe 分箱 上传文件方法
@@ -267,9 +267,9 @@ export const UploadBinning = () => {
         data = binningUploadHandler(reader);
       }
 
-      if (data && binningData) {
+      if (data && parametersData) {
         const isEqual = checkFeaturesIsEqual(
-          binningData.variableBins,
+          parametersData.variableBins,
           data.variableBins,
         );
 
@@ -281,7 +281,7 @@ export const UploadBinning = () => {
           message.success('上传成功');
         }
 
-        setBinningData(data);
+        setParametersData(data);
         setSelectedRowKeys([]);
         init();
       }

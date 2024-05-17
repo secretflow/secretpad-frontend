@@ -44,7 +44,7 @@ export default defineConfig({
   //   apps: [
   //     {
   //       name: 'secretpad', // 后端应用名
-  //       tag: 'release/0.6.0b0_cml', // 分支 tag
+  //       tag: 'feature/0.7.0b0', // 分支 tag
   //       source: 'ZAPPINFO', // 应用来源，默认 ZAPPINFO，其他来源可在官网的应用信息中查看
   //     },
   //   ],

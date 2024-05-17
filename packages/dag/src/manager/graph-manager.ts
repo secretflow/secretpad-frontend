@@ -224,14 +224,15 @@ export class DefaultGraphManager extends DAGContext implements GraphManager {
 
     if (mode === 'LITE') return;
 
-    this.graph.on('edge:removed', () => {
+    this.graph.on('edge:removed', ({ edge }) => {
       const events = this.context.EventHub.getData();
       for (const event of events) {
-        if (event.onEdgeUpdated) {
-          event.onEdgeUpdated();
+        if (event.onEdgeRemoved) {
+          event.onEdgeRemoved(edge);
         }
       }
     });
+
     this.graph.on('edge:connected', ({ edge }) => {
       this.executeAction(ActionType.addEdge, edge);
 

@@ -32,6 +32,48 @@ import type {
 
 import mainDag from './dag';
 
+const CUSTOM_COMPONENT = {
+  BinningModification: 'feature/binning_modifications',
+  ModelParamModification: 'preprocessing/model_param_modifications',
+};
+
+const checkPortsCodeName = 'data_prep/union';
+
+const findNearestTableType = (currNode: Node, currCodeName: string) => {
+  const upstreamNodes = mainDag.graphManager.graph.getPredecessors(currNode);
+
+  if (upstreamNodes?.length) {
+    for (const node of upstreamNodes) {
+      const { codeName } = node.getData();
+      if (codeName !== currCodeName) {
+        return node.getData().codeName;
+      }
+    }
+
+    return currCodeName;
+  } else {
+    return currNode.getData().codeName;
+  }
+};
+
+const findCurrTableType = (currNode: Node, currCodeName: string) => {
+  const { codeName } = currNode.getData();
+  if (codeName === currCodeName) {
+    const upstreamNodes = mainDag.graphManager.graph.getPredecessors(currNode);
+
+    if (upstreamNodes?.length) {
+      for (const node of upstreamNodes) {
+        const { codeName } = node.getData();
+        if (codeName !== currCodeName) {
+          return node.getData().codeName;
+        }
+      }
+    }
+  }
+
+  return codeName;
+};
+
 export class GraphService implements GraphEventHandlerProtocol {
   protected nodeRunningEmitter = new Emitter<boolean>();
   onNodeRunningEvent = this.nodeRunningEmitter.on;
@@ -104,9 +146,13 @@ export class GraphService implements GraphEventHandlerProtocol {
     this.logService.cancel();
 
     const data = node.getData<GraphNode>();
+    const { id } = data;
+
+    const nodeParties = await mainDag.requestService.getNodeParties(id);
     const logparam: LogParam = {
       nodeData: data,
       from: 'pipeline',
+      nodeParties,
     };
 
     if (
@@ -120,7 +166,6 @@ export class GraphService implements GraphEventHandlerProtocol {
       this.logService.cancel();
       this.modalManager.closeModal(dagLogDrawer.id);
     }
-    const { id } = data;
 
     const graphNode = await mainDag.requestService.getGraphNode(id);
     const inputNodes = await mainDag.dataService.getInputsNodes();
@@ -163,12 +208,29 @@ export class GraphService implements GraphEventHandlerProtocol {
     this.modalManager.closeAllModals();
   }
 
-  onEdgeUpdated() {
+  onEdgeRemoved() {
     this.logService.cancel();
     this.modalManager.closeModal(componentConfigDrawer.id);
   }
 
   async onEdgeConnected(edge: Edge) {
+    const targetId = edge?.store?.data?.target?.cell;
+    const targetNode = mainDag.graphManager.graph.getCellById(targetId);
+
+    const sourceId = edge?.store?.data?.source?.cell;
+    const sourceNode = mainDag.graphManager.graph.getCellById(sourceId);
+
+    // 给 union 组件的 port 做前置类型校验
+    // 不可左边连 样本表，右边连 联合表，只能连同类型的表
+    if (targetNode.getData().codeName === checkPortsCodeName) {
+      const upsreamNodeCodeName = findNearestTableType(targetNode, checkPortsCodeName);
+      const sourceNodeCodeName = findCurrTableType(sourceNode, checkPortsCodeName);
+
+      if (upsreamNodeCodeName !== sourceNodeCodeName) {
+        message.warning('union组件：只允许同时输入联合表或样本表');
+      }
+    }
+
     /**
      * 特殊处理，每当「重新连接」下游的分箱修改算子时
      * 就清空分箱修改算子「codeName = feature/binning_modifications」的配置「nodeDef」
@@ -182,7 +244,12 @@ export class GraphService implements GraphEventHandlerProtocol {
       const { search } = window.location;
       const { projectId, dagId } = parse(search);
       const node = await mainDag.requestService.getGraphNode(componentId);
-      if (node?.codeName === 'feature/binning_modifications') {
+      if (
+        [
+          CUSTOM_COMPONENT.BinningModification,
+          CUSTOM_COMPONENT.ModelParamModification,
+        ].includes(node?.codeName)
+      ) {
         const { attrs, attrPaths, ...restNodeDef } = node.nodeDef || {};
         const updatedNode = {
           ...node,
@@ -215,7 +282,12 @@ export class GraphService implements GraphEventHandlerProtocol {
      * 特殊处理，情况同 onEdgeConnected
      */
     const binningModificationNodeIds = nodes
-      .filter((node) => node?.codeName === 'feature/binning_modifications')
+      .filter((node) =>
+        [
+          CUSTOM_COMPONENT.BinningModification,
+          CUSTOM_COMPONENT.ModelParamModification,
+        ].includes(node?.codeName),
+      )
       .map((node) => node.id);
 
     this.cleanNodeDef(binningModificationNodeIds);
@@ -227,12 +299,12 @@ export class GraphService implements GraphEventHandlerProtocol {
     }
 
     const { search } = window.location;
-    const { projectId, dagId } = parse(search);
+    const { dagId } = parse(search);
 
-    const graph = await mainDag.requestService.fetchGraph();
+    const dataNodes = mainDag.dataService.nodes;
 
-    const nodes = graph?.nodes?.map((node) => {
-      if (nodeIds.includes(node?.graphNodeId)) {
+    const nodes = dataNodes.map((node) => {
+      if (nodeIds.includes(node?.id)) {
         const { attrs, attrPaths, ...restNodeDef } = node?.nodeDef || {};
         return {
           ...node,
@@ -245,11 +317,9 @@ export class GraphService implements GraphEventHandlerProtocol {
       }
     });
 
-    await fullUpdateGraph({
-      projectId: projectId as string,
-      graphId: dagId as string,
-      edges: graph?.edges,
-      nodes: nodes,
+    await mainDag.requestService.saveDag(dagId as string, {
+      nodes,
+      edges: mainDag.dataService.edges,
     });
 
     // 更新最新的 nodes
@@ -289,10 +359,11 @@ export class GraphService implements GraphEventHandlerProtocol {
 
   saveNodeConfig = async (nodeInfo: ComponentConfig) => {
     const { node, isFinished } = nodeInfo;
-    const { nodeDef, graphNodeId } = node;
+    const { graphNodeId, nodeDef } = node;
     const { status } = await updateGraphNode(nodeInfo);
     if (status && status.code === 0) {
       message.success('保存成功');
+
       mainDag.graphManager.executeAction(ActionType.changeNodeData, graphNodeId, {
         nodeDef,
       });
@@ -322,7 +393,12 @@ export class GraphService implements GraphEventHandlerProtocol {
         .map((id) => {
           return mainDag.graphManager.graph?.getCellById(id).store.data.data;
         })
-        .filter((node) => node?.codeName === 'feature/binning_modifications')
+        .filter((node) =>
+          [
+            CUSTOM_COMPONENT.BinningModification,
+            CUSTOM_COMPONENT.ModelParamModification,
+          ].includes(node?.codeName),
+        )
         .map((node) => node.id);
 
       this.cleanNodeDef(binningModificationNodeIds);
@@ -333,7 +409,7 @@ export class GraphService implements GraphEventHandlerProtocol {
 
   getSubNodeIds(graph: Graph, nodeId: string, nodeIds: Set<string> = new Set()) {
     nodeIds.add(nodeId);
-    const outgoingEdges = graph.getOutgoingEdges(nodeId);
+    const outgoingEdges = graph?.getOutgoingEdges(nodeId);
     outgoingEdges?.forEach((edge) => {
       const data = edge.getData();
       const { target } = data;

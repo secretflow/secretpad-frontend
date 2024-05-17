@@ -1,35 +1,12 @@
-export enum SourceTypeEnum {
-  'Latest',
-  'Upstream',
-}
-
-export type Bin = {
-  key: string;
-  label: string;
-  markForMerge: boolean;
-  totalCount: number;
-  woe?: number;
-  order?: number;
-};
-
 export type ParametersData = {
   modelHash: string;
-  variableParametersData: {
-    table: ParametersDatum[];
-    bias: number;
-  };
+  featureWeights: ParametersDatum[];
+  bias: number;
 };
 
 export type ParametersDatum = {
-  feature: string;
-  node: string;
-  weight: number;
+  key: string;
+  featureName: string;
+  party: string;
+  featureWeight: number;
 };
-
-export enum CurrOperationEnum {
-  'Reset',
-  'Undo',
-  'Upload',
-  'EditBias',
-  'Redo',
-}

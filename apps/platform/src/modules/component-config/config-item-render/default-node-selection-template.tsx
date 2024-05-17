@@ -10,23 +10,29 @@ import { useModel } from '@/util/valtio-helper';
 import styles from '../index.less';
 
 import type { RenderProp } from './config-render-protocol';
+import { getComponentByRenderStrategy } from './helper';
 
 export const DefaultNodeSelect: React.FC<RenderProp<string>> = (config) => {
   const {
+    form,
     onChange,
     value,
     defaultVal,
     node,
     translation,
     upstreamTables = [],
+    componentConfig,
   } = config;
   const [nodes, setNodes] = useState<{ label: string; value: string }[]>([]);
   const nodeService = useModel(NodeService);
 
-  const { prefixes } = node;
+  const { prefixes, list_max_length_inclusive } = node;
 
   const { search } = useLocation();
   const { projectId } = parse(search) as { projectId: string };
+
+  let isMultiple = true;
+  if (list_max_length_inclusive === 1) isMultiple = false;
 
   useEffect(() => {
     const getNodes = async () => {
@@ -106,6 +112,7 @@ export const DefaultNodeSelect: React.FC<RenderProp<string>> = (config) => {
       colon={false}
     >
       <Select
+        mode={isMultiple ? 'multiple' : undefined}
         value={value}
         options={nodes}
         onChange={(val) => {
@@ -115,15 +122,11 @@ export const DefaultNodeSelect: React.FC<RenderProp<string>> = (config) => {
     </Form.Item>
   );
 
-  return prefixes ? (
-    <Form.Item noStyle dependencies={[prefixes.join('/')]}>
-      {({ getFieldValue }) => {
-        const dependency = getFieldValue(prefixes.join('/'));
-        // console.log(dependency, name);
-        return dependency === node.name || dependency === undefined ? item : <></>;
-      }}
-    </Form.Item>
-  ) : (
-    item
-  );
+  return getComponentByRenderStrategy({
+    prefixes,
+    componentConfig,
+    component: item,
+    form,
+    type: node.type,
+  });
 };

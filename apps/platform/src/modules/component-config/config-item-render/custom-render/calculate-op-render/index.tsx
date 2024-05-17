@@ -1,5 +1,4 @@
 import { Form, Select } from 'antd';
-import { useEffect } from 'react';
 
 import styles from './index.less';
 import {

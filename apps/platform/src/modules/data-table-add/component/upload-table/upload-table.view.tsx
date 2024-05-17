@@ -389,6 +389,11 @@ export class UploadTableView extends Model {
     this.step = 0;
   };
 
+  checkFileNameHasSpace = (fileName: string) => {
+    const hasSpace = /\s/.test(fileName);
+    return hasSpace;
+  };
+
   initColConfigForm = (schema: any) => {
     this.formInstance?.setFieldValue('schema', schema);
     // setFieldValue后的值不能被form立刻监听到
@@ -398,6 +403,11 @@ export class UploadTableView extends Model {
   };
 
   beforeUpload = async (file: File, fileList: File[]) => {
+    if (this.checkFileNameHasSpace(file.name)) {
+      message.error('文件解析错误, 不支持文件名包含空格');
+      return false;
+    }
+
     this.uploadingFile = file;
     this.fileInfo = {
       name: file.name,
@@ -430,6 +440,9 @@ export class UploadTableView extends Model {
 
   uploadingHandler = (e: any) => {
     const { file } = e;
+    if (this.checkFileNameHasSpace(file.name)) {
+      return;
+    }
     const { response } = file;
     if (this.fileUploadAborted) return;
 

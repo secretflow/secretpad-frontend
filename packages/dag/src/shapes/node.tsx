@@ -40,7 +40,11 @@ const DagNode = (props: { node: Node; graph: Graph }) => {
   const { id, status, label, codeName, styles } = data;
   const statusName = NodeStatus[status];
   const [domain] = codeName.split('/');
-  const { isOpaque = false, isHighlighted = false } = styles || {};
+  const {
+    isOpaque = false,
+    isHighlighted = false,
+    isContinueRun = false,
+  } = styles || {};
   const showMenu = React.useContext(ShowMenuContext);
 
   const getStatusFlag = () => {
@@ -63,7 +67,7 @@ const DagNode = (props: { node: Node; graph: Graph }) => {
   const onMenuItemClick = (key: ActionType) => {
     const argsIsArrayKey = [ActionType.removeCell, ActionType.copy];
     const argsIsRun = [ActionType.runDown, ActionType.runUp, ActionType.runSingle];
-
+    const argsIsContinue = [ActionType.continueRun];
     if (argsIsArrayKey.includes(key)) {
       graphManager.executeAction(key, [id]);
     } else if (argsIsRun.includes(key)) {
@@ -71,10 +75,24 @@ const DagNode = (props: { node: Node; graph: Graph }) => {
       setTimeout(() => {
         graphManager.executeAction(ActionType.queryStatus, []);
       }, 1500);
+    } else if (argsIsContinue.includes(key)) {
+      graphManager.executeAction(key, id);
+      setTimeout(() => {
+        graphManager.executeAction(ActionType.queryStatus, []);
+      }, 1500);
     } else {
       graphManager.executeAction(key, id);
     }
   };
+
+  /**
+   * Popover content 以及 getMenuItems 是否展示继续执行按钮
+   * 目前只支持 (SecureBoost训练 SSGLM训练 SS-XGB训练) 算子才可 继续执行, 即 isContinueRun = true
+   * */
+  const showContinueRun =
+    showMenu &&
+    (data.status === NodeStatus.stopped || data.status === NodeStatus.failed) &&
+    isContinueRun;
 
   const getMenuItems = () => {
     const menu = (
@@ -116,6 +134,13 @@ const DagNode = (props: { node: Node; graph: Graph }) => {
         {data.status === NodeStatus.running && (
           <MenuItem name={ActionType.stopRun} icon={<StopOutlined />} text="停止执行" />
         )}
+        {showContinueRun && (
+          <MenuItem
+            name={ActionType.continueRun}
+            icon={<SyncOutlined />}
+            text="继续执行"
+          />
+        )}
       </Menu>
     );
     return menu;
@@ -129,7 +154,9 @@ const DagNode = (props: { node: Node; graph: Graph }) => {
     >
       <Popover
         trigger="hover"
-        content={<Description data={data} dagContext={DAGContext} />}
+        content={
+          <Description data={{ ...data, showContinueRun }} dagContext={DAGContext} />
+        }
         placement="bottom"
         arrow={false}
         overlayClassName={'popover'}
@@ -148,7 +175,9 @@ const DagNode = (props: { node: Node; graph: Graph }) => {
   ) : (
     <Popover
       trigger="hover"
-      content={<Description data={data} dagContext={DAGContext} />}
+      content={
+        <Description data={{ ...data, showContinueRun }} dagContext={DAGContext} />
+      }
       placement="bottom"
       arrow={false}
       overlayClassName={'popover'}

@@ -1,4 +1,4 @@
-import type { Cell, GraphEventHandlerProtocol } from '@secretflow/dag';
+import type { Cell, Edge, GraphEventHandlerProtocol } from '@secretflow/dag';
 
 import { DefaultComponentTreeService } from '@/modules/component-tree/component-tree-service';
 import { getModel } from '@/util/valtio-helper';
@@ -12,8 +12,8 @@ export class PreviewGraphService implements GraphEventHandlerProtocol {
 
   onGraphScale?: ((zoom: number) => void) | undefined;
   onSelectionChanged?: ((cells: Cell<Cell.Properties>[]) => void) | undefined;
-  onEdgeUpdated?: (() => void) | undefined;
-  onResultClick?: ((graphId: string, outputId: string) => void) | undefined;
+  onEdgeRemoved?: ((edge: Edge) => void) | undefined;
+  onResultClick?: (graphId: string, outputId: string, codeName: string) => void;
 }
 
 resultPreviewDag.EventHub.register(getModel(PreviewGraphService));

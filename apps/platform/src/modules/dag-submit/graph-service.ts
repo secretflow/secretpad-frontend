@@ -5,12 +5,12 @@ import { ActionType } from '@secretflow/dag';
 import { Emitter } from '@secretflow/utils';
 import { message } from 'antd';
 
+import { DefaultComponentTreeService } from '@/modules/component-tree/component-tree-service';
 import { dagLogDrawer } from '@/modules/dag-log/log.drawer.layout';
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import { ModelSubmissionDrawerItem } from '@/modules/dag-model-submission/submission-drawer';
 import type { ModelInfo } from '@/modules/dag-model-submission/submission-service';
 import { getModel, Model } from '@/util/valtio-helper';
-import { DefaultComponentTreeService } from '@/modules/component-tree/component-tree-service';
 
 import mainDag from './dag';
 import {
@@ -94,7 +94,7 @@ export class SubmitGraphService extends Model implements GraphEventHandlerProtoc
       this.onCenterNode(node.getData().id);
       const sameBrachNodes = getModelSameBranchNodes(node);
       if (sameBrachNodes) {
-        // TODO: 暂只需要打包训练算子，不需要打包预测算子
+        // 需要打包训练算子，不需要打包预测算子
         const newSameBrachNodes = {
           modelNode: sameBrachNodes?.modelNode,
           preNodes: sameBrachNodes?.preNodes,
@@ -112,7 +112,36 @@ export class SubmitGraphService extends Model implements GraphEventHandlerProtoc
         highlightSelectionByIds(this.getSelectIds());
         this.modalManager.openModal(ModelSubmissionDrawerItem.id);
       }
-    } else if (isPredict(node)) {
+    }
+    // else if (isModelParamsModification(node)) {
+    //   // 如果选择的是 线性模型参数修改算子 则需要选中他上游的模型算子，以及前处理算子
+    //   // 如果 node 是线性模型参数修改算子并且被选中。点击 清空选择，然后选择模型的上下游
+    //   if (this.selectNodeIdsObj.nextNodesIds.includes(node.id)) {
+    //     this.clearGraphSelection();
+    //     // this.modalManager.closeModal(ModelSubmissionDrawerItem.id);
+    //     highlightSelectionByIds(this.getSelectIds());
+    //     this.modalManager.closeModal(dagLogDrawer.id);
+    //     return;
+    //   }
+    //   // 重置可选算子
+    //   this.clearGraphSelection();
+    //   this.onCenterNode(node.getData().id);
+    //   const sameBrachNodes = getModelSameBranchNodes(node);
+    //   if (sameBrachNodes) {
+    //     updateGraphNodesStyles(Object.values(sameBrachNodes).flat(), {
+    //       isOpaque: false,
+    //     });
+    //     this.selectNodeIdsObj = {
+    //       modelNodeIds: sameBrachNodes.modelNode.map((item) => item.id),
+    //       preNodesIds: sameBrachNodes.preNodes.map((item) => item.id),
+    //       nextNodesIds: sameBrachNodes.nextNodes.map((item) => item.id),
+    //       predictNodesIds: [],
+    //     };
+    //     highlightSelectionByIds(this.getSelectIds());
+    //     this.modalManager.openModal(ModelSubmissionDrawerItem.id);
+    //   }
+    // }
+    else if (isPredict(node)) {
       if (this.selectNodeIdsObj.predictNodesIds.includes(node.id)) {
         this.clearGraphSelection();
         highlightSelectionByIds(this.getSelectIds());
@@ -139,7 +168,7 @@ export class SubmitGraphService extends Model implements GraphEventHandlerProtoc
         this.modalManager.openModal(ModelSubmissionDrawerItem.id);
       }
     } else {
-      /** 点击的不是模型训练算子也不是模型预测算子, 则 获取当前选中的模型算子 判断当前点击的是 上游还是下游 */
+      /** 点击的不是模型训练算子也不是模型预测算子 则 获取当前选中的模型算子 判断当前点击的是 上游还是下游 */
       const modelNode = graph
         .getNodes()
         .find(
@@ -235,7 +264,7 @@ export class SubmitGraphService extends Model implements GraphEventHandlerProtoc
         // 如果选择了预测算子，需要将预测算子上面的训练算子也传给服务端，这里算子是根据画布选中节点来处理的，所以这里需要使用 getModelSameBranchNodes 额外获取一下训练算子
         result.predictNode.push(nodeData);
         const sameBrachNodes = getModelSameBranchNodes(node);
-        result.modelNode.push(sameBrachNodes?.modelNode[0].getData());
+        result.modelNode.push(sameBrachNodes?.modelNode[0]?.getData());
       }
     });
     this.onModelSubmitChangedEmitter.fire(result);

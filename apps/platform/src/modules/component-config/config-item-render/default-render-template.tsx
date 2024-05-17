@@ -6,11 +6,13 @@ import styles from '../index.less';
 import { typeListMap, getValueBound } from '../utils';
 
 import type { RenderProp } from './config-render-protocol';
+import { getComponentByRenderStrategy } from './helper';
 
 export const DefaultSwitch: React.FC<RenderProp<boolean>> = (config) => {
-  const { node, onChange, defaultVal, translation } = config;
+  const { node, onChange, defaultVal, translation, form, componentConfig } = config;
+  const { prefixes } = node;
 
-  return (
+  const item = (
     <Form.Item
       label={
         <div className={styles.configItemLabel}>
@@ -38,6 +40,14 @@ export const DefaultSwitch: React.FC<RenderProp<boolean>> = (config) => {
       <Switch onChange={(checked: boolean) => onChange(checked)} />
     </Form.Item>
   );
+
+  return getComponentByRenderStrategy({
+    prefixes,
+    componentConfig,
+    component: item,
+    form,
+    type: node.type,
+  });
 };
 
 export const DefaultInputNumber: React.FC<RenderProp<number>> = (config) => {
@@ -185,15 +195,13 @@ export const DefaultSelect: React.FC<RenderProp<string>> = (config) => {
     );
     setSelectOptions(options || []);
   }, [allowedValues]);
-  const name = translation[node.name] || node.name;
-  const { prefixes } = node;
 
-  const item = (
+  return (
     <Form.Item
       label={
-        prefixes && prefixes.length > 0 ? undefined : (
-          <div className={styles.configItemLabel}>{name}</div>
-        )
+        <div className={styles.configItemLabel}>
+          {translation[node.name] || node.name}
+        </div>
       }
       name={
         node.prefixes && node.prefixes.length > 0
@@ -248,46 +256,63 @@ export const DefaultSelect: React.FC<RenderProp<string>> = (config) => {
       />
     </Form.Item>
   );
-
-  return prefixes ? (
-    <Form.Item noStyle dependencies={[prefixes.join('/')]}>
-      {({ getFieldValue }) => {
-        const dependency = getFieldValue(prefixes.join('/'));
-        // console.log(dependency, name);
-        return dependency === node.name || dependency === undefined ? item : <></>;
-      }}
-    </Form.Item>
-  ) : (
-    item
-  );
 };
 
-export const DefaultUnion = (config) => {
-  const { node, translation } = config;
+export const DefaultUnion: React.FC<RenderProp<string>> = (config) => {
+  const { node, translation, form, componentConfig } = config;
   const name = translation[node.name] || node.name;
   const { prefixes, children, selectedName } = node;
 
-  const options = children.map((i) => ({
-    label: translation[i.name] || i.name,
-    value: i.name,
-  }));
+  const options = children
+    .filter((child) => {
+      return child.prefixes[child.prefixes.length - 1] === node.name;
+    })
+    .map((i) => ({
+      label: translation[i.name] || i.name,
+      value: i.name,
+    }));
 
-  return (
+  const item = (
     <Form.Item
       name={
         node.prefixes && node.prefixes.length > 0
           ? node.prefixes.join('/') + '/' + node.name
           : node.name
       }
-      label={
-        prefixes && prefixes.length > 0 ? undefined : (
-          <div className={styles.configItemLabel}>{name}</div>
-        )
-      }
+      rules={[
+        {
+          required: node.isRequired,
+        },
+      ]}
+      label={<div className={styles.configItemLabel}>{name}</div>}
       tooltip={translation[node.docString] || node.docString}
       initialValue={selectedName}
     >
       <Select options={options}></Select>
     </Form.Item>
   );
+
+  return getComponentByRenderStrategy({
+    prefixes,
+    componentConfig,
+    component: item,
+    form,
+    type: node.type,
+  });
+};
+
+export const DefaultStruct: React.FC<RenderProp<string>> = (config) => {
+  const { node, form, componentConfig } = config;
+  const { prefixes } = node;
+
+  // 在目前的策略中，Struct 节点默认不渲染。
+  const item = <></>;
+
+  return getComponentByRenderStrategy({
+    prefixes,
+    componentConfig,
+    component: item,
+    form,
+    type: node.type,
+  });
 };

@@ -1,8 +1,10 @@
 import { Button, Tag, Typography } from 'antd';
 import { parse } from 'query-string';
+import { useLocation } from 'umi';
 
 import { Platform, hasAccess } from '@/components/platform-wrapper';
 import { Download } from '@/modules/dag-result/apply-download';
+import { openNewTab } from '@/util/path';
 import { getModel } from '@/util/valtio-helper';
 
 import { ResultManagerService } from '../result-manager/result-manager.service';
@@ -10,7 +12,6 @@ import { ResultManagerService } from '../result-manager/result-manager.service';
 import style from './index.less';
 import type { ResultComponentProps } from './types';
 import { formatTimestamp } from './utils';
-import { openNewTab } from '@/util/path';
 
 const { Paragraph } = Typography;
 

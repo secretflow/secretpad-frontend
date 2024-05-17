@@ -30,6 +30,7 @@ export type GraphNode = {
   styles?: {
     isOpaque?: boolean;
     isHighlighted?: boolean;
+    isContinueRun?: boolean;
   };
 };
 
@@ -71,7 +72,7 @@ export interface GraphEventHandlerProtocol {
   onBlankClick?: () => void;
   onGraphScale?: (zoom: number) => void;
   onSelectionChanged?: (cells: Cell[]) => void;
-  onEdgeUpdated?: () => void;
+  onEdgeRemoved?: (edge?: Edge) => void;
   onResultClick?: (graphId: string, outputId: string, codeName: string) => void;
   onNodeRunning?: (isRunning: boolean) => void;
   onCopyActionChange?: (isCopied: boolean) => void;

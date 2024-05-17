@@ -24,7 +24,7 @@ enum statusColorEnum {
 
 export const Description = (props: IProps) => {
   const { dagContext } = props;
-  const { id, status, outputs, codeName } = props.data;
+  const { id, status, outputs, codeName, showContinueRun } = props.data;
   const { nodeNum } = parseNodeId(id);
   let statusDes = '';
   let statusColor = '';
@@ -74,6 +74,11 @@ export const Description = (props: IProps) => {
             )}
             <span style={{ marginLeft: '4px' }}>{statusDes}</span>
           </span>
+          {showContinueRun && (
+            <span>
+              <ContinueRunItem {...props} />
+            </span>
+          )}
         </div>
         {status === NodeStatus.success && outputs && (
           <div>
@@ -130,5 +135,24 @@ const ResultItem = (props: {
         </EllipsisMiddles>
       </Tooltip>
     </div>
+  );
+};
+
+const ContinueRunItem = (props: IProps) => {
+  const { dagContext } = props;
+  const { id } = props.data;
+
+  const onContinueRun = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    dagContext.graphManager.executeAction(ActionType.continueRun, id);
+    setTimeout(() => {
+      dagContext.graphManager.executeAction(ActionType.queryStatus, []);
+    }, 1500);
+  };
+
+  return (
+    <span onClick={onContinueRun} className={'continueRunBtn'}>
+      继续执行
+    </span>
   );
 };

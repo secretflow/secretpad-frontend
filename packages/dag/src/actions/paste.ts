@@ -72,13 +72,6 @@ export class PasteAction extends DAGContext implements ActionProtocol {
     }));
     await this.context.dataService.addNodes(nodes);
 
-    const events = this.context.EventHub.getData();
-    for (const event of events) {
-      if (event.onNodesPasted) {
-        event.onNodesPasted(nodes);
-      }
-    }
-
     await this.context.dataService.addEdges(
       fixedData.edges.map((edge) => ({
         id: edge.data.id,
@@ -88,5 +81,12 @@ export class PasteAction extends DAGContext implements ActionProtocol {
         targetAnchor: edge.data.targetAnchor,
       })),
     );
+
+    const events = this.context.EventHub.getData();
+    for (const event of events) {
+      if (event.onNodesPasted) {
+        event.onNodesPasted(nodes);
+      }
+    }
   }
 }

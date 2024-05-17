@@ -11,7 +11,7 @@ export type AtomicConfigNode = {
   type: AtomicParameterType;
   fromInputIndex?: number;
   docString: string;
-  isRequired: boolean;
+  isRequired?: boolean;
   prefixes?: string[];
   value?: Attribute; //Record<string, any>;
   render?: string; // key in ConfigRenderRegistry for custom render
@@ -33,11 +33,12 @@ export type StructConfigNode = {
   domain?: string;
   version?: string;
   children: ConfigItem[];
+  type?: 'AT_STRUCT_GROUP' | 'AT_UNION_GROUP';
 };
 
 // 叶子结点：AtomicConfigNode
 // 非叶子结点：StructConfigNode
-export type ConfigItem = StructConfigNode | AtomicConfigNode;
+export type ConfigItem = StructConfigNode | AtomicConfigNode | CustomConfigNode;
 
 export type ConfigPrefix = string;
 
@@ -57,6 +58,15 @@ export const codeNameRenderKey = {
 
 export const codeNameRenderIndex = {
   'preprocessing/binary_op': [0, 2, 1, 3, 4],
+  'data_prep/psi': [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 14, 11, 12, 13, 3, 15, 16],
+};
+
+export const hideCodeNameIndex = {
+  'data_prep/psi': [7],
+};
+
+export const advancedConfigIndex = {
+  'data_prep/psi': [3, 15, 16],
 };
 
 export interface ComponentConfig {
@@ -121,7 +131,10 @@ export const getUpstreamKey = {
     const { inputs = [] } = graphNode || {};
     return upstreamNodes.map((n, index) => {
       const { codeName, nodeDef } = n || {};
-      if (codeName !== 'read_data/datatable') return inputs[index];
+
+      if (!['read_data/datatable'].includes(codeName)) {
+        return inputs[index];
+      }
       const { attrs } = nodeDef;
       if (!attrs) return inputs[index];
       return attrs[0]?.s;
@@ -145,7 +158,7 @@ export const getUpstreamKey = {
 export const getInputTables = (inputNodes: GraphNode[]) => {
   return inputNodes?.map((n) => {
     const { codeName, nodeDef } = n || {};
-    if (codeName !== 'read_data/datatable') return;
+    if (!['read_data/datatable'].includes(codeName)) return;
     const { attrs } = nodeDef;
     if (!attrs) return;
     return attrs[0]?.s;

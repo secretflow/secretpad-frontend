@@ -1,8 +1,13 @@
 import type { GraphNode } from '@secretflow/dag';
+import type { FormInstance } from 'antd';
 
 import type { Attribute, ValueOf } from '@/modules/component-tree/component-protocol';
 
-import type { AtomicConfigNode, GraphNodeDetail } from '../component-config-protocol';
+import type {
+  AtomicConfigNode,
+  ConfigItem,
+  GraphNodeDetail,
+} from '../component-config-protocol';
 
 export type ConfigRenderProtocol = {
   registerConfigRenders: () => ConfigRender[];
@@ -17,10 +22,12 @@ export interface NodeAllInfo {
 }
 
 export type RenderProp<T> = {
+  form?: FormInstance;
   docString?: string;
   type: AtomicConfigNode['type'];
   value: T;
   defaultVal: T;
+  componentConfig: ConfigItem[];
   node: AtomicConfigNode;
   nodeAllInfo: NodeAllInfo;
   onChange: (val: ValueOf<Attribute> | undefined | null) => void;

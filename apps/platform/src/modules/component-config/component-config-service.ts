@@ -31,6 +31,7 @@ export class DefaultComponentConfigService extends Model {
       name,
       mode,
     ) as StructConfigNode;
+
     const leaves: AtomicConfigNode[] = [];
     if (node && node?.children.length > 0) this.getLeavesInTree(node, leaves);
 
@@ -44,6 +45,7 @@ export class DefaultComponentConfigService extends Model {
       },
       mode,
     );
+
     if (configNodes.length === 0) return false;
     for (const configNode of configNodes) {
       if (isAtomicConfigNode(configNode, 'isRequired')) {
@@ -53,7 +55,7 @@ export class DefaultComponentConfigService extends Model {
     return false;
   }
 
-  private getLeavesInTree(root: ConfigItem, leaves: AtomicConfigNode[] = []): void {
+  private getLeavesInTree(root: ConfigItem, leaves: ConfigItem[] = []): void {
     if (isStructConfigNode(root) && root.children.length > 0) {
       const selectedChildren = root.children;
 
@@ -64,7 +66,10 @@ export class DefaultComponentConfigService extends Model {
       //   leaves.push(root);
       // }
 
-      if (root.type === 'AT_UNION_GROUP') leaves.push(root as AtomicConfigNode);
+      if (root.type === 'AT_STRUCT_GROUP' || root.type === 'AT_UNION_GROUP') {
+        leaves.push(root);
+      }
+
       selectedChildren.map((c) => this.getLeavesInTree(c, leaves));
       return;
     }

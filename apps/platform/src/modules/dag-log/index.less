@@ -22,16 +22,23 @@
 
 .dagLogHeaderLeft {
   height: 34px;
-  background-color: #fff;
+}
+
+.logLabelTitle {
+  display: 'flex';
+  padding-left: 16px;
 }
 
 .isUnfoldTitle {
+  height: 32px;
   border-top: 2px solid rgb(0 104 250 / 100%);
+  background-color: #fff;
 }
 
 .spaceText {
+  display: flex;
   height: 32px;
-  padding: 0 16px;
+  align-items: center;
 
   :global(.ant-progress) {
     margin: 0;
@@ -45,6 +52,11 @@
   font-weight: 500;
   letter-spacing: 0;
   line-height: 20px;
+}
+
+.logTextDisabled {
+  color: rgb(0 0 0 / 25%);
+  cursor: not-allowed;
 }
 
 .runningText {

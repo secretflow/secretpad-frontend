@@ -11,20 +11,21 @@ import {
   Alert,
 } from 'antd';
 import classnames from 'classnames';
+import { parse } from 'query-string';
 import { useEffect, useCallback } from 'react';
 import { history } from 'umi';
+
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
+import { SubmitGraphService } from '@/modules/dag-submit/graph-service';
+import { DagLayoutMenu, DagLayoutView } from '@/modules/layout/dag-layout';
 import submissionLayoutStyle from '@/modules/layout/model-submission-layout/index.less';
 import { getModel, useModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
+import { NodeAddress } from './node-address';
 import { PreviewSubmitNode } from './preview-submit-node';
 import { SubmissionDrawerService } from './submission-service';
-import { parse } from 'query-string';
 import { useFormValidateOnly } from './useFormValidateOnly';
-import { SubmitGraphService } from '@/modules/dag-submit/graph-service';
-import { DagLayoutMenu, DagLayoutView } from '@/modules/layout/dag-layout';
-import { NodeAddress } from './node-address';
 
 const WIDTH = 560;
 
@@ -297,7 +298,11 @@ export const SubmissionDrawer = () => {
               <NodeAddress addressList={addressNodeList} />
             </Spin>
           </Form.Item>
-          <Form.Item required label={<div className={styles.formLabel}>提交组件</div>}>
+          <Form.Item
+            required
+            label={<div className={styles.formLabel}>提交组件</div>}
+            tooltip="如需选择后处理组件如线性模型参数修改, 则需在提交组件时选择预测组件"
+          >
             <div className={styles.canvas}>
               {previewNodes.length === 0 ? (
                 <Empty

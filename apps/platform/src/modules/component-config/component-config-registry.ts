@@ -25,7 +25,7 @@ export class ComponentConfigRegistry extends Model {
 
   registerConfigNode(component: Component, mode: ComputeMode) {
     if (this.hasConfigNode(component, mode)) return;
-    const { name, domain, version, attrs = [], inputs } = component;
+    const { name, domain, version, attrs = [], inputs, outputs } = component;
     const parent: StructConfigNode = {
       name: `${domain}/${name}`,
       domain,
@@ -42,7 +42,7 @@ export class ComponentConfigRegistry extends Model {
       for (const param of attrs) {
         const { prefixes } = param;
         if (prefixes) {
-          this.getNodeByPath(prefixes, parent, param);
+          this.getNodeByPath(prefixes, parent, param, 0);
         } else {
           parent.children.push(this.createNode(param));
         }
@@ -60,15 +60,19 @@ export class ComponentConfigRegistry extends Model {
     prefixes: string[],
     root: StructConfigNode,
     param: ParameterNode,
+    depth: number,
   ): ConfigItem | undefined {
     if (prefixes.length === 0) return;
-    const prefix = prefixes[0];
+
+    const prefix = prefixes[depth];
     const child = root.children.find(({ name }) => name === prefix) as StructConfigNode;
+
     if (!child) {
       root.children.push(this.createNode(param));
       return;
     }
-    return this.getNodeByPath(prefixes, child, param);
+
+    return this.getNodeByPath(prefixes, child, param, depth + 1);
   }
 
   private createInputConfigNode(input: IoDef[]) {
@@ -121,7 +125,7 @@ export class ComponentConfigRegistry extends Model {
           prefixes,
           children: [],
           docString,
-          // isRequired: false,
+          isRequired: false,
           selectedName: (param as UnionParameterNode)?.union?.default_selection,
           type: 'AT_UNION_GROUP',
         };
@@ -144,7 +148,10 @@ export class ComponentConfigRegistry extends Model {
           docString,
         };
       default:
+        // is_optional：undefined，默认为必填
+        // is_optional: true，不必填
         isRequired = (param as AtomicParameterNode).atomic?.is_optional !== true;
+
         return {
           type,
           prefixes,

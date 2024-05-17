@@ -2,14 +2,14 @@ import { Drawer, Spin } from 'antd';
 
 import { Model, useModel } from '@/util/valtio-helper';
 
-import { BinModificationsRenderView } from '..';
-import { LinearModelParametersTable } from '../linear-model-parameters-table';
+import { LinearModelParamsModificationsRenderView } from '..';
+import { LinearModelParametersTable } from '../table';
 import { ToolBar } from '../toolbar';
 import SaveBtn from '../toolbar/save-btn';
 
 const ModificationResultDrawer = () => {
-  const { isVisible, setVisible } = useModel(BinningResultDrawerView);
-  const { loading, setCurrOperation } = useModel(BinModificationsRenderView);
+  const { isVisible, setVisible } = useModel(ParametersResultDrawerView);
+  const { loading } = useModel(LinearModelParamsModificationsRenderView);
 
   return (
     <Drawer
@@ -20,7 +20,6 @@ const ModificationResultDrawer = () => {
       open={isVisible}
       bodyStyle={{ padding: '16px 16px 0 16px' }}
       onClose={() => {
-        setCurrOperation(undefined);
         setVisible(false);
       }}
     >
@@ -34,7 +33,7 @@ const ModificationResultDrawer = () => {
   );
 };
 
-export class BinningResultDrawerView extends Model {
+export class ParametersResultDrawerView extends Model {
   isVisible = false;
 
   setVisible = (visible: boolean) => {

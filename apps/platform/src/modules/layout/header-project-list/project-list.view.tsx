@@ -88,11 +88,10 @@ export class HeaderProjectListView extends Model {
   loading = false;
 
   getListProject = async () => {
-    const { data } = await (this.projectEditService.isP2pMode()
-      ? listP2PProject()
-      : listProject());
+    const isP2pMode = await this.projectEditService.isP2pMode();
+    const { data } = await (isP2pMode ? listP2PProject() : listProject());
     if (data) {
-      this.projectList = this.projectEditService.isP2pMode()
+      this.projectList = isP2pMode
         ? (data || []).filter((item) => this.checkProjectIsApproved(item))
         : (data as ProjectVO[]) || [];
     }
@@ -111,7 +110,7 @@ export class HeaderProjectListView extends Model {
     this.loading = false;
   };
 
-  changeProjectList = (value: string, pathname: string) => {
+  changeProjectList = async (value: string, pathname: string) => {
     this.selectValue = value;
     const project = this.projectList?.find((item) => item.projectId === value);
 
@@ -123,7 +122,7 @@ export class HeaderProjectListView extends Model {
     history.push(
       {
         pathname,
-        search: this.projectEditService.isP2pMode()
+        search: (await this.projectEditService.isP2pMode())
           ? `projectId=${value}&mode=${project.computeMode || 'MPC'}&type=${
               project.computeFunc || 'DAG'
             }`

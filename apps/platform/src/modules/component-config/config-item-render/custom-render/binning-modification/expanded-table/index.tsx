@@ -51,8 +51,8 @@ const ExpandedTable = (props: IProps) => {
     setSelectedRowKeys,
     type,
     disabled,
-    binningData,
-    setBinningData,
+    parametersData,
+    setParametersData,
     selectedRowMap,
     setSelectedRowMap,
   } = useModel(BinModificationsRenderView);
@@ -62,7 +62,7 @@ const ExpandedTable = (props: IProps) => {
 
   useEffect(() => {
     const keys: string[] = [];
-    binningData?.variableBins?.forEach((bins) => {
+    parametersData?.variableBins?.forEach((bins) => {
       bins.bins?.forEach((bin) => {
         if (bin.markForMerge) {
           keys.push(bin.key);
@@ -82,7 +82,7 @@ const ExpandedTable = (props: IProps) => {
       };
     });
     setSelectedRowMap(newSelectedRowMap);
-  }, [binningData]);
+  }, [parametersData]);
 
   const onCheckboxPropsChange = (record: { label: string }) => {
     const isDisable = record.label.toUpperCase() === 'ELSE';
@@ -109,7 +109,7 @@ const ExpandedTable = (props: IProps) => {
     }
 
     /** 不支持合并到两个以及以下的分桶 */
-    const records = binningData?.variableBins?.find(
+    const records = parametersData?.variableBins?.find(
       (record: Record) => record.feature === featureName,
     );
     const test = selected ? newIndexArr.length : newIndexArr.length - 1;
@@ -125,7 +125,7 @@ const ExpandedTable = (props: IProps) => {
       : selectedRowKeys.filter((key) => key !== currentRowkey);
     setSelectedRowKeys(currentSelectedRowKeys);
 
-    const markedbinningData = binningData?.variableBins?.map((record) => {
+    const markedparametersData = parametersData?.variableBins?.map((record) => {
       const valueList = selectedRowMap[record.key]?.value || [];
       const rowKeys = valueList.length >= 1 ? valueList : [];
       return {
@@ -138,10 +138,10 @@ const ExpandedTable = (props: IProps) => {
         }),
       };
     });
-    if (binningData && markedbinningData) {
-      setBinningData({
-        modelHash: binningData.modelHash,
-        variableBins: markedbinningData,
+    if (parametersData && markedparametersData) {
+      setParametersData({
+        modelHash: parametersData.modelHash,
+        variableBins: markedparametersData,
       });
     }
   };

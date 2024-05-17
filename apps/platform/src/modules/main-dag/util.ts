@@ -1,4 +1,7 @@
+import type { Node, Edge } from '@antv/x6';
 import { NodeStatus } from '@secretflow/dag';
+
+import mainDag from '@/modules/main-dag/dag';
 
 export const createPortTooltip = (
   container: Element,
@@ -39,3 +42,43 @@ export enum nodeStatus {
   STOPPED = NodeStatus.stopped,
   UNFINISHED = NodeStatus.unfinished,
 }
+
+export const validateConnection = (
+  sourceNode: Node,
+  targetNode: Node,
+  sourceMagnet: Element,
+  targetMagnet: Element,
+  edges: Edge[],
+) => {
+  // 只能从 bottom 连接桩开始连接，连接到 top 连接桩
+  if (!sourceMagnet || sourceMagnet.getAttribute('port-group') === 'top') {
+    return false;
+  }
+  if (!targetMagnet || targetMagnet.getAttribute('port-group') !== 'top') {
+    return false;
+  }
+
+  // 不能重复连线
+  const port = targetMagnet.getAttribute('port') as string;
+  if (edges.find((edge) => edge.getTargetPortId() === port)) {
+    return false;
+  }
+
+  //连接桩类型校验
+  let res = false;
+  const sourcePortId = sourceMagnet.getAttribute('port') as string;
+  const sourcePortType = sourceNode.getPort(sourcePortId)?.type;
+
+  const targetPortId = targetMagnet.getAttribute('port') as string;
+  const targetPortType = targetNode.getPort(targetPortId)?.type;
+
+  for (const sourceType of sourcePortType) {
+    // const res = targetPortType.indexOf(sourceType);
+    if (targetPortType.indexOf(sourceType) > -1) {
+      res = true;
+      break;
+    }
+  }
+
+  return res;
+};

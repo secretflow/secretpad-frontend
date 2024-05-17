@@ -1,67 +1,37 @@
 import { InputNumber } from 'antd';
-import { useEffect } from 'react';
 
 import { useModel } from '@/util/valtio-helper';
 
-import { BinModificationsRenderView } from '../..';
-import { CurrOperationEnum } from '../../types';
+import { LinearModelParamsModificationsRenderView } from '../..';
 
-export const EditDefaultWoe = () => {
-  const {
-    disabled,
-    defaultBiasValue,
-    parametersData,
-    setDefaultBiasValue,
-    setCurrOperation,
-    setBinningData,
-  } = useModel(BinModificationsRenderView);
+export const EditBias = () => {
+  const { disabled, parametersData, setParametersData, record } = useModel(
+    LinearModelParamsModificationsRenderView,
+  );
 
   const handleChange = (value: number | null) => {
-    setDefaultBiasValue(value as number);
-
     if (parametersData) {
-      setCurrOperation(CurrOperationEnum.EditBias);
-
-      const changedBinningData = parametersData?.variableParametersData?.map(
-        (record) => {
-          return {
-            ...record,
-            bins: record.bins?.map((bin) => {
-              if (bin.label === 'ELSE') {
-                return {
-                  ...bin,
-                  woe: value,
-                };
-              } else {
-                return bin;
-              }
-            }),
-          };
-        },
-      );
-
-      if (changedBinningData && parametersData) {
-        setBinningData({
-          modelHash: parametersData.modelHash as string,
-          variableParametersData: changedBinningData,
+      if (parametersData) {
+        setParametersData({
+          ...parametersData,
+          bias: value as number,
+        });
+        record({
+          ...parametersData,
+          bias: value as number,
         });
       }
     }
   };
 
-  useEffect(() => {
-    setDefaultBiasValue(defaultBiasValue);
-  }, [parametersData]);
-
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
       {
         <>
-          <span>bias(interpect)：</span>
+          <span>bias(intercept)：</span>
           <InputNumber
             onChange={handleChange}
-            value={defaultBiasValue}
-            min={0}
+            value={parametersData?.bias}
             style={{ width: 140 }}
             defaultValue={0}
             disabled={disabled}

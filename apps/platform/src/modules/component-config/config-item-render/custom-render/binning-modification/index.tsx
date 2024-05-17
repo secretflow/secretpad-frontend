@@ -5,20 +5,22 @@ import React, { useEffect } from 'react';
 
 import type { GraphNodeDetail } from '@/modules/component-config/component-config-protocol';
 import mainDag from '@/modules/main-dag/dag';
-import { Model, getModel, useModel } from '@/util/valtio-helper';
+import { getModel, useModel } from '@/util/valtio-helper';
 
 import type { NodeAllInfo } from '../../config-render-protocol';
+import { ParamsModificationsRenderView } from '../parameters-modification/parameters-modification-view';
+import { SourceTypeEnum } from '../parameters-modification/types';
 
 import { DefaultBinningModificationService } from './binning-modification-service';
 import { BinningResultDrawerView } from './drawer';
 import { getLabel, getBoundValue } from './helper';
 import type { BinningData, CurrOperationEnum, SelectedRowMap } from './types';
-import { TableTypeEnum, type Record, SourceTypeEnum } from './types';
-import { DefaultUndoService } from './undo-service';
+import { TableTypeEnum, type Record } from './types';
+import { DefaultRedoUndoService } from '../redo-undo/redo-undo-service';
 
 /** 2. 把表单格式，serializer 序列化，转换成 node info */
-export const binModificationsSerializer = (binningData: BinningData) => {
-  const variableBins = binningData?.variableBins?.map((record: Record) => {
+export const binModificationsSerializer = (parametersData: BinningData) => {
+  const variableBins = parametersData?.variableBins?.map((record: Record) => {
     const { feature, isWoe, binCount, type, iv, bins, partyName } = record;
 
     /** woe 分箱 和 普通分箱 参数有区别 */
@@ -55,7 +57,7 @@ export const binModificationsSerializer = (binningData: BinningData) => {
   });
 
   return {
-    modelHash: binningData.modelHash,
+    modelHash: parametersData.modelHash,
     variableBins,
   };
 };
@@ -138,10 +140,10 @@ export const BinModificationsRender: React.FC<IBinModificationsRender> = (
   params: IBinModificationsRender,
 ) => {
   // 打开分箱结果表
-  const { initBinningTable, binningData } = useModel(BinModificationsRenderView);
+  const { initParametersTable, parametersData } = useModel(BinModificationsRenderView);
   const { setVisible } = useModel(BinningResultDrawerView);
 
-  const undoService = useModel(DefaultUndoService);
+  const undoService = useModel(DefaultRedoUndoService);
 
   /** init binning data & undo service
    * 分箱的初始化数据入口，不走 config-form-view.tsx form 表单的逻辑
@@ -150,7 +152,7 @@ export const BinModificationsRender: React.FC<IBinModificationsRender> = (
     // 防止其他 component 的 nodeAllInfo 进入
     if (params.nodeAllInfo.graphNode.codeName === 'feature/binning_modifications') {
       undoService.init();
-      initBinningTable(params.nodeAllInfo, params.disabled);
+      initParametersTable(params.nodeAllInfo, params.disabled);
     }
   }, [params.nodeAllInfo.nodeId]);
 
@@ -161,17 +163,17 @@ export const BinModificationsRender: React.FC<IBinModificationsRender> = (
         <Button
           style={{ padding: 0 }}
           type="link"
-          disabled={!binningData}
+          disabled={!parametersData}
           onClick={() => {
             undoService.init();
-            initBinningTable(params.nodeAllInfo, params.disabled);
+            initParametersTable(params.nodeAllInfo, params.disabled);
 
             setVisible(true);
           }}
         >
           编辑分箱
         </Button>
-        {!binningData ? (
+        {!parametersData ? (
           <Tooltip title="无法编辑？请先执行分箱修改">
             <QuestionCircleOutlined />
           </Tooltip>
@@ -181,45 +183,22 @@ export const BinModificationsRender: React.FC<IBinModificationsRender> = (
   );
 };
 
-/** 含有 binning 交互逻辑的 实体 */
-export class BinModificationsRenderView extends Model {
-  /** 分箱数据 */
-  binningData?: BinningData;
-  /** 初始分箱数据 */
-  initData?: BinningData;
-
+export class BinModificationsRenderView extends ParamsModificationsRenderView<BinningData> {
   /** woe 分箱结果表 or 常规分箱表 */
   type: TableTypeEnum = TableTypeEnum.WoeBinning;
-  /** 分箱结果表来源 */
-  sourceType: SourceTypeEnum = SourceTypeEnum.Upstream;
   /** 默认 woe 的值 */
   defaultWoeValue = 0;
   /** 选择需要合并的 桶 */
   selectedRowKeys: React.Key[] = [];
   /** 选择需要合并的 所有桶 */
   selectedRowMap: SelectedRowMap = {};
-  /** 上游数据 */
-  upstreamBinningData?: BinningData;
-  /** 最新数据 */
-  latestBinningData?: BinningData;
-
   /** 当前的操作 */
   currOperation?: CurrOperationEnum;
 
-  /** loading */
-  loading = false;
+  parametersModificationService = getModel(DefaultBinningModificationService);
 
-  /** 分箱算子的节点信息 */
-  node?: NodeAllInfo;
-
-  /** 是否需要禁用：从配置面板透传 */
-  disabled = false;
-
-  undoService = getModel(DefaultUndoService);
-  binningModificationService = getModel(DefaultBinningModificationService);
-
-  setLoading = (loading: boolean) => {
-    this.loading = loading;
+  getUnSerializer = (data: any) => {
+    return binModificationsUnSerializer(data) as BinningData;
   };
 
   setCurrOperation = (currOperation?: CurrOperationEnum) => {
@@ -238,41 +217,11 @@ export class BinModificationsRenderView extends Model {
     this.defaultWoeValue = value;
   };
 
-  setSourceType = (sourceType: SourceTypeEnum) => {
-    this.sourceType = sourceType;
-  };
-
-  getLatestBinningData = async () => {
-    this.binningData = this.latestBinningData;
-  };
-
-  setBinningData = (binningData: BinningData) => {
-    this.binningData = binningData;
-  };
-
-  resetBinningTable = () => {
+  resetParametersTable = () => {
     this.defaultWoeValue = 0;
   };
 
-  getUpstreamBinningData = async () => {
-    if (!this.upstreamBinningData) {
-      // 先获取上游的
-      const nodeId = this.node?.graphNode.graphNodeId as string;
-      const outputId = this.node?.graphNode?.outputs?.[1] as string;
-
-      const tabs = await this.binningModificationService.getBinningDatas(
-        nodeId,
-        outputId,
-      );
-
-      this.upstreamBinningData = tabs?.[0];
-      this.binningData = this.upstreamBinningData;
-    } else {
-      this.binningData = this.upstreamBinningData;
-    }
-  };
-
-  initBinningTable = async (node: NodeAllInfo, disabled: boolean) => {
+  initParametersTable = async (node: NodeAllInfo, disabled: boolean) => {
     const graphNode = await mainDag.requestService.getGraphNode(node.nodeId);
 
     /** node 信息 */
@@ -281,11 +230,11 @@ export class BinModificationsRenderView extends Model {
       graphNode: graphNode as GraphNodeDetail,
     };
 
-    this.binningData = undefined;
+    this.parametersData = undefined;
     this.currOperation = undefined;
 
-    this.latestBinningData = undefined;
-    this.upstreamBinningData = undefined;
+    this.latestData = undefined;
+    this.upstreamData = undefined;
 
     this.selectedRowKeys = [];
 
@@ -301,17 +250,17 @@ export class BinModificationsRenderView extends Model {
       const nodeId = this.node?.graphNode?.graphNodeId;
       const outputId = this.node?.graphNode?.outputs?.[1];
 
-      const tabs = await this.binningModificationService.getBinningDatas(
+      const tabs = await this.parametersModificationService.getParametersDatas(
         nodeId,
         outputId,
       );
 
       if (tabs) {
-        const upstreamBinningData = tabs?.[0];
+        const upstreamData = tabs?.[0];
 
-        this.upstreamBinningData = upstreamBinningData;
-        this.binningData = upstreamBinningData;
-        this.initData = upstreamBinningData;
+        this.upstreamData = upstreamData;
+        this.parametersData = upstreamData;
+        this.initData = upstreamData;
       }
     } else {
       /** 最新结果表 */
@@ -322,72 +271,21 @@ export class BinModificationsRenderView extends Model {
       if (nodeDefVal) {
         // tabs[1]
         const data = JSON.parse(nodeDefVal);
-        const binningData = binModificationsUnSerializer(data);
+        const parametersData = this.getUnSerializer(data);
 
-        this.latestBinningData = binningData;
-        this.binningData = binningData;
-        this.initData = binningData;
+        this.latestData = parametersData;
+        this.parametersData = parametersData;
+        this.initData = parametersData;
       }
     }
 
     /** 是否是 woe 分箱 */
-    this.type = this.binningData?.variableBins?.[0]?.isWoe
+    this.type = this.parametersData?.variableBins?.[0]?.isWoe
       ? TableTypeEnum.WoeBinning
       : TableTypeEnum.Binning;
   };
 
-  refreshData = async () => {
-    const nodeId = this.node?.graphNode.graphNodeId as string;
-    const outputId = this.node?.graphNode?.outputs?.[1] as string;
-
-    const tabs = await this.binningModificationService.getBinningDatas(
-      nodeId,
-      outputId,
-    );
-
-    if (tabs) {
-      const binningData = tabs?.[1];
-
-      this.binningModificationService.updateBinningConfig(
-        binningData,
-        this.node as NodeAllInfo,
-      );
-
-      this.binningData = binningData;
-
-      return binningData;
-    } else {
-      return;
-    }
-  };
-
-  saveComponentConfig = (binningData: BinningData) => {
-    this.binningModificationService.saveBinningConfig(
-      binningData,
-      this.node as NodeAllInfo,
-    );
-  };
-
-  merge = (binningData: BinningData) => {
-    this.binningModificationService.merge(binningData, this.node as NodeAllInfo);
-  };
-
-  undo = () => {
-    const snapshot = this.binningModificationService.undo();
-    if (snapshot?.length <= 0) {
-      this.binningData = this.initData;
-      return;
-    }
-    this.binningData = snapshot;
-  };
-
-  redo = () => {
-    const snapshot = this.binningModificationService.redo();
-    this.binningData = snapshot;
-  };
-
-  reset = () => {
-    this.binningModificationService.reset();
-    this.binningData = this.initData;
+  merge = (parametersData: BinningData) => {
+    this.parametersModificationService.merge(parametersData, this.node as NodeAllInfo);
   };
 }

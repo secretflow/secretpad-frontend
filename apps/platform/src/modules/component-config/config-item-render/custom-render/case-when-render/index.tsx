@@ -37,7 +37,6 @@ const opOptions = [
 ];
 
 export const caseWhenSerializer = (val, clsName) => {
-  console.log(val, 'caseWhenSerializer');
   const name = 'custom_value';
   const cw = val;
   const { whens, else_value, output_column, as_label, float_epsilon } = cw || {};
@@ -110,6 +109,7 @@ export const caseWhenUnserializer = (val?) => {
 
 export const CaseWhenRender = (prop: { node: AtomicConfigNode }) => {
   const { node, upstreamTables = [] } = prop;
+
   const [tables, setTables] = useState<IDataTable[]>([]);
   const [outputTables, setOutputTables] = useState<IOutputDataTable[]>([]);
   const [columns, setColumns] = useState<{ label: string; value: string }[]>([]);

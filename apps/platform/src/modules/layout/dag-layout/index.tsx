@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { history } from 'umi';
 
 import { AccessWrapper, Platform } from '@/components/platform-wrapper';
+import { AdvancedConfigComponent } from '@/modules/advanced-config/advanced-config-entry';
 import BinningResultDrawer from '@/modules/component-config/config-item-render/custom-render/binning-modification/drawer';
 import {
   componentConfigDrawer,
@@ -15,9 +16,11 @@ import {
 import { QuickConfigModal } from '@/modules/component-config/template-quick-config/quick-config-drawer';
 import { ComponentTree } from '@/modules/component-tree/component-tree-view';
 import { DAGGuideTourComponent } from '@/modules/dag-guide-tour/dag-guide-tour.view';
-import { Log } from '@/modules/dag-log/log-viewer.view';
+import { Log, LogLabel } from '@/modules/dag-log/log-viewer.view';
 import { DagLogDrawer } from '@/modules/dag-log/log.drawer.layout';
 import { DagLog } from '@/modules/dag-log/log.view';
+import { SlsLog, SlsLogLabel } from '@/modules/dag-log/sls-log-viewer.view';
+import { SlsService } from '@/modules/dag-log/sls-service';
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import { ModalWidth } from '@/modules/dag-modal-manager/modal-manger-protocol';
 import { ResultDrawer } from '@/modules/dag-result/result-modal';
@@ -66,6 +69,7 @@ export enum DagLayoutMenu {
 export const DagLayout = () => {
   const viewInstance = useModel(DagLayoutView);
   const loginService = useModel(LoginService);
+  const slsLogService = useModel(SlsService);
 
   const { type = 'DAG', mode } = parse(window.location.search);
 
@@ -140,6 +144,21 @@ export const DagLayout = () => {
     }
   }, [viewInstance.initActiveMenu]);
 
+  const logItems = [
+    {
+      key: '1',
+      label: <LogLabel />,
+      children: <Log />,
+      disabled: false,
+    },
+    {
+      key: '2',
+      label: <SlsLogLabel />,
+      disabled: !slsLogService.slsLogIsConfig,
+      children: <SlsLog />,
+    },
+  ];
+
   return (
     <div className={styles.wrap}>
       <div className={styles.header}>
@@ -212,6 +231,7 @@ export const DagLayout = () => {
               <ToolbarComponent />
               <div className={styles.right}>
                 <Space>
+                  <AdvancedConfigComponent />
                   <RecordComponent />
                   {!isTeeProject() && <ModelSubmissionEntry />}
                 </Space>
@@ -233,9 +253,7 @@ export const DagLayout = () => {
       <ComponentConfigDrawer />
       <QuickConfigModal />
       <DagLogDrawer>
-        <DagLog>
-          <Log />
-        </DagLog>
+        <DagLog items={logItems} />
       </DagLogDrawer>
       <div style={{ display: 'none' }}>
         <DAGGuideTourComponent />

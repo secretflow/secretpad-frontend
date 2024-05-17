@@ -1,6 +1,6 @@
 import { Model } from '@/util/valtio-helper';
 
-export class DefaultUndoService<T> extends Model {
+export class DefaultRedoUndoService<T> extends Model {
   undoStack: T[] = [];
   redoStack: T[] = [];
 
@@ -50,10 +50,6 @@ export class DefaultUndoService<T> extends Model {
 
   // 重做（重新来过）
   public reset = () => {
-    if (this.undoStack.length <= 0) {
-      return;
-    }
-
     this.undoStack = [];
     this.redoStack = [];
 
