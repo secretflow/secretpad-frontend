@@ -14,8 +14,16 @@ import {
   groupbySerializer,
   groupbyUnserializer,
 } from './custom-render/groupby-render/serializer';
+import {
+  unionSerializer,
+  unionUnserializer,
+} from './custom-render/union-render/serializer';
 
 export const customSerializerRegistry = {
+  union: {
+    serializer: unionSerializer,
+    unserializer: unionUnserializer,
+  },
   'case_when_rules_pb2.CaseWhenRule': {
     serializer: caseWhenSerializer,
     unserializer: caseWhenUnserializer,

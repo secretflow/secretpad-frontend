@@ -129,6 +129,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
       setIsEditable(true);
     }
   }, [pathname, projectEditService.canEdit.configFormDisabled]);
+
   useEffect(() => {
     /** 1. fetch 组件信息的时候，unserializer 反序列化，转换成表单需要的格式 */
     const fetchGraphNode = async () => {
@@ -301,6 +302,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
   };
 
   const onFormFinished = (val: Record<string, ValueOf<Attribute> | undefined>) => {
+    console.log(val, 'valvalvalval');
     onSaveConfig(val);
     // close config drawer
     onClose();
@@ -394,6 +396,7 @@ export const ConfigurationNodeRender = ({
 }) => {
   const configRenderRegistry = useModel(ConfigRenderRegistry);
   const Render = configRenderRegistry.getRender(config, exif);
+
   const defaultVal = getDefaultValue(config);
   const { upstreamTables } = exif;
 

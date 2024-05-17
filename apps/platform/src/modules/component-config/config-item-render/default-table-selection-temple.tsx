@@ -15,6 +15,7 @@ export const DefaultTableSelect: React.FC<RenderProp<string>> = (config) => {
   const [tables, setTables] = useState<
     { datatableId: string; nodeName: string; datatableName: string }[]
   >([]);
+
   useEffect(() => {
     const getTables = async () => {
       const dataTableList: {

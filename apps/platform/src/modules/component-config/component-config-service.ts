@@ -64,6 +64,7 @@ export class DefaultComponentConfigService extends Model {
       //   leaves.push(root);
       // }
 
+      if (root.type === 'AT_UNION_GROUP') leaves.push(root as AtomicConfigNode);
       selectedChildren.map((c) => this.getLeavesInTree(c, leaves));
       return;
     }

@@ -50,6 +50,7 @@ export const DefaultInputNumber: React.FC<RenderProp<number>> = (config) => {
     maxInclusive = false,
     minInclusive = false,
   } = getValueBound(node);
+
   return (
     <Form.Item
       label={
@@ -184,13 +185,15 @@ export const DefaultSelect: React.FC<RenderProp<string>> = (config) => {
     );
     setSelectOptions(options || []);
   }, [allowedValues]);
+  const name = translation[node.name] || node.name;
+  const { prefixes } = node;
 
-  return (
+  const item = (
     <Form.Item
       label={
-        <div className={styles.configItemLabel}>
-          {translation[node.name] || node.name}
-        </div>
+        prefixes && prefixes.length > 0 ? undefined : (
+          <div className={styles.configItemLabel}>{name}</div>
+        )
       }
       name={
         node.prefixes && node.prefixes.length > 0
@@ -243,6 +246,48 @@ export const DefaultSelect: React.FC<RenderProp<string>> = (config) => {
           }
         }}
       />
+    </Form.Item>
+  );
+
+  return prefixes ? (
+    <Form.Item noStyle dependencies={[prefixes.join('/')]}>
+      {({ getFieldValue }) => {
+        const dependency = getFieldValue(prefixes.join('/'));
+        // console.log(dependency, name);
+        return dependency === node.name || dependency === undefined ? item : <></>;
+      }}
+    </Form.Item>
+  ) : (
+    item
+  );
+};
+
+export const DefaultUnion = (config) => {
+  const { node, translation } = config;
+  const name = translation[node.name] || node.name;
+  const { prefixes, children, selectedName } = node;
+
+  const options = children.map((i) => ({
+    label: translation[i.name] || i.name,
+    value: i.name,
+  }));
+
+  return (
+    <Form.Item
+      name={
+        node.prefixes && node.prefixes.length > 0
+          ? node.prefixes.join('/') + '/' + node.name
+          : node.name
+      }
+      label={
+        prefixes && prefixes.length > 0 ? undefined : (
+          <div className={styles.configItemLabel}>{name}</div>
+        )
+      }
+      tooltip={translation[node.docString] || node.docString}
+      initialValue={selectedName}
+    >
+      <Select options={options}></Select>
     </Form.Item>
   );
 };

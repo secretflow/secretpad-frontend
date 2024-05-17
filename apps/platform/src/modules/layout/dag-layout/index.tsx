@@ -20,7 +20,7 @@ import { DagLogDrawer } from '@/modules/dag-log/log.drawer.layout';
 import { DagLog } from '@/modules/dag-log/log.view';
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import { ModalWidth } from '@/modules/dag-modal-manager/modal-manger-protocol';
-import { ResultDrawer, resultDrawer } from '@/modules/dag-result/result-modal';
+import { ResultDrawer } from '@/modules/dag-result/result-modal';
 import { DatatableTreeComponent } from '@/modules/data-table-tree/datatable-tree.view';
 import { LoginService } from '@/modules/login/login.service';
 import { GraphComponents } from '@/modules/main-dag/graph';
@@ -34,6 +34,7 @@ import { PipelineViewComponent } from '@/modules/pipeline/pipeline-view';
 import { RecordListDrawerItem } from '@/modules/pipeline-record-list/record-list-drawer-view';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
+import ModificationResultDrawer from '../../component-config/config-item-render/custom-render/linear-model-parameters-modification/drawer/index';
 import { ProjectListComponent } from '../header-project-list/project-list.view';
 
 import styles from './index.less';
@@ -241,6 +242,7 @@ export const DagLayout = () => {
       </div>
       {/* 分箱修改 drawer 独立不与 modalManager 耦合：解决执行算子的时候不关闭 modal 问题 */}
       <BinningResultDrawer />
+      <ModificationResultDrawer />
     </div>
   );
 };

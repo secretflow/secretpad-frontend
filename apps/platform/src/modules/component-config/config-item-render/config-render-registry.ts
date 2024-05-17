@@ -25,26 +25,26 @@ export class ConfigRenderRegistry extends Model {
   }
 
   getRender(config: ConfigItem, exif?: any) {
-    if (
-      (config as StructConfigNode).children &&
-      (config as StructConfigNode).children.length > 0 &&
-      (config as StructConfigNode).selectedName
-    ) {
-      // TODO: render union node
-      return;
-    } else {
-      const { renderKey } = exif;
-      const selectedRenders = this.renders
-        .map((render) => ({
-          ...render,
-          priority: render.canHandle(config as AtomicConfigNode, renderKey),
-        }))
-        .filter((render) => render.priority !== false);
+    // if (
+    //   (config as StructConfigNode).children &&
+    //   (config as StructConfigNode).children.length > 0 &&
+    //   (config as StructConfigNode).selectedName
+    // ) {
+    //   // TODO: render union node
+    //   return;
+    // } else {
+    const { renderKey } = exif;
+    const selectedRenders = this.renders
+      .map((render) => ({
+        ...render,
+        priority: render.canHandle(config as AtomicConfigNode, renderKey),
+      }))
+      .filter((render) => render.priority !== false);
 
-      if (selectedRenders.length === 0) return;
+    if (selectedRenders.length === 0) return;
 
-      // TODO: sort priority
-      return selectedRenders[0].component;
-    }
+    // TODO: sort priority
+    return selectedRenders[0].component;
   }
+  // }
 }

@@ -15,7 +15,8 @@ export type AtomicParameterType =
   // Special types.
   // | 'ATTR_TYPE_UNSPECIFIED'
   | 'AT_SF_TABLE_COL'
-  | 'AT_PARTY';
+  | 'AT_PARTY'
+  | 'AT_UNION_GROUP';
 
 // export const ColSelectionParameter = 'AT_SF_TABLE_COL';
 
@@ -31,6 +32,7 @@ export type ParameterNode = {
   // `input` and `output` are reserved.
   name: string;
   desc: string;
+  custom_protobuf_cls?: string;
 } & (
   | AtomicParameterNode
   | UnionParameterNode
