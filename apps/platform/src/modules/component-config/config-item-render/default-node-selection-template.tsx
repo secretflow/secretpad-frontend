@@ -23,6 +23,8 @@ export const DefaultNodeSelect: React.FC<RenderProp<string>> = (config) => {
   const [nodes, setNodes] = useState<{ label: string; value: string }[]>([]);
   const nodeService = useModel(NodeService);
 
+  const { prefixes } = node;
+
   const { search } = useLocation();
   const { projectId } = parse(search) as { projectId: string };
 
@@ -81,7 +83,7 @@ export const DefaultNodeSelect: React.FC<RenderProp<string>> = (config) => {
     getNodes();
   }, []);
 
-  return (
+  const item = (
     <Form.Item
       label={
         <div className={styles.configItemLabel}>
@@ -111,5 +113,17 @@ export const DefaultNodeSelect: React.FC<RenderProp<string>> = (config) => {
         }}
       />
     </Form.Item>
+  );
+
+  return prefixes ? (
+    <Form.Item noStyle dependencies={[prefixes.join('/')]}>
+      {({ getFieldValue }) => {
+        const dependency = getFieldValue(prefixes.join('/'));
+        // console.log(dependency, name);
+        return dependency === node.name || dependency === undefined ? item : <></>;
+      }}
+    </Form.Item>
+  ) : (
+    item
   );
 };

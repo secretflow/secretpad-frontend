@@ -25,7 +25,7 @@ export class ComponentConfigRegistry extends Model {
 
   registerConfigNode(component: Component, mode: ComputeMode) {
     if (this.hasConfigNode(component, mode)) return;
-    const { name, domain, version, attrs, inputs } = component;
+    const { name, domain, version, attrs = [], inputs } = component;
     const parent: StructConfigNode = {
       name: `${domain}/${name}`,
       domain,
@@ -43,8 +43,9 @@ export class ComponentConfigRegistry extends Model {
         const { prefixes } = param;
         if (prefixes) {
           this.getNodeByPath(prefixes, parent, param);
+        } else {
+          parent.children.push(this.createNode(param));
         }
-        parent.children.push(this.createNode(param));
       }
     }
 
@@ -61,7 +62,7 @@ export class ComponentConfigRegistry extends Model {
     param: ParameterNode,
   ): ConfigItem | undefined {
     if (prefixes.length === 0) return;
-    const prefix = prefixes.shift();
+    const prefix = prefixes[0];
     const child = root.children.find(({ name }) => name === prefix) as StructConfigNode;
     if (!child) {
       root.children.push(this.createNode(param));
@@ -112,6 +113,7 @@ export class ComponentConfigRegistry extends Model {
   createNode(param: ParameterNode): ConfigItem {
     let isRequired = true;
     const { type, name, desc: docString, prefixes, custom_protobuf_cls } = param;
+
     switch (type) {
       case 'AT_UNION_GROUP':
         return {
@@ -119,7 +121,9 @@ export class ComponentConfigRegistry extends Model {
           prefixes,
           children: [],
           docString,
-          selectedName: (param as UnionParameterNode).union.default_selection,
+          // isRequired: false,
+          selectedName: (param as UnionParameterNode)?.union?.default_selection,
+          type: 'AT_UNION_GROUP',
         };
       case 'AT_STRUCT_GROUP':
         return {
@@ -127,6 +131,8 @@ export class ComponentConfigRegistry extends Model {
           prefixes,
           children: [],
           docString,
+          isRequired: false,
+          type: 'AT_STRUCT_GROUP',
         };
       case 'AT_CUSTOM_PROTOBUF':
         return {
