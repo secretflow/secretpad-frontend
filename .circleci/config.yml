@@ -4,12 +4,12 @@ version: 2.1
 jobs:
   main:
     docker:
-      - image: cimg/node:lts-browsers
+      - image: node:18
     steps:
       - checkout
       # look for existing cache and restore if found
       - restore_cache:
-          key: npm-dependencies-{{ checksum "pnpm-lock.yaml" }}
+          key: pnpm-dependencies-{{ checksum "pnpm-lock.yaml" }}
       # pnpm version
       - run:
          name: Install pnpm package manager
