@@ -1,5 +1,5 @@
 import type { GraphModel, GraphNode } from '@secretflow/dag';
-import { NodeStatus } from '@secretflow/dag';
+import { ActionType, NodeStatus } from '@secretflow/dag';
 import { DefaultRequestService } from '@secretflow/dag';
 import { Emitter } from '@secretflow/utils';
 import { message, Image as AntdImage } from 'antd';
@@ -33,6 +33,7 @@ import { getModel } from '@/util/valtio-helper';
 import type { User } from '../login/login.service';
 import { LoginService } from '../login/login.service';
 
+import mainDag from './dag';
 import type { IGraphEdgeType, IGraphNodeType } from './graph.protocol';
 import { nodeStatus } from './util';
 
@@ -168,6 +169,7 @@ export class GraphRequestService extends DefaultRequestService {
     }
 
     const { nodes, edges } = data;
+
     const convertedNodes = nodes?.map((n) => {
       const { graphNodeId, status, codeName, ...options } = n;
       const configs =
@@ -185,7 +187,6 @@ export class GraphRequestService extends DefaultRequestService {
       if (graphNodeStatus === NodeStatus.default && !isFinished) {
         graphNodeStatus = NodeStatus.unfinished;
       }
-
       return {
         ...options,
         codeName,
@@ -222,7 +223,7 @@ export class GraphRequestService extends DefaultRequestService {
     const { mode } = parse(window.location.search);
     const nodes = await Promise.all(
       n.map(async (i) => {
-        const { id, codeName, nodeDef, ...restNodes } = i;
+        const { id, codeName, nodeDef, styles, ...restNodes } = i;
         const config = this.componentConfigRegistry.getComponentConfig(
           codeName,
           mode as ComputeMode,
@@ -250,6 +251,17 @@ export class GraphRequestService extends DefaultRequestService {
           }
           return newNodeDef;
         };
+
+        const getNewStyles = () => {
+          if (mlTrainCodeNames.includes(codeName as string)) {
+            return {
+              ...styles,
+              isContinueRun: true,
+            };
+          }
+          return styles;
+        };
+
         return id
           ? {
               ...restNodes,
@@ -258,10 +270,29 @@ export class GraphRequestService extends DefaultRequestService {
               inputs: [],
               outputs: outputPorts,
               nodeDef: getNewNodeDef(),
+              styles: getNewStyles(),
             }
           : i;
       }),
     );
+
+    // 更新节点样式
+    const styledNodes = (
+      nodes as {
+        graphNodeId: string;
+        styles?: {
+          isContinueRun?: boolean;
+          isOpaque?: boolean;
+          isHighlighted: boolean;
+        };
+      }[]
+    )?.map(({ graphNodeId, styles }) => {
+      return {
+        nodeId: graphNodeId,
+        styles,
+      };
+    });
+    mainDag.graphManager.executeAction(ActionType.changeStyles, styledNodes);
 
     const edges = e.map((i) => {
       const { id, ...restEdges } = i;

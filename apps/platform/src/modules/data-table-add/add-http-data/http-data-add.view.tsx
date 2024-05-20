@@ -2,6 +2,7 @@ import {
   DeleteOutlined,
   DownloadOutlined,
   PlusOutlined,
+  QuestionCircleOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
 import {
@@ -12,21 +13,21 @@ import {
   Input,
   Select,
   Space,
+  Tooltip,
   Upload,
   message,
 } from 'antd';
 import { Drawer } from 'antd';
+import { parse } from 'query-string';
 import { useEffect, useRef } from 'react';
 import { CSVLink } from 'react-csv';
-import { createFeatureDatasource } from '@/services/secretpad/FeatureDatasourceController';
 
+import { createFeatureDatasource } from '@/services/secretpad/FeatureDatasourceController';
 import { Model, useModel } from '@/util/valtio-helper';
 
 import { analysisCsv } from '../component/upload-table/util';
 
 import styles from './index.less';
-import { parse } from 'query-string';
-import { flushSync } from 'react-dom';
 
 const downloadData = [
   { 特征名称: 'id1', 特征类型: 'string', 特征描述: '' },
@@ -204,7 +205,13 @@ export const HttpDataAddDrawer = ({
         </Space>
       }
     >
-      <div className={styles.titleSheet}>数据表类型：http数据源</div>
+      <div className={styles.titleSheet}>
+        数据表类型
+        <Tooltip title="http数据源通常用于模型发布环节，用于在线服务调用">
+          <QuestionCircleOutlined style={{ margin: 4 }} />
+        </Tooltip>
+        ：http数据源
+      </div>
       <CSVLink filename="示例文件.csv" data={downloadData} ref={csvRef} />
       <Form form={form} layout="vertical" autoComplete="off" requiredMark="optional">
         <Form.Item

@@ -9,8 +9,8 @@ import { LinearModelParamsModificationsRenderView } from '..';
 import styles from '../index.less';
 import type { ParametersDatum } from '../types';
 
-const MIN_FLOAT32 = -3.40282347e38;
-const MAX_FLOAT32 = 3.40282347e38;
+const MIN_FLOAT32 = -3.4e38;
+const MAX_FLOAT32 = 3.4e38;
 
 type FormInstance<T> = GetRef<typeof Form<T>>;
 
