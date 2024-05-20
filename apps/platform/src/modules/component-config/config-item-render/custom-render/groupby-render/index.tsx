@@ -1,4 +1,5 @@
 import { DeleteOutlined } from '@ant-design/icons';
+import { useDeepCompareEffect } from 'ahooks';
 import { Form, Space, Select, Button, Input } from 'antd';
 import classnames from 'classnames';
 import { parse } from 'query-string';
@@ -57,7 +58,7 @@ export const GroupByRender = (prop: { node: AtomicConfigNode }) => {
   const [tables, setTables] = useState<IDataTable[]>([]);
   const [outputTables, setOutputTables] = useState<IOutputDataTable[]>([]);
 
-  useEffect(() => {
+  useDeepCompareEffect(() => {
     const getTables = async () => {
       const dataTableList: IDataTable[] = [];
       const { search } = window.location;

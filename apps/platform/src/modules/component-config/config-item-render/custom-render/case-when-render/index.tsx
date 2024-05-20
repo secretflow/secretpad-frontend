@@ -1,4 +1,5 @@
 import { PlusCircleFilled, DeleteOutlined } from '@ant-design/icons';
+import { useDeepCompareEffect } from 'ahooks';
 import { Button, Divider, Form, Input, Select, Switch } from 'antd';
 import { parse } from 'query-string';
 import { useEffect, useState, useMemo } from 'react';
@@ -119,7 +120,7 @@ export const CaseWhenRender = (prop: { node: AtomicConfigNode }) => {
   const { search } = useLocation();
   const { projectId, dagId } = parse(search) as { projectId: string; dagId: string };
 
-  useEffect(() => {
+  useDeepCompareEffect(() => {
     const getTables = async () => {
       const dataTableList: IDataTable[] = [];
 
