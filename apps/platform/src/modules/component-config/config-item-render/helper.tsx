@@ -8,10 +8,11 @@ interface IParams {
   component: React.ReactNode;
   form?: FormInstance;
   type: string;
+  name?: string;
 }
 
 export const getComponentByRenderStrategy = (params: IParams) => {
-  const { prefixes, componentConfig, component, form, type } = params;
+  const { prefixes, componentConfig, component, form, type, name } = params;
 
   const parentName = prefixes?.[prefixes.length - 1];
   const parentType = componentConfig.find(
@@ -33,9 +34,16 @@ export const getComponentByRenderStrategy = (params: IParams) => {
     return <></>;
   }
 
-  /** 该节点的父节点是 union，直接隐藏 */
-  if (parentType === 'AT_UNION_GROUP') {
+  /**
+   * 该节点的父节点是 union，自己没有类型/struct，不渲染
+   * 否则，那就根据那个父节点的 value 渲染
+   */
+  if (parentType === 'AT_UNION_GROUP' && (!type || type === 'AT_STRUCT_GROUP')) {
     return <></>;
+  } else if (parentType === 'AT_UNION_GROUP') {
+    const dependency = Form.useWatch(prefixes?.join('/'), form);
+
+    return dependency === name ? component : <></>;
   }
 
   /**

@@ -128,5 +128,6 @@ export const DefaultNodeSelect: React.FC<RenderProp<string>> = (config) => {
     component: item,
     form,
     type: node.type,
+    name: node.name,
   });
 };

@@ -9,6 +9,7 @@ import { LinearModelParametersModificationRender } from './custom-render/linear-
 import { DefaultColSelection } from './defalt-col-selection-template';
 import { DefaultMultiTableFeatureSelection } from './default-feature-selection/default-feature-selection';
 import { DefaultNodeSelect } from './default-node-selection-template';
+import { DefaultPythonEditor } from './default-python-editor';
 import {
   DefaultInputNumber,
   DefaultSwitch,
@@ -24,8 +25,19 @@ export class DefaultConfigRender implements ConfigRenderProtocol {
   registerConfigRenders() {
     return [
       {
-        canHandle: (node: AtomicConfigNode) =>
-          node.type === 'AT_UNION_GROUP' ? 1 : false,
+        canHandle: (node: AtomicConfigNode, renderKey?: string) =>
+          node.type === 'AT_STRING' &&
+          (node.name === 'custom' || node.name === 'models') &&
+          renderKey === 'PYTHON'
+            ? 3
+            : false,
+        component: DefaultPythonEditor,
+      },
+
+      {
+        canHandle: (node: AtomicConfigNode) => {
+          return node.type === 'AT_UNION_GROUP' ? 1 : false;
+        },
         component: DefaultUnion,
       },
       {

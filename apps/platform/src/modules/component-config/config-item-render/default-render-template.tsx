@@ -47,12 +47,14 @@ export const DefaultSwitch: React.FC<RenderProp<boolean>> = (config) => {
     component: item,
     form,
     type: node.type,
+    name: node.name,
   });
 };
 
 export const DefaultInputNumber: React.FC<RenderProp<number>> = (config) => {
-  const { node, onChange, value, defaultVal, translation } = config;
-  const { type } = node;
+  const { node, onChange, value, defaultVal, translation, componentConfig, form } =
+    config;
+  const { type, prefixes } = node;
 
   const {
     minVal,
@@ -61,7 +63,7 @@ export const DefaultInputNumber: React.FC<RenderProp<number>> = (config) => {
     minInclusive = false,
   } = getValueBound(node);
 
-  return (
+  const item = (
     <Form.Item
       label={
         <div className={styles.configItemLabel}>
@@ -122,10 +124,20 @@ export const DefaultInputNumber: React.FC<RenderProp<number>> = (config) => {
       />
     </Form.Item>
   );
+
+  return getComponentByRenderStrategy({
+    prefixes,
+    componentConfig,
+    component: item,
+    form,
+    type: node.type,
+    name: node.name,
+  });
 };
 
 export const DefaultInput: React.FC<RenderProp<string>> = (config) => {
-  const { onChange, value, defaultVal, node, translation } = config;
+  const { onChange, value, defaultVal, node, translation, componentConfig, form } =
+    config;
 
   let name = translation[node.name] || node.name;
   const { prefixes } = node;
@@ -133,7 +145,7 @@ export const DefaultInput: React.FC<RenderProp<string>> = (config) => {
     if (prefixes[1]) name = `${translation[prefixes[1]] || prefixes[1]} ${name}`;
   }
 
-  return (
+  const item = (
     <Form.Item
       label={<div className={styles.configItemLabel}>{name}</div>}
       name={
@@ -159,15 +171,26 @@ export const DefaultInput: React.FC<RenderProp<string>> = (config) => {
       />
     </Form.Item>
   );
+
+  return getComponentByRenderStrategy({
+    prefixes,
+    componentConfig,
+    component: item,
+    form,
+    type: node.type,
+    name: node.name,
+  });
 };
 
 export const DefaultSelect: React.FC<RenderProp<string>> = (config) => {
-  const { node, onChange, value, defaultVal, translation } = config;
+  const { node, onChange, value, defaultVal, translation, componentConfig, form } =
+    config;
   const {
     allowed_values: allowedValues,
     type,
     list_max_length_inclusive,
     list_min_length_inclusive,
+    prefixes,
   } = node;
   let isMultiple = false;
   if (['AT_STRINGS', 'AT_INTS', 'AT_FLOATS', 'AT_BOOLS'].includes(type)) {
@@ -196,7 +219,7 @@ export const DefaultSelect: React.FC<RenderProp<string>> = (config) => {
     setSelectOptions(options || []);
   }, [allowedValues]);
 
-  return (
+  const item = (
     <Form.Item
       label={
         <div className={styles.configItemLabel}>
@@ -256,6 +279,15 @@ export const DefaultSelect: React.FC<RenderProp<string>> = (config) => {
       />
     </Form.Item>
   );
+
+  return getComponentByRenderStrategy({
+    prefixes,
+    componentConfig,
+    component: item,
+    form,
+    type: node.type,
+    name: node.name,
+  });
 };
 
 export const DefaultUnion: React.FC<RenderProp<string>> = (config) => {
@@ -298,15 +330,16 @@ export const DefaultUnion: React.FC<RenderProp<string>> = (config) => {
     component: item,
     form,
     type: node.type,
+    name: node.name,
   });
 };
 
 export const DefaultStruct: React.FC<RenderProp<string>> = (config) => {
   const { node, form, componentConfig } = config;
-  const { prefixes } = node;
+  const { prefixes, name } = node;
 
   // 在目前的策略中，Struct 节点默认不渲染。
-  const item = <></>;
+  const item = <div className={styles.configItemStructLabel}>{name}</div>;
 
   return getComponentByRenderStrategy({
     prefixes,
@@ -314,5 +347,34 @@ export const DefaultStruct: React.FC<RenderProp<string>> = (config) => {
     component: item,
     form,
     type: node.type,
+    name,
+  });
+};
+
+export const DefaultEmpty: React.FC<RenderProp<string>> = (config) => {
+  const { node, form, componentConfig } = config;
+  const { prefixes, name } = node;
+
+  // 默认不渲染。
+  const item = (
+    <Form.Item
+      style={{ display: 'none' }}
+      name={
+        node.prefixes && node.prefixes.length > 0
+          ? node.prefixes.join('/') + '/' + node.name
+          : node.name
+      }
+    >
+      <></>
+    </Form.Item>
+  );
+
+  return getComponentByRenderStrategy({
+    prefixes,
+    componentConfig,
+    component: item,
+    form,
+    type: node.type,
+    name,
   });
 };

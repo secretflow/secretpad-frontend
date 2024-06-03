@@ -45,7 +45,7 @@ interface PythonEditorProps {
 // ];
 
 export const PythonEditor: FC<PythonEditorProps> = (props) => {
-  const { value = '', onChange, disabled = false, name, tooltip } = props;
+  const { value, onChange, disabled = false, name, tooltip } = props;
   const editorRef = useRef<HTMLDivElement>(null);
   const fullscreenRef = useRef(null);
   const monacoSuggestion = useRef<any>(null);
@@ -104,6 +104,10 @@ export const PythonEditor: FC<PythonEditorProps> = (props) => {
       monacoSuggestion.current = null;
     }
   };
+
+  useEffect(() => {
+    editor.current?.setValue(value);
+  }, [value]);
 
   useEffect(() => {
     if (editor.current) {

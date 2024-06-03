@@ -54,6 +54,7 @@ export const codeNameRenderKey = {
   'data_prep/psi': 'UNION_KEY_SELECT',
   'preprocessing/psi': 'UNION_KEY_SELECT',
   'preprocessing/sqlite': 'SQL',
+  'ml.train/slnn_train': 'PYTHON',
 };
 
 export const codeNameRenderIndex = {

@@ -14,12 +14,6 @@ jobs:
       - run:
           name: install dependencies
           command: pnpm install --ignore-scripts
-       # pnpm version
-      - run:
-         name: Install pnpm package manager
-         command: |
-          corepack enable
-          corepack prepare pnpm@8.8 --activate
       # save any changes to the cache
       - save_cache:
           key: npm-dependencies-{{ checksum "pnpm-lock.yaml" }}
@@ -34,8 +28,4 @@ workflows:
 
   ci:
     jobs:
-      - main:
-          filters:
-            branches:
-              only:
-                - main
+      - main
