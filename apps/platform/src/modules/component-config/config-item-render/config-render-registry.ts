@@ -1,10 +1,6 @@
 import { getModel, Model } from '@/util/valtio-helper';
 
-import type {
-  AtomicConfigNode,
-  ConfigItem,
-  StructConfigNode,
-} from '../component-config-protocol';
+import type { AtomicConfigNode, ConfigItem } from '../component-config-protocol';
 
 import { DefaultConfigRender } from './config-render-contribution';
 import type { ConfigRender } from './config-render-protocol';

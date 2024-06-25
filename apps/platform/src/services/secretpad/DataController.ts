@@ -25,11 +25,6 @@ export async function createData(
 @param request download data request
  POST /api/v1alpha1/data/download */
 export async function download(
-  params: {
-    // query
-    /** http servlet response */
-    response?: API.HttpServletResponse;
-  },
   body?: API.DownloadDataRequest,
   options?: { [key: string]: any },
 ) {
@@ -37,11 +32,6 @@ export async function download(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-    },
-    params: {
-      ...params,
-      response: undefined,
-      ...params['response'],
     },
     data: body,
     ...(options || {}),

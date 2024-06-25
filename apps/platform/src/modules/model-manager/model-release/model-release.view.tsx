@@ -515,7 +515,7 @@ export const ModelReleaseModal = (props: ModelReleaseModalType) => {
                         name={[`${nodeId}`, 'max_cpu']}
                         dependencies={[[`${nodeId}`, 'min_cpu']]}
                         label="最大 CPU"
-                        initialValue={32}
+                        initialValue={0}
                         rules={[
                           { required: true, message: '请输入' },
                           {
@@ -524,9 +524,6 @@ export const ModelReleaseModal = (props: ModelReleaseModalType) => {
                                 `${nodeId}`,
                                 'min_cpu',
                               ]);
-                              if (Number(value) === 0) {
-                                return Promise.reject(new Error(`取值应该大于0`));
-                              }
                               if (min_cpu && value < min_cpu)
                                 return Promise.reject(
                                   new Error(`取值应该大于最小 CPU 值`),
@@ -590,7 +587,7 @@ export const ModelReleaseModal = (props: ModelReleaseModalType) => {
                       <Form.Item
                         name={[`${nodeId}`, 'max_memory']}
                         dependencies={[[`${nodeId}`, 'min_memory']]}
-                        initialValue={64}
+                        initialValue={0}
                         label="最大 Memory"
                         rules={[
                           { required: true, message: '请输入' },
@@ -600,9 +597,6 @@ export const ModelReleaseModal = (props: ModelReleaseModalType) => {
                                 `${nodeId}`,
                                 'min_memory',
                               ]);
-                              if (Number(value) === 0) {
-                                return Promise.reject(new Error(`取值应该大于0`));
-                              }
                               if (min_memory && value < min_memory)
                                 return Promise.reject(
                                   new Error(`取值应该大于最小 Memory 值`),

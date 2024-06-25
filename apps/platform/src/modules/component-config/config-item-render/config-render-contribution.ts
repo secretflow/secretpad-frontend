@@ -6,7 +6,8 @@ import { CalculateOpRender } from './custom-render/calculate-op-render';
 import { CaseWhenRender } from './custom-render/case-when-render';
 import { GroupByRender } from './custom-render/groupby-render';
 import { LinearModelParametersModificationRender } from './custom-render/linear-model-parameters-modification';
-import { DefaultColSelection } from './defalt-col-selection-template';
+import ObservationsQuantilesRender from './custom-render/observations-quantiles-render';
+import { DefaultColSelection } from './default-col-selection-template';
 import { DefaultMultiTableFeatureSelection } from './default-feature-selection/default-feature-selection';
 import { DefaultNodeSelect } from './default-node-selection-template';
 import {
@@ -16,6 +17,7 @@ import {
   DefaultSelect,
   DefaultUnion,
   DefaultStruct,
+  DefaultEmpty,
 } from './default-render-template';
 import { DefaultSQLEditor } from './default-sql-editor';
 import { DefaultTableSelect } from './default-table-selection-temple';
@@ -24,8 +26,9 @@ export class DefaultConfigRender implements ConfigRenderProtocol {
   registerConfigRenders() {
     return [
       {
-        canHandle: (node: AtomicConfigNode) =>
-          node.type === 'AT_UNION_GROUP' ? 1 : false,
+        canHandle: (node: AtomicConfigNode) => {
+          return node.type === 'AT_UNION_GROUP' ? 1 : false;
+        },
         component: DefaultUnion,
       },
       {
@@ -89,7 +92,6 @@ export class DefaultConfigRender implements ConfigRenderProtocol {
         },
         component: DefaultNodeSelect,
       },
-
       {
         canHandle: (_node: AtomicConfigNode, renderKey?: string) => {
           return renderKey === 'DATA_TABLE_SELECT' ? 3 : false;
@@ -130,6 +132,31 @@ export class DefaultConfigRender implements ConfigRenderProtocol {
       {
         canHandle: (node: AtomicConfigNode) => (node.type === 'AT_PARTY' ? 1 : false),
         component: DefaultNodeSelect,
+      },
+      {
+        canHandle: (node: AtomicConfigNode, renderKey?: string) =>
+          node.type === 'AT_FLOATS' &&
+          node.name === 'quantiles' &&
+          renderKey === 'SAMPLE'
+            ? 1
+            : false,
+        component: ObservationsQuantilesRender,
+      },
+      {
+        canHandle: (node: AtomicConfigNode, renderKey?: string) =>
+          node.type === 'AT_BOOLS' &&
+          node.name === 'replacements' &&
+          renderKey === 'SAMPLE'
+            ? 1
+            : false,
+        component: DefaultEmpty,
+      },
+      {
+        canHandle: (node: AtomicConfigNode, renderKey?: string) =>
+          node.type === 'AT_FLOATS' && node.name === 'weights' && renderKey === 'SAMPLE'
+            ? 1
+            : false,
+        component: DefaultEmpty,
       },
     ];
   }

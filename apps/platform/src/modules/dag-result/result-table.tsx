@@ -6,7 +6,7 @@ import {
 } from '@ant-design/icons';
 import { useFullscreen } from 'ahooks';
 import type { InputRef } from 'antd';
-import { Button, Input, Space, Table, Tag } from 'antd';
+import { Button, Input, Space, Table, Tag, Tooltip } from 'antd';
 import type { ColumnType } from 'antd/es/table';
 import type { FilterConfirmProps } from 'antd/es/table/interface';
 import classNames from 'classnames';
@@ -14,24 +14,28 @@ import classnames from 'classnames';
 import { groupBy, map as lodashMap } from 'lodash';
 import { parse } from 'query-string';
 import type { Key } from 'react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { CSVLink } from 'react-csv';
+import { useLocation } from 'umi';
 
 import { Platform, hasAccess } from '@/components/platform-wrapper';
 import { Download } from '@/modules/dag-result/apply-download';
+import { openNewTab } from '@/util/path';
 import { getModel } from '@/util/valtio-helper';
 
+import { DataSourceType } from '../data-source-list/type';
 import { ResultManagerService } from '../result-manager/result-manager.service';
 
 import styles from './index.less';
 import type { DataType, ResultComponentProps } from './types';
 import { formatTimestamp } from './utils';
-import { useLocation } from 'umi';
-import { openNewTab } from '@/util/path';
 
 export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
+
+  const [downloadBtnDisabled, setDownloadBtnDisabled] = useState(false);
+  const [downloadPath, setDownloadPath] = useState('');
   const searchInput = useRef<InputRef>(null);
   const { pathname } = useLocation();
   const { mode, projectId } = parse(window.location.search);
@@ -127,11 +131,24 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
   const metaInfo: { path: string; nodeId: string; tableId: string; type: string }[] =
     [];
 
+  useEffect(() => {
+    rows.forEach((r) => {
+      const { datasourceType, path } = r;
+
+      if (datasourceType === DataSourceType.OSS) {
+        setDownloadBtnDisabled(true);
+        setDownloadPath(path);
+      }
+    });
+  }, [rows]);
+
   rows.forEach((r) => {
     const { path, nodeId, fields, fieldTypes, tableId, type } = r;
+
     if (fields === '') {
       return;
     }
+
     metaInfo.push({ path, nodeId, tableId, type });
     const fieldList = fields.split(',');
     const fieldTypeList = fieldTypes.split(',');
@@ -191,6 +208,7 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
       return item;
     });
   };
+
   return (
     <div className={styles.result}>
       <div className={styles.report}>
@@ -243,17 +261,26 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
                 {/* p2p 模式下不用申请，直接下载 */}
                 {hasAccess({ type: [Platform.AUTONOMY] }) &&
                   props.codeName !== 'read_data/datatable' && (
-                    <Button
-                      type="link"
-                      style={{ paddingLeft: 8, fontSize: 12 }}
-                      onClick={() =>
-                        resultManagerService.download(nodeId || '', {
-                          domainDataId: path,
-                        })
+                    <Tooltip
+                      title={
+                        downloadBtnDisabled
+                          ? `OSS 文件不支持直接下载，请到 OSS 对应 bucket 的预设路径下找到文件下载，地址：${downloadPath}`
+                          : ''
                       }
                     >
-                      下载
-                    </Button>
+                      <Button
+                        type="link"
+                        style={{ paddingLeft: 8, fontSize: 12 }}
+                        onClick={() =>
+                          resultManagerService.download(nodeId || '', {
+                            domainDataId: path,
+                          })
+                        }
+                        disabled={downloadBtnDisabled}
+                      >
+                        下载
+                      </Button>
+                    </Tooltip>
                   )}
               </div>
             </div>

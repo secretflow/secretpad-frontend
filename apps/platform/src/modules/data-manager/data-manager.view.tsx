@@ -1,11 +1,6 @@
-import {
-  SearchOutlined,
-  InfoCircleOutlined,
-  DownOutlined,
-  ReloadOutlined,
-} from '@ant-design/icons';
-import type { MenuProps, RadioChangeEvent, TourProps } from 'antd';
-import { Dropdown, message, Tag } from 'antd';
+import { SearchOutlined, InfoCircleOutlined, ReloadOutlined } from '@ant-design/icons';
+import type { RadioChangeEvent, TourProps } from 'antd';
+import { message, Tag } from 'antd';
 import {
   Button,
   Radio,
@@ -28,8 +23,7 @@ import React, { useEffect, useRef } from 'react';
 import { confirmDelete } from '@/components/comfirm-delete';
 import { EdgeAuthWrapper } from '@/components/edge-wrapper-auth';
 import { Platform, hasAccess } from '@/components/platform-wrapper';
-import { HttpDataAddDrawer } from '@/modules/data-table-add/add-http-data/http-data-add.view';
-import { DataTableAddContent } from '@/modules/data-table-add/data-table-add.view';
+import { DataAddDrawer } from '@/modules/data-table-add/add-data/add-data.view';
 import { DatatableInfoService } from '@/modules/data-table-info/component/data-table-auth/data-table-auth.service';
 import { DataTableAuth } from '@/modules/data-table-info/data-table-auth-drawer';
 import { DataTableInfoDrawer } from '@/modules/data-table-info/data-table-info.view';
@@ -49,7 +43,7 @@ import { LoginService } from '../login/login.service';
 
 import {
   DataManagerService,
-  DataSheetType,
+  DataSourceType,
   UploadStatus,
 } from './data-manager.service';
 import styles from './index.less';
@@ -87,13 +81,14 @@ export const DataManagerComponent: React.FC = () => {
       ),
     },
     {
-      title: '表类型',
-      dataIndex: 'type',
-      key: 'type',
+      title: '数据源类型',
+      dataIndex: 'datasourceType',
+      key: 'datasourceType',
       width: '10%',
       filters: [
-        { text: 'CSV', value: DataSheetType.CSV },
-        { text: 'HTTP', value: DataSheetType.HTTP },
+        { text: 'OSS', value: DataSourceType.OSS },
+        { text: 'HTTP', value: DataSourceType.HTTP },
+        { text: 'LOCAL', value: DataSourceType.LOCAL },
       ],
     },
     {
@@ -138,7 +133,14 @@ export const DataManagerComponent: React.FC = () => {
       },
     },
     {
-      title: '状态',
+      title: (
+        <Space>
+          <div className={styles.uploadText}>状态</div>
+          <Tooltip title="数据表状态可能展示不准确,请点击刷新后查看">
+            <InfoCircleOutlined className={styles.uploadIcon} />
+          </Tooltip>
+        </Space>
+      ),
       dataIndex: 'status',
       key: 'status',
       width: '14%',
@@ -176,7 +178,11 @@ export const DataManagerComponent: React.FC = () => {
       dataIndex: 'pushToTeeStatus',
       width: '15%',
       render: (status: string, record: API.DatatableVO) => {
-        if (record.type === DataSheetType.HTTP) return '-';
+        if (
+          record.datasourceType === DataSourceType.HTTP ||
+          record.datasourceType === DataSourceType.OSS
+        )
+          return '-';
         if (!status || status === '') {
           return (
             <Button
@@ -287,17 +293,6 @@ export const DataManagerComponent: React.FC = () => {
     }
   }, [viewInstance.tablesList]);
 
-  const items: MenuProps['items'] = [
-    {
-      key: '1',
-      label: <a onClick={() => viewInstance.addData()}>本地数据</a>,
-    },
-    {
-      key: '2',
-      label: <a onClick={() => viewInstance.addHttpData()}>HTTP数据</a>,
-    },
-  ];
-
   return (
     <div className={styles.main}>
       <div className={styles.toolbar}>
@@ -322,11 +317,9 @@ export const DataManagerComponent: React.FC = () => {
           </Radio.Group>
         </div>
         <div>
-          <Dropdown menu={{ items }} placement="bottom">
-            <Button type="primary">
-              添加数据 <DownOutlined />
-            </Button>
-          </Dropdown>
+          <Button type="primary" onClick={() => viewInstance.addData()}>
+            添加数据
+          </Button>
         </div>
       </div>
       <div className={styles.content}>
@@ -342,7 +335,7 @@ export const DataManagerComponent: React.FC = () => {
           }
           loading={viewInstance.tableLoading}
           onChange={(pagination, filters, sorter) => {
-            viewInstance.typeFilters = filters?.type as FilterValue;
+            viewInstance.typeFilters = filters?.datasourceType as FilterValue;
             viewInstance.getTableList();
           }}
           pagination={{
@@ -385,16 +378,6 @@ export const DataManagerComponent: React.FC = () => {
         />
       )}
 
-      {viewInstance.showAddDataDrawer && (
-        <DataTableAddContent
-          onClose={() => {
-            viewInstance.getTableList();
-            viewInstance.showAddDataDrawer = false;
-          }}
-          visible={viewInstance.showAddDataDrawer}
-        />
-      )}
-
       {viewInstance.showDatatableInfoDrawer && (
         <DataTableInfoDrawer
           close={() => {
@@ -408,13 +391,13 @@ export const DataManagerComponent: React.FC = () => {
         />
       )}
 
-      {viewInstance.showHttpDataAddDrawer && (
-        <HttpDataAddDrawer
+      {viewInstance.showDataAddDrawer && (
+        <DataAddDrawer
           onClose={() => {
             viewInstance.getTableList();
-            viewInstance.showHttpDataAddDrawer = false;
+            viewInstance.showDataAddDrawer = false;
           }}
-          visible={viewInstance.showHttpDataAddDrawer}
+          visible={viewInstance.showDataAddDrawer}
         />
       )}
       {contextHolder}
@@ -449,11 +432,9 @@ export class DataManagerView extends Model {
 
   tableInfo: API.DatatableVO = {};
 
-  showAddDataDrawer = false;
-
   showDatatableInfoDrawer = false;
 
-  showHttpDataAddDrawer = false;
+  showDataAddDrawer = false;
 
   currentNode: API.NodeVO = {};
 
@@ -505,12 +486,8 @@ export class DataManagerView extends Model {
     this.displayTableList = this.tablesList;
   }
 
-  addData() {
-    this.showAddDataDrawer = true;
-  }
-
-  addHttpData = () => {
-    this.showHttpDataAddDrawer = true;
+  addData = () => {
+    this.showDataAddDrawer = true;
   };
 
   openDataInfo(tableInfo: API.DatatableVO) {
@@ -586,14 +563,26 @@ export class DataManagerView extends Model {
 
   refreshTableStatus = async (record: API.DatatableVO) => {
     try {
-      const { status } = await getDatatable({
+      const { status, data } = await getDatatable({
         datatableId: record.datatableId,
         nodeId: this.currentNode.nodeId,
         type: record.type,
       });
       if (status?.code === 0) {
         message.success('数据状态刷新成功');
-        this.getTableList();
+        // TODO: 这里服务端列表状态和这个状态暂时做不到同步，需要手动修改列表状态
+        // this.getTableList();
+        const newStatus = data?.status;
+        const newList = this.displayTableList.map((item) => {
+          if (item.datatableId === record.datatableId) {
+            return {
+              ...item,
+              status: newStatus,
+            };
+          }
+          return item;
+        });
+        this.displayTableList = newList;
       } else {
         message.error('数据状态刷新失败');
       }

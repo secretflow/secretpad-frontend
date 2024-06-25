@@ -129,8 +129,9 @@ export class DefaultComponentTreeService extends Model {
 
   convertToTree(mode: ComputeMode): ComponentTreeItem[] {
     const mergedDomainMap: { [key: string]: string } = {
-      feature: '特征预处理',
-      preprocessing: '特征预处理',
+      feature: '特征处理',
+      preprocessing: '特征处理',
+      postprocessing: '特征处理',
       read_data: '数据准备',
       data_prep: '数据准备',
     };
@@ -179,7 +180,7 @@ export class DefaultComponentTreeService extends Model {
     const domainOrder = [
       '数据准备',
       'data_filter',
-      '特征预处理',
+      '特征处理',
       'stats',
       'ml.train',
       'ml.predict',
@@ -188,7 +189,7 @@ export class DefaultComponentTreeService extends Model {
 
     const childrenOrder: { [key: string]: string[] } = {
       数据准备: ['datatable', 'psi', 'train_test_split'],
-      特征预处理: [
+      特征处理: [
         'binary_op',
         'case_when',
         'feature_calculate',

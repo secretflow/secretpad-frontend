@@ -1,7 +1,7 @@
 export type GroupByConfig = {
-  columnQueries: {
+  column_queries: {
     function: AggregationFunction;
-    columnName: string;
+    column_name: string;
   }[];
 };
 

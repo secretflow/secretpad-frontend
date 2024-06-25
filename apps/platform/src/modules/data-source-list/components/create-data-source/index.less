@@ -1,0 +1,63 @@
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+}
+
+.nodeTitle {
+  color: #000000e0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+.nodeContent {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 2px;
+  margin-top: 8px;
+  background: #00000005;
+
+  .nodeName {
+    margin-right: 3px;
+  }
+
+  .check {
+    padding: 0;
+    margin-left: 6px;
+  }
+
+  .testing {
+    color: rgb(0 104 250 / 50%);
+
+    &:hover {
+      color: rgb(0 104 250 / 50%) !important;
+    }
+  }
+
+  .nodeStatusTag {
+    margin-left: 6px;
+
+    :global {
+      .ant-btn {
+        padding: 0;
+        margin-left: 0;
+      }
+
+      .ant-btn:not(.ant-btn-icon-only) > .ant-btn-icon:not(:last-child) {
+        margin-inline-end: 4px;
+      }
+    }
+  }
+
+  :global {
+    .ant-form-item {
+      margin-bottom: 0;
+    }
+
+    .ant-select {
+      width: 160px;
+    }
+  }
+}

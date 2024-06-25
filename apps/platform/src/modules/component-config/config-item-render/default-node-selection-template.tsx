@@ -22,9 +22,12 @@ export const DefaultNodeSelect: React.FC<RenderProp<string>> = (config) => {
     translation,
     upstreamTables = [],
     componentConfig,
+    attrConfig,
   } = config;
   const [nodes, setNodes] = useState<{ label: string; value: string }[]>([]);
   const nodeService = useModel(NodeService);
+
+  const isNoWrap = !!attrConfig?.style?.noWrap;
 
   const { prefixes, list_max_length_inclusive } = node;
 
@@ -110,6 +113,7 @@ export const DefaultNodeSelect: React.FC<RenderProp<string>> = (config) => {
       ]}
       initialValue={defaultVal}
       colon={false}
+      labelCol={isNoWrap ? { span: 12 } : undefined}
     >
       <Select
         mode={isMultiple ? 'multiple' : undefined}
@@ -128,5 +132,6 @@ export const DefaultNodeSelect: React.FC<RenderProp<string>> = (config) => {
     component: item,
     form,
     type: node.type,
+    name: node.name,
   });
 };

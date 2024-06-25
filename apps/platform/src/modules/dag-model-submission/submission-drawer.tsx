@@ -5,7 +5,6 @@ import {
   Form,
   Input,
   Empty,
-  Spin,
   message,
   Tooltip,
   Alert,
@@ -22,10 +21,10 @@ import submissionLayoutStyle from '@/modules/layout/model-submission-layout/inde
 import { getModel, useModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
-import { NodeAddress } from './node-address';
+import { NodeAddressList } from './node-address';
 import { PreviewSubmitNode } from './preview-submit-node';
 import { SubmissionDrawerService } from './submission-service';
-import { useFormValidateOnly } from './useFormValidateOnly';
+import { useFormValidateOnly } from './hooks';
 
 const WIDTH = 560;
 
@@ -91,8 +90,8 @@ export const SubmissionDrawer = () => {
   };
 
   const getAddress = useCallback(
-    async (modelId: string) => {
-      await getModelNodesAddress(modelId);
+    async (id: string) => {
+      await getModelNodesAddress(id);
     },
     [modelId],
   );
@@ -138,9 +137,10 @@ export const SubmissionDrawer = () => {
       graphNodeOutPutId: modelId,
       modelName: value.name,
       modelDesc: value.desc,
-      modelPartyConfig: addressNodeList.map((item) => ({
+      modelPartyConfig: value.storageAddress.map((item) => ({
         modelParty: item.nodeId,
-        modelDataSource: item.dataSourcePath,
+        modelDataSource: item.dataSource,
+        modelDataPath: item.dataSourcePath,
         modelDataName: item.nodeName,
       })),
       modelComponent: submitNodes.map((item) => ({
@@ -294,9 +294,7 @@ export const SubmissionDrawer = () => {
             }
             required
           >
-            <Spin spinning={submissionDrawerService.loading}>
-              <NodeAddress addressList={addressNodeList} />
-            </Spin>
+            <NodeAddressList />
           </Form.Item>
           <Form.Item
             required

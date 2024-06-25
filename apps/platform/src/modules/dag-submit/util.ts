@@ -74,7 +74,10 @@ export const highlightSelectionByIds = (ids: string[]) => {
 
 /**
  * 重置画布展示样式
- * 只有成功的模型训练算子以及(模型预测算子并且上游有线性模型参数修改算子)才可点击
+ * 可点击的高亮算子
+ *  1. 成功的模型训练算子
+ *  2. 成功的模型预测算子并且上游有线性模型参数修改算子
+ *  3. 成功的模型预测算子并且下游有成功的后处理算子
  * */
 export const resetGraphStyles = () => {
   const graph = mainDag.graphManager.getGraphInstance();
@@ -96,6 +99,7 @@ export const resetGraphStyles = () => {
 /**
  * 成功的模型训练算子高亮
  * 成功的模型预测算子并且上游有线性模型参数修改算子高亮
+ * 成功的模型预测算子并且下游有后处理算子高亮
  */
 export const nodeCanOpaque = (node: Node) => {
   const graph = mainDag.graphManager.getGraphInstance();
@@ -113,7 +117,11 @@ export const nodeCanOpaque = (node: Node) => {
         item.getData().nodeDef?.name === 'model_param_modifications' &&
         item.getData().status === 0,
     );
-    return !!modelParamsModificationNode;
+
+    // 获取后处理算子
+    const postNodesResult = getPostNodes(node);
+
+    return !!modelParamsModificationNode || postNodesResult.length !== 0;
   }
   return domain === 'ml.train';
 };

@@ -1,9 +1,9 @@
 import type { GraphNode } from '@secretflow/dag';
 
-import type {
-  AtomicParameterDef,
-  AtomicParameterType,
-  Attribute,
+import {
+  type AtomicParameterDef,
+  type AtomicParameterType,
+  type Attribute,
 } from '@/modules/component-tree/component-protocol';
 
 export type AtomicConfigNode = {
@@ -17,6 +17,8 @@ export type AtomicConfigNode = {
   render?: string; // key in ConfigRenderRegistry for custom render
   col_max_cnt_inclusive?: number;
   col_min_cnt_inclusive?: number;
+  list_max_length_inclusive?: number;
+  list_min_length_inclusive?: number;
 } & AtomicParameterDef;
 
 export type CustomConfigNode = {
@@ -24,6 +26,8 @@ export type CustomConfigNode = {
   type: 'AT_CUSTOM_PROTOBUF';
   custom_protobuf_cls: string;
   prefixes?: string[];
+  docString: string;
+  isRequired: boolean;
 };
 
 export type StructConfigNode = {
@@ -32,6 +36,8 @@ export type StructConfigNode = {
   prefixes?: string[];
   domain?: string;
   version?: string;
+  isRequired?: boolean;
+  docString?: string;
   children: ConfigItem[];
   type?: 'AT_STRUCT_GROUP' | 'AT_UNION_GROUP';
 };
@@ -39,6 +45,12 @@ export type StructConfigNode = {
 // 叶子结点：AtomicConfigNode
 // 非叶子结点：StructConfigNode
 export type ConfigItem = StructConfigNode | AtomicConfigNode | CustomConfigNode;
+
+export type ConfigType =
+  | AtomicParameterType
+  | 'AT_STRUCT_GROUP'
+  | 'AT_UNION_GROUP'
+  | 'AT_CUSTOM_PROTOBUF';
 
 export type ConfigPrefix = string;
 
@@ -54,19 +66,7 @@ export const codeNameRenderKey = {
   'data_prep/psi': 'UNION_KEY_SELECT',
   'preprocessing/psi': 'UNION_KEY_SELECT',
   'preprocessing/sqlite': 'SQL',
-};
-
-export const codeNameRenderIndex = {
-  'preprocessing/binary_op': [0, 2, 1, 3, 4],
-  'data_prep/psi': [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 14, 11, 12, 13, 3, 15, 16],
-};
-
-export const hideCodeNameIndex = {
-  'data_prep/psi': [7],
-};
-
-export const advancedConfigIndex = {
-  'data_prep/psi': [3, 15, 16],
+  'data_filter/sample': 'SAMPLE',
 };
 
 export interface ComponentConfig {
@@ -140,6 +140,7 @@ export const getUpstreamKey = {
       return attrs[0]?.s;
     });
   },
+
   'preprocessing/psi': (
     upstreamNodes: GraphNodeDetail[],
     graphNode?: GraphNodeDetail,

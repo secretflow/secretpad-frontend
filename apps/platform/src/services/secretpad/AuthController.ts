@@ -23,21 +23,9 @@ export async function login(body?: API.LoginRequest, options?: { [key: string]: 
 @author lihaixin
 @date 2023/12/15
  POST /api/logout */
-export async function logout(
-  params: {
-    // query
-    /** http servlet request */
-    request?: API.HttpServletRequest;
-  },
-  options?: { [key: string]: any },
-) {
+export async function logout(options?: { [key: string]: any }) {
   return request<API.SecretPadResponse_String_>('/api/logout', {
     method: 'POST',
-    params: {
-      ...params,
-      request: undefined,
-      ...params['request'],
-    },
     ...(options || {}),
   });
 }

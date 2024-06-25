@@ -277,6 +277,27 @@ export async function listProject(options?: { [key: string]: any }) {
   });
 }
 
+/** Update project schema api
+@param request update project request
+@return successful SecretPadResponse with null data
+ POST /api/v1alpha1/project/datasource/list */
+export async function projectGraphDomainDataSourceList(
+  body?: API.GetProjectGraphDomainDataSourceRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.SecretPadResponse_Set_ProjectGraphDomainDataSourceVO__>(
+    '/api/v1alpha1/project/datasource/list',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: body,
+      ...(options || {}),
+    },
+  );
+}
+
 /** Stop project job api
 @param request stop project job task request
 @return successful SecretPadResponse with null data

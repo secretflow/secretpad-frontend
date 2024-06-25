@@ -1,6 +1,12 @@
 .configDrawer {
   position: absolute;
 
+  .fontSizeSmall() {
+    color: rgb(0 0 0 / 88%);
+    font-size: 12px !important;
+    line-height: 20px;
+  }
+
   :global {
     .ant-drawer-content-wrapper {
       box-shadow: 0 1px 4px 0 rgb(0 0 0 / 15%);
@@ -20,7 +26,7 @@
     }
 
     .ant-form-item {
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .ant-alert-message {
@@ -42,8 +48,22 @@
   }
 
   .task {
-    color: rgb(0 0 0 / 88%);
-    font-size: 12px !important;
-    line-height: 20px;
+    .fontSizeSmall();
+  }
+
+  .nodeStoragePath {
+    :global(.ant-col-24.ant-form-item-label) {
+      padding: 0;
+    }
+
+    :global(.ant-form-item .ant-form-item-extra) {
+      min-height: 16px;
+      margin-top: 4px;
+      font-size: 12px;
+    }
+
+    .label {
+      .fontSizeSmall();
+    }
   }
 }

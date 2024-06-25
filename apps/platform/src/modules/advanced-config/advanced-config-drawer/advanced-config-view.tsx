@@ -1,18 +1,24 @@
-import { getModel, useModel } from '@/util/valtio-helper';
-import { DefaultModalManager } from '@/modules/dag-modal-manager';
-import { advancedConfigService } from './advanced-config-service';
-import { Button, Drawer, Form, InputNumber, Space, Spin } from 'antd';
-import { useCallback, useEffect } from 'react';
-import dagLayoutStyle from '@/modules/layout/dag-layout/index.less';
-
-import styles from './index.less';
 import { CloseOutlined } from '@ant-design/icons';
-import { useLocation } from 'umi';
+import { Button, Drawer, Form, InputNumber, Select, Space, Spin } from 'antd';
 import { parse } from 'query-string';
+import { useCallback, useEffect } from 'react';
+import { useLocation } from 'umi';
+
+import { Platform } from '@/components/platform-wrapper';
+import { DefaultModalManager } from '@/modules/dag-modal-manager';
+import dagLayoutStyle from '@/modules/layout/dag-layout/index.less';
+import { LoginService } from '@/modules/login/login.service';
+import { getModel, useModel } from '@/util/valtio-helper';
+
+import { advancedConfigService } from './advanced-config-service';
+import styles from './index.less';
 
 export const AdvancedConfig = () => {
   const modalManager = useModel(DefaultModalManager);
   const service = useModel(advancedConfigService);
+  const loginService = useModel(LoginService);
+
+  const { nodeDataSourceOptionsMap, config } = service;
 
   const { search } = useLocation();
   const { dagId, projectId } = parse(search);
@@ -30,8 +36,13 @@ export const AdvancedConfig = () => {
     await service.getSetting(dagId as string, projectId as string);
   }, [dagId]);
 
+  const getAllNodeDataSources = useCallback(async () => {
+    await service.queryAllNodeDataSources(projectId as string);
+  }, [projectId]);
+
   useEffect(() => {
     if (visible) {
+      getAllNodeDataSources();
       getConfig();
     }
   }, [visible]);
@@ -39,10 +50,42 @@ export const AdvancedConfig = () => {
   useEffect(() => {
     if (visible) {
       form.setFieldsValue({
-        maxParallelism: service.config?.maxParallelism,
+        maxParallelism: config?.maxParallelism,
+        dataSourceConfig: config?.dataSourceConfig,
       });
     }
-  }, [service.config.maxParallelism, visible]);
+  }, [config.maxParallelism, visible, config?.dataSourceConfig]);
+
+  const getDataSourceOptions = (key: number) => {
+    const currentNodeConfig = config.dataSourceConfig[key];
+    return nodeDataSourceOptionsMap[currentNodeConfig?.nodeId];
+  };
+
+  const handleDisabled = (key: number) => {
+    /**
+     * editAllowed 为 true 才可以编辑, 并且要满足下面的条件
+     * 1. center 模式下
+     *    -  center 账号可以全部编辑
+     *    -  -  edge 账号只能编辑自己节点以及内置节点
+     * 2. p2p 模式下只能编辑当前节点
+     */
+    const editAllowed = service.config?.dataSourceConfig[key]?.editEnable;
+    const currentNodeId = service.config?.dataSourceConfig[key]?.nodeId;
+    const ownerId = loginService?.userInfo?.ownerId;
+
+    if (loginService?.userInfo?.platformType === Platform.CENTER) {
+      if (loginService?.userInfo?.ownerType === 'EDGE') {
+        // editAllowed 服务端已经做了关于当前登陆用户是不是当前节点的判断了，所有直接返回 editAllowed
+        return editAllowed;
+      } else if (loginService?.userInfo?.ownerType === 'CENTER') {
+        return editAllowed;
+      }
+    } else if (loginService?.userInfo?.platformType === Platform.AUTONOMY) {
+      // p2p 模式下只能编辑当前节点
+      return editAllowed && ownerId === currentNodeId;
+    }
+    return false;
+  };
 
   const handleOk = () => {
     form.validateFields().then(async (value) => {
@@ -50,6 +93,12 @@ export const AdvancedConfig = () => {
         maxParallelism: value.maxParallelism,
         graphId: dagId as string,
         projectId: projectId as string,
+        dataSourceConfig: value.dataSourceConfig
+          .filter((item: { editEnable: boolean }) => item.editEnable === true)
+          .map((item: { nodeId: string; dataSourceId: string }) => ({
+            nodeId: item.nodeId,
+            dataSourceId: item.dataSourceId,
+          })),
       };
       await service.setting(params);
       onClose();
@@ -80,7 +129,12 @@ export const AdvancedConfig = () => {
       }
     >
       <Spin spinning={service.loading}>
-        <Form form={form}>
+        <Form
+          form={form}
+          initialValues={{
+            maxParallelism: 1,
+          }}
+        >
           <Form.Item
             name={'maxParallelism'}
             label={<div className={styles.task}>任务并发数</div>}
@@ -89,7 +143,6 @@ export const AdvancedConfig = () => {
             wrapperCol={{ offset: 4, span: 12 }}
           >
             <InputNumber
-              defaultValue={1}
               step={1}
               min={1}
               max={100}
@@ -97,6 +150,37 @@ export const AdvancedConfig = () => {
               precision={0}
             />
           </Form.Item>
+          <Form.List name="dataSourceConfig">
+            {(fields) => {
+              return (
+                <>
+                  {fields.map((field) => (
+                    <div key={field.key} className={styles.nodeStoragePath}>
+                      <Form.Item
+                        {...field}
+                        label={
+                          <span className={styles.label}>{`节点${
+                            config?.dataSourceConfig[field.key]?.nodeName
+                          }默认存储数据源`}</span>
+                        }
+                        name={[field.name, 'dataSourceId']}
+                        rules={[{ required: true, message: '请选择' }]}
+                        labelCol={{ span: 24 }}
+                        wrapperCol={{ span: 24 }}
+                        extra="保存后将不可修改"
+                      >
+                        <Select
+                          placeholder="请选择"
+                          disabled={!handleDisabled(field.key)}
+                          options={getDataSourceOptions(field.key)}
+                        />
+                      </Form.Item>
+                    </div>
+                  ))}
+                </>
+              );
+            }}
+          </Form.List>
           <div className={styles.footer}>
             <Space>
               <Button type="primary" size="small" onClick={handleOk}>

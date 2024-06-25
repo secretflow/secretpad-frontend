@@ -6,8 +6,10 @@ import type { Attribute, ValueOf } from '@/modules/component-tree/component-prot
 import type {
   AtomicConfigNode,
   ConfigItem,
+  ConfigType,
   GraphNodeDetail,
 } from '../component-config-protocol';
+import type { AttrConfig } from '../component-panel-style-registry';
 
 export type ConfigRenderProtocol = {
   registerConfigRenders: () => ConfigRender[];
@@ -24,17 +26,18 @@ export interface NodeAllInfo {
 export type RenderProp<T> = {
   form?: FormInstance;
   docString?: string;
-  type: AtomicConfigNode['type'];
+  type: ConfigType;
   value: T;
   defaultVal: T;
   componentConfig: ConfigItem[];
-  node: AtomicConfigNode;
+  node: ConfigItem;
   nodeAllInfo: NodeAllInfo;
   onChange: (val: ValueOf<Attribute> | undefined | null) => void;
   translation: Record<string, string>;
   disabled: boolean;
   index: number;
   upstreamTables?: [string, string];
+  attrConfig?: AttrConfig;
 };
 
 export type ConfigRender<T = any> = {

@@ -64,11 +64,12 @@ export class SubmitGraphService extends Model implements GraphEventHandlerProtoc
     const graph = mainDag.graphManager.getGraphInstance();
     if (!graph) return;
     const { styles = {} } = data;
-    const { isOpaque = false } = styles;
+    const { isOpaque = false, nodeParties = [] } = styles;
     if (isOpaque !== true) {
       this.modalManager.openModal(dagLogDrawer.id, {
         nodeData: data,
         from: 'pipeline',
+        nodeParties,
       });
       this.autoSelectModel(node);
       this.resetSelectionEdge();
@@ -94,11 +95,11 @@ export class SubmitGraphService extends Model implements GraphEventHandlerProtoc
       this.onCenterNode(node.getData().id);
       const sameBrachNodes = getModelSameBranchNodes(node);
       if (sameBrachNodes) {
-        // 需要打包训练算子，不需要打包预测算子
+        // 需要打包训练算子，不需要打包预测算子, 也不需要打包后处理算子
         const newSameBrachNodes = {
           modelNode: sameBrachNodes?.modelNode,
           preNodes: sameBrachNodes?.preNodes,
-          nextNodes: sameBrachNodes?.nextNodes,
+          // nextNodes: sameBrachNodes?.nextNodes,
         };
         updateGraphNodesStyles(Object.values(newSameBrachNodes).flat(), {
           isOpaque: false,
@@ -106,7 +107,7 @@ export class SubmitGraphService extends Model implements GraphEventHandlerProtoc
         this.selectNodeIdsObj = {
           modelNodeIds: sameBrachNodes.modelNode.map((item) => item.id),
           preNodesIds: sameBrachNodes.preNodes.map((item) => item.id),
-          nextNodesIds: sameBrachNodes.nextNodes.map((item) => item.id),
+          nextNodesIds: [],
           predictNodesIds: [],
         };
         highlightSelectionByIds(this.getSelectIds());

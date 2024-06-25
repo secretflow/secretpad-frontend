@@ -9,58 +9,74 @@ import classNames from 'classnames';
 import React, { useEffect, useRef } from 'react';
 import { CSVLink } from 'react-csv';
 
+import type { Tab } from '../../result-report-types';
 import type { DescriptionList, ResultOriginData } from '../typing';
 import { lexicographicalOrder, modifyDataStructure } from '../utils';
 
 import { DescriptionTable } from './description-table';
 import './index.less';
 
+const STATS_PSI = 'stats/stats_psi';
+
+const getFullCsvDataForStatsPSI = (allTableInfo: Tab[]) => {
+  const tableInfoMap = {};
+  const _allTableInfo = [...allTableInfo];
+  _allTableInfo.shift();
+  _allTableInfo.forEach((info) => {
+    tableInfoMap[info.name] = modifyDataStructure(info);
+  });
+
+  const csvFullData = [
+    [
+      'name (feature)',
+      'feature',
+      'PSI (feature)',
+      'name (Label)',
+      'Label',
+      'PSI (Label)',
+      'Base Ratio',
+      'Test Ratio',
+    ],
+  ];
+
+  const summaryInfo = modifyDataStructure(allTableInfo[0]);
+
+  (summaryInfo?.records as string[][]).forEach((record) => {
+    csvFullData.push(record);
+
+    const key = record[1] as string;
+    const processedRecord = tableInfoMap[key].records.map((item) => {
+      (item as string[]).unshift(...['', '', '']);
+      return item;
+    }) as string[][];
+    csvFullData.push(...processedRecord);
+  });
+
+  return csvFullData;
+};
+
 export const OutputTable: React.FC<OutputTableProps> = (props) => {
   const {
     name: tableName,
     tableInfo: requestTableInfo,
     showFullscreen = false,
+    allTableInfo,
+    componentName,
   } = props;
   const fullScreenRef = React.useRef(null);
   const [isFullscreen, { enterFullscreen, exitFullscreen }] =
     useFullscreen(fullScreenRef);
-  const tableInfo = modifyDataStructure(requestTableInfo);
-  const csvRef = useRef<{
-    link: HTMLLinkElement;
-  }>(null);
 
-  const downloadData = () => {
-    if (csvRef && csvRef.current) {
-      csvRef.current.link.click();
-    }
+  const tableInfo = modifyDataStructure(requestTableInfo);
+
+  // 去除导出数据时手动加入的key
+  const convertDownDataSource = (dataList: { key?: number }[] = []) => {
+    return dataList.map((item) => {
+      delete item.key;
+      return item;
+    });
   };
 
-  const [isEllipsis, setEllipsis] = React.useState(false);
-
-  useEffect(() => {
-    if (tableInfo.schema.length > 3) {
-      setEllipsis(true);
-    } else {
-      setEllipsis(false);
-    }
-  }, [tableInfo.schema.length]);
-
-  if (!tableInfo) {
-    return (
-      <div className="content">
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ marginTop: 120 }} />
-      </div>
-    );
-  }
-
-  if (tableInfo.type === 'descriptions') {
-    return (
-      <DescriptionTable
-        data={tableInfo.records as DescriptionList[]}
-        tableName={tableName}
-      />
-    );
-  }
   const columnsList: Columns[] = [];
   tableInfo.schema.forEach(({ name, type }) => {
     if (name !== 'name') {
@@ -108,6 +124,7 @@ export const OutputTable: React.FC<OutputTableProps> = (props) => {
       });
     }
   });
+
   const dataSource = ((tableInfo.records as (string | number | boolean)[][]) || []).map(
     (record, index) => {
       const res: { key: number; [propName: string]: number | string | boolean } = {
@@ -124,13 +141,52 @@ export const OutputTable: React.FC<OutputTableProps> = (props) => {
       return res;
     },
   );
-  // 去除导出数据时手动加入的key
-  const convertDownDataSource = (dataList: { key?: number }[] = []) => {
-    return dataList.map((item) => {
-      delete item.key;
-      return item;
-    });
+
+  let csvData;
+  if (componentName && componentName === STATS_PSI && allTableInfo) {
+    csvData = getFullCsvDataForStatsPSI(allTableInfo);
+  } else {
+    csvData = convertDownDataSource(dataSource);
+  }
+
+  const csvRef = useRef<{
+    link: HTMLLinkElement;
+  }>(null);
+
+  const downloadData = () => {
+    if (csvRef && csvRef.current) {
+      csvRef.current.link.click();
+    }
   };
+
+  const [isEllipsis, setEllipsis] = React.useState(false);
+
+  useEffect(() => {
+    if (tableInfo.schema.length > 3) {
+      setEllipsis(true);
+    } else {
+      setEllipsis(false);
+    }
+  }, [tableInfo.schema.length]);
+
+  if (!tableInfo) {
+    return (
+      <div className="content">
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ marginTop: 120 }} />
+      </div>
+    );
+  }
+
+  if (tableInfo.type === 'descriptions') {
+    return (
+      <DescriptionTable
+        data={tableInfo.records as DescriptionList[]}
+        tableName={tableName}
+        componentName={componentName}
+        allTableInfo={allTableInfo}
+      />
+    );
+  }
 
   return (
     <div className="VisOutputTableContent">
@@ -149,11 +205,7 @@ export const OutputTable: React.FC<OutputTableProps> = (props) => {
           </Space>
         )}
       </div>
-      <CSVLink
-        filename={`${tableName}.csv`}
-        data={convertDownDataSource(dataSource)}
-        ref={csvRef}
-      />
+      <CSVLink filename={`${tableName}.csv`} data={csvData} ref={csvRef} />
       <div
         ref={fullScreenRef}
         className={classNames({
@@ -214,4 +266,6 @@ export interface OutputTableProps {
   name: string;
   tableInfo: ResultOriginData;
   showFullscreen?: boolean;
+  allTableInfo?: ResultOriginData[];
+  componentName?: string;
 }

@@ -31,4 +31,12 @@ export enum UploadStatus {
 export enum DataSheetType {
   'CSV' = 'CSV',
   'HTTP' = 'HTTP',
+  'OSS' = 'OSS',
+}
+
+export enum DataSourceType {
+  OSS = 'OSS',
+  HTTP = 'HTTP',
+  ODPS = 'ODPS',
+  LOCAL = 'LOCAL',
 }

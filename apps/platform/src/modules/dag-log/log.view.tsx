@@ -1,6 +1,7 @@
 import { DoubleRightOutlined } from '@ant-design/icons';
 import classNames from 'classnames';
-import React from 'react';
+import { parse } from 'query-string';
+import React, { useEffect } from 'react';
 
 import { useModel } from '@/util/valtio-helper';
 
@@ -22,15 +23,18 @@ interface IProps {
 
 export const DagLog: React.FC<IProps> = ({ items }) => {
   const viewInstance = useModel(DagLogService);
+  const { search } = window.location;
+  const { dagId } = parse(search);
   const { unfold, logMainHeight, setLogMainMax, setLogMainMin } = viewInstance;
 
-  React.useEffect(() => {
+  const [activeKey, setActiveKey] = React.useState(items[0]?.key);
+
+  useEffect(() => {
+    setActiveKey(items[0]?.key);
     return () => {
       viewInstance.setLogMainMin();
     };
-  }, []);
-
-  const [activeKey, setActiveKey] = React.useState(items[0].key);
+  }, [dagId]);
 
   return (
     <div style={{ height: logMainHeight }}>
