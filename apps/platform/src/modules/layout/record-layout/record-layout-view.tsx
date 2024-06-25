@@ -3,7 +3,7 @@ import { Breadcrumb, Divider } from 'antd';
 import { parse, stringify } from 'query-string';
 import { history } from 'umi';
 
-import { Platform, hasAccess } from '@/components/platform-wrapper';
+import { PadMode, Platform, hasAccess } from '@/components/platform-wrapper';
 import { ComponentConfigDrawer } from '@/modules/component-config/config-modal';
 import { Log, LogLabel } from '@/modules/dag-log/log-viewer.view';
 import { DagLogDrawer } from '@/modules/dag-log/log.drawer.layout';
@@ -32,9 +32,9 @@ export enum RecordArea {
 
 export const RecordLayout = () => {
   const slsLogService = useModel(SlsService);
+  const searchDagParams = window.location.search;
+  const { projectId, mode, type } = parse(searchDagParams);
   const goBack = async () => {
-    const searchDagParams = window.location.search;
-    const { projectId, mode, type } = parse(searchDagParams);
     const { pipelineName, pipelineId, origin } = (history.location.state || {}) as {
       pipelineId: string;
       pipelineName: string;
@@ -59,6 +59,24 @@ export const RecordLayout = () => {
       },
     );
   };
+
+  const logItems = [
+    {
+      key: '1',
+      label: <LogLabel />,
+      children: <Log />,
+      disabled: false,
+    },
+  ];
+
+  if (mode === PadMode.MPC) {
+    logItems.push({
+      key: '2',
+      label: <SlsLogLabel />,
+      disabled: !slsLogService.slsLogIsConfig,
+      children: <SlsLog />,
+    });
+  }
 
   return (
     <div className={styles.wrap}>
@@ -103,22 +121,7 @@ export const RecordLayout = () => {
       <ResultDrawer />
       <ComponentConfigDrawer />
       <DagLogDrawer>
-        <DagLog
-          items={[
-            {
-              key: '1',
-              label: <LogLabel />,
-              children: <Log />,
-              disabled: false,
-            },
-            {
-              key: '2',
-              label: <SlsLogLabel />,
-              disabled: !slsLogService.slsLogIsConfig,
-              children: <SlsLog />,
-            },
-          ]}
-        />
+        <DagLog items={logItems} />
       </DagLogDrawer>
       <RecordGuideTourComponent />
     </div>

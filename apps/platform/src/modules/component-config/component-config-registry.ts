@@ -25,7 +25,7 @@ export class ComponentConfigRegistry extends Model {
 
   registerConfigNode(component: Component, mode: ComputeMode) {
     if (this.hasConfigNode(component, mode)) return;
-    const { name, domain, version, attrs = [], inputs, outputs } = component;
+    const { name, domain, version, attrs = [], inputs } = component;
     const parent: StructConfigNode = {
       name: `${domain}/${name}`,
       domain,
@@ -125,7 +125,7 @@ export class ComponentConfigRegistry extends Model {
           prefixes,
           children: [],
           docString,
-          isRequired: false,
+          isRequired: true,
           selectedName: (param as UnionParameterNode)?.union?.default_selection,
           type: 'AT_UNION_GROUP',
         };

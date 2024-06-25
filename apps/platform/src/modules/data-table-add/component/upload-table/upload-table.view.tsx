@@ -158,7 +158,7 @@ export const UploadTable: React.FC<IProps> = ({ setDisabled }) => {
                   </Upload>
                 </div>
               </Descriptions.Item>
-              <Descriptions.Item label="所属数据源">默认数据源</Descriptions.Item>
+              <Descriptions.Item label="所属数据源">本地数据源</Descriptions.Item>
               <Descriptions.Item label="数据源类型">节点本地数据</Descriptions.Item>
             </Descriptions>
           </div>
@@ -482,7 +482,7 @@ export class UploadTableView extends Model {
         name: file.name,
         percent: 100,
         status: 'Error',
-        info: response?.status.msg || '',
+        info: response?.status?.msg || '',
       };
     }
   };
@@ -629,6 +629,8 @@ export class UploadTableView extends Model {
         description: values.tbl_desc,
         datatableSchema: values.schema,
         realName: this.fileInfo?.realName,
+        datasourceType: 'LOCAL',
+        datasourceName: 'default-data-source',
       });
 
       this.submitting = false;

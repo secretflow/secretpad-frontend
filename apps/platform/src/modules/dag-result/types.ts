@@ -1,3 +1,5 @@
+import type { DataSourceType } from '../data-source-list/type';
+
 import type { Tab } from './result-report-types';
 
 export type ResultComponentProps<T extends ResultType> = {
@@ -10,6 +12,7 @@ export type ResultRuleRow = {
   nodeId: string;
   tableId: string;
   type: string;
+  datasourceType: DataSourceType;
 };
 
 export type ResultModelRow = ResultRuleRow;
@@ -20,6 +23,7 @@ type ResultTableRow = {
   tableId: string;
   dsId: string;
   type: string;
+  datasourceType: DataSourceType;
 } & ResultRuleRow;
 
 export type ResultTableData = {

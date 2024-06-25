@@ -7,7 +7,7 @@ export const groupbySerializer = (val: GroupByConfig, clsName: string) => {
     custom_protobuf_cls: clsName,
   };
 };
-export const groupbyUnserializer = (val: {
+export const groupbyUnserializer = (val?: {
   custom_value: GroupByConfig;
   custom_protobuf_cls: string;
 }) => {

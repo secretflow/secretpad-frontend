@@ -1,6 +1,7 @@
 import type { GraphNode } from '@secretflow/dag';
 import { parse } from 'query-string';
 
+import { PadMode } from '@/components/platform-wrapper';
 import API from '@/services/secretpad';
 import { Model } from '@/util/valtio-helper';
 
@@ -58,6 +59,9 @@ export class SlsService extends Model {
     from: 'record' | 'pipeline',
     currentNodePartiesId: string | undefined,
   ) => {
+    const { search } = window.location;
+    const { mode } = parse(search);
+    if (mode === PadMode.TEE) return;
     if (!this.slsLogIsConfig) return;
     if (!currentNodePartiesId) return;
     const { label, id } = data;

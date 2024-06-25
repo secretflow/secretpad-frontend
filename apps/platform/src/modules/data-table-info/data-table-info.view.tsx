@@ -3,6 +3,7 @@ import { Badge, Descriptions, message, Space, Tabs } from 'antd';
 import { Drawer } from 'antd';
 import type { TabsProps } from 'antd';
 import React, { useEffect } from 'react';
+
 import { DataSheetType } from '@/modules/data-manager/data-manager.service';
 import { getDatatable } from '@/services/secretpad/DatatableController';
 import { Model, useModel } from '@/util/valtio-helper';
@@ -20,6 +21,12 @@ interface IProps<T> {
   close: () => void;
   data: T;
 }
+
+export const DataSheetText = {
+  [DataSheetType.CSV]: '节点本地数据',
+  [DataSheetType.HTTP]: 'HTTP数据',
+  [DataSheetType.OSS]: 'OSS数据',
+};
 
 export const DataTableInfoDrawer: React.FC<IProps<PropsData>> = (props) => {
   const { visible, close, data } = props;
@@ -73,11 +80,10 @@ export const DataTableInfoDrawer: React.FC<IProps<PropsData>> = (props) => {
     >
       <Descriptions title="" column={2}>
         <Descriptions.Item label="所属数据源">
-          {/* {tableInfo.datasourceId} */}
-          默认数据源
+          {tableInfo.datasourceName}
         </Descriptions.Item>
         <Descriptions.Item label="数据源类型">
-          {tableInfo.type === DataSheetType.CSV ? '节点本地数据' : 'HTTP数据'}
+          {tableInfo?.datasourceType}
         </Descriptions.Item>
         <Descriptions.Item span={2} label="数据地址">
           {tableInfo.relativeUri}

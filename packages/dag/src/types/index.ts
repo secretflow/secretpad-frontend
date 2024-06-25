@@ -31,6 +31,10 @@ export type GraphNode = {
     isOpaque?: boolean;
     isHighlighted?: boolean;
     isContinueRun?: boolean;
+    nodeParties?: {
+      nodeId: string;
+      nodeName: string;
+    }[];
   };
 };
 

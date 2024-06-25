@@ -52,6 +52,7 @@ export const getVisComponents = (
   data: Tab,
   id: string,
   showFullscreen?: boolean,
+  tabs?: Tab[],
 ) => {
   const ComponentVisMap: Record<string, any> = {
     // pva
@@ -72,7 +73,15 @@ export const getVisComponents = (
     return ComponentVisMap[key];
   }
 
-  return <OutputTable tableInfo={data} name={id} showFullscreen={showFullscreen} />;
+  return (
+    <OutputTable
+      tableInfo={data}
+      name={id}
+      showFullscreen={showFullscreen}
+      componentName={key}
+      allTableInfo={tabs}
+    />
+  );
 };
 
 export const getVisTabsContent = (codeName: string, tabs: Tab[], id: string) => {
@@ -82,20 +91,31 @@ export const getVisTabsContent = (codeName: string, tabs: Tab[], id: string) => 
     // 回归模型评估
     'ml.eval/regression_eval': <RegressionTable data={tabs} id={id} />,
   };
+
   if (ComponentVisMap[codeName]) {
     return ComponentVisMap[codeName];
   }
+
   return (
-    <Tabs
-      className={styles.tabsTable}
-      defaultActiveKey="0"
-      items={(tabs || []).map((item, index) => {
-        return {
-          label: getTabsName(item.name, index),
-          key: `${index}`,
-          children: <div key={index}>{getVisComponents(codeName, item, id)}</div>,
-        };
-      })}
-    />
+    <div id="reportTabsContent">
+      <Tabs
+        getPopupContainer={() =>
+          document.getElementById('reportTabsContent') as HTMLDivElement
+        }
+        className={styles.tabsTable}
+        defaultActiveKey="0"
+        items={(tabs || []).map((item, index) => {
+          return {
+            label: getTabsName(item.name, index),
+            key: `${index}`,
+            children: (
+              <div key={index}>
+                {getVisComponents(codeName, item, id, undefined, tabs)}
+              </div>
+            ),
+          };
+        })}
+      />
+    </div>
   );
 };

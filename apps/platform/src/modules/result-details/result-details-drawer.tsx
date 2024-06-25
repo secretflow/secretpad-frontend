@@ -1,8 +1,4 @@
-import {
-  CloseOutlined,
-  FullscreenExitOutlined,
-  FullscreenOutlined,
-} from '@ant-design/icons';
+import { FullscreenExitOutlined, FullscreenOutlined } from '@ant-design/icons';
 import { useFullscreen } from 'ahooks';
 import {
   Typography,
@@ -13,6 +9,7 @@ import {
   Tabs,
   Space,
   Badge,
+  Tooltip,
 } from 'antd';
 import classNames from 'classnames';
 import React, { useEffect } from 'react';
@@ -30,6 +27,8 @@ import {
 } from '@/modules/result-manager/result-manager.service';
 import { getNodeResultDetail } from '@/services/secretpad/NodeController';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
+
+import { DataSourceType } from '../data-source-list/type';
 
 import { PreviewGraphComponents } from './graph';
 import { FullscreenGraphModalComponent } from './graph-fullscreen-modal';
@@ -104,26 +103,35 @@ export const ResultDetailsDrawer: React.FC = () => {
           <div className={style.actions}>
             {(nodeResultsVO?.pullFromTeeStatus === ResultTableState.SUCCESS ||
               nodeResultsVO?.pullFromTeeStatus === '') && (
-              // <Tooltip
-              //   title={
-              //     nodeService.currentNode?.type !== 'embedded'
-              //       ? `请到 ${datasource} 路径查看结果`
-              //       : ''
-              //   }
-              // >
-              <Button
-                type="primary"
-                // disabled={nodeService.currentNode?.type !== 'embedded'}
-                onClick={() => viewInstance.download()}
+              <Tooltip
+                title={
+                  nodeResultsVO?.datasourceType === DataSourceType.OSS
+                    ? `OSS 文件不支持直接下载，请到 OSS 对应 bucket 的预设路径下找到文件下载，地址：${nodeResultsVO?.relativeUri}`
+                    : ''
+                }
               >
-                下载结果
-              </Button>
-              // </Tooltip>
+                <Button
+                  type="primary"
+                  // disabled={nodeService.currentNode?.type !== 'embedded'}
+                  disabled={nodeResultsVO?.datasourceType === DataSourceType.OSS}
+                  onClick={() => viewInstance.download()}
+                >
+                  下载结果
+                </Button>
+              </Tooltip>
             )}
             {nodeResultsVO.pullFromTeeStatus === ResultTableState.FAILED && (
-              <Button type="primary" onClick={() => viewInstance.download()}>
-                重新获取
-              </Button>
+              <Tooltip
+                title={
+                  nodeResultsVO?.datasourceType === DataSourceType.OSS
+                    ? `OSS 文件不支持直接下载，请到 OSS 对应 bucket 的预设路径下找到文件下载，地址：${nodeResultsVO?.relativeUri}`
+                    : ''
+                }
+              >
+                <Button type="primary" onClick={() => viewInstance.download()}>
+                  重新获取
+                </Button>
+              </Tooltip>
             )}
           </div>
         ) : (

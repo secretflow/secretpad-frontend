@@ -2,6 +2,24 @@
 // 该文件由 OneAPI 自动生成，请勿手动修改！
 import request from 'umi-request';
 
+/** Create datatable api
+@param request create datatable request
+@return
+ POST /api/v1alpha1/datatable/create */
+export async function createDataTable(
+  body?: API.CreateDatatableRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.SecretPadResponse_String_>('/api/v1alpha1/datatable/create', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** Delete datable api
 @param request delete datatable request
 @return successful SecretPadResponse with null data

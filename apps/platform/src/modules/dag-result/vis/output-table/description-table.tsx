@@ -3,10 +3,50 @@ import { Button, Table } from 'antd';
 import { useRef } from 'react';
 import { CSVLink } from 'react-csv';
 
+import type { Tab } from '../../result-report-types';
+import { modifyDataStructure } from '../utils';
+
 import styles from './index.less';
 
+const SAMPLE = 'data_filter/sample';
+
+const getFullCsvDataForSample = (allTableInfo?: Tab[]) => {
+  const allTableInfoList =
+    allTableInfo?.map((info) => ({
+      name: info.name,
+      ...modifyDataStructure(info),
+    })) || [];
+
+  const csvFullData = [
+    ['sample_name', 'num_before_sample', 'num_after_sample', 'sample_rate'],
+  ];
+
+  allTableInfoList.forEach((record) => {
+    const num_before_sample = record?.records?.find(
+      (item) => item?.name === 'num_before_sample',
+    )?.value;
+
+    const num_after_sample = record?.records?.find(
+      (item) => item.name === 'num_after_sample',
+    )?.value;
+
+    const sample_rate = record?.records?.find(
+      (item) => item.name === 'sample_rate',
+    )?.value;
+
+    csvFullData.push([record.name, num_before_sample, num_after_sample, sample_rate]);
+  });
+
+  return csvFullData;
+};
+
 export const DescriptionTable = (props: IProps) => {
-  const { data = [], tableName = '' } = props;
+  const { data = [], tableName = '', allTableInfo, componentName } = props;
+
+  let fullCavData;
+  if (componentName && componentName === SAMPLE) {
+    fullCavData = getFullCsvDataForSample(allTableInfo);
+  }
 
   const csvRef = useRef<{
     link: HTMLLinkElement;
@@ -45,7 +85,7 @@ export const DescriptionTable = (props: IProps) => {
           导出数据
         </Button>
       </div>
-      <CSVLink filename={`${tableName}.csv`} data={data} ref={csvRef} />
+      <CSVLink filename={`${tableName}.csv`} data={fullCavData || data} ref={csvRef} />
       <Table
         bordered
         size="small"
@@ -62,6 +102,8 @@ export const DescriptionTable = (props: IProps) => {
 export interface IProps {
   data?: DataProps[];
   tableName?: string;
+  allTableInfo?: Tab[];
+  componentName?: string;
 }
 
 export interface DataProps {

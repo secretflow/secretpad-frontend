@@ -1,0 +1,14 @@
+version: "2.0"
+
+stages:
+  - 敏感信息检测
+
+jobs:
+  Keymap扫描:
+    id: scan
+    stage: 敏感信息检测
+    component: keymapscan
+
+workflow:
+  stages:
+    敏感信息检测:

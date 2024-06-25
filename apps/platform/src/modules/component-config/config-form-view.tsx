@@ -1,5 +1,5 @@
-import { Form, Button, Space, Alert } from 'antd';
 // import { debounce } from 'lodash';
+import { Alert, Button, Form, Space, Switch } from 'antd';
 import type { FormInstance } from 'antd/lib';
 import { parse } from 'query-string';
 import { useEffect, useState } from 'react';
@@ -27,13 +27,12 @@ import type {
 import {
   getInputTables,
   getUpstreamKey,
-  codeNameRenderIndex,
   codeNameRenderKey,
-  advancedConfigIndex,
-  hideCodeNameIndex,
 } from './component-config-protocol';
 import { ComponentConfigRegistry } from './component-config-registry';
 import { DefaultComponentConfigService } from './component-config-service';
+import { componentPanelStyleConfigs } from './component-panel-style-registry';
+import type { AttrConfig } from './component-panel-style-registry';
 import type { NodeAllInfo } from './config-item-render/config-render-protocol';
 import { ConfigRenderRegistry } from './config-item-render/config-render-registry';
 import { customSerializerRegistry } from './config-item-render/custom-serializer-registry';
@@ -56,6 +55,50 @@ const hideSaveBtnCustomProtobufClsList = [
   'linear_model_pb2',
 ];
 
+/** 采样组件：自定义高级配置按钮 */
+export const CustomAdvancedBtnForSample = (props: {
+  form: FormInstance;
+  onChange: (checked: boolean) => void;
+  value: boolean;
+}) => {
+  const { form, onChange, value } = props;
+  const sample_algorithm = Form.useWatch('sample_algorithm', form);
+  if (['random', 'stratify'].includes(sample_algorithm)) {
+    return <AdvanceBtn onChange={onChange} value={value} />;
+  } else {
+    return <></>;
+  }
+};
+
+/** 高级配置按钮 基本样式 */
+export const AdvanceBtn = ({
+  onChange,
+  value,
+}: {
+  onChange: (checked: boolean) => void;
+  value: boolean;
+}) => {
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <Space>
+        <span style={{ fontWeight: 400 }}>高级配置</span>
+        <Switch
+          size="small"
+          value={value}
+          style={{ padding: 0, margin: '8px 0' }}
+          onChange={onChange}
+        />
+      </Space>
+    </div>
+  );
+};
+
+export const getAttrPath = (attr: ConfigItem) => {
+  return attr.prefixes && attr.prefixes.length > 0
+    ? attr.prefixes.join('/') + '/' + attr.name
+    : attr.name;
+};
+
 interface IConfigFormComponent {
   node: NodeAllInfo;
   onClose: () => void;
@@ -74,9 +117,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
   const { mode } = parse(search);
 
   const [form] = Form.useForm();
-  const [componentConfig, setConfig] = useState<AtomicConfigNode[] | undefined>(
-    undefined,
-  );
+  const [componentConfig, setConfig] = useState<ConfigItem[] | undefined>(undefined);
   const [graphNode, setGraphNode] = useState<GraphNodeDetail>();
   const [isEditable, setIsEditable] = useState(true);
   const [isShowSaveBtn, setIsShowSaveBtn] = useState(true);
@@ -89,10 +130,6 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
 
   const exif = {
     renderKey: codeNameRenderKey[nodeName as keyof typeof codeNameRenderKey],
-    renderIndex: codeNameRenderIndex[nodeName as keyof typeof codeNameRenderIndex],
-    hideIndex: hideCodeNameIndex[nodeName as keyof typeof hideCodeNameIndex],
-    advancedConfigIndex:
-      advancedConfigIndex[nodeName as keyof typeof advancedConfigIndex],
     upstreamTables:
       nodeName in getUpstreamKey
         ? getUpstreamKey[nodeName as keyof typeof getUpstreamKey](
@@ -104,8 +141,6 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
         : getInputTables(inputNodes),
   };
 
-  const [renderIndex, setRenderIndex] = useState(exif.renderIndex);
-
   useEffect(() => {
     const fetchConfig = () => {
       const configNode = componentConfigService.getComponentConfig(
@@ -115,10 +150,11 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
       setConfig(configNode);
     };
     const getTranslation = () => {
-      const { version } = configRegistry.getComponentConfig(
-        node.name,
-        mode as ComputeMode,
-      ) as StructConfigNode;
+      const { version } =
+        (configRegistry.getComponentConfig(
+          node.name,
+          mode as ComputeMode,
+        ) as StructConfigNode) || {};
 
       setTranslation(
         interpreter.getComponentTranslationMap(
@@ -130,8 +166,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
     getTranslation();
     setGraphNode(savedNode);
     fetchConfig();
-    setRenderIndex(exif.renderIndex);
-  }, [node, nodeId, savedNode, mode]);
+  }, [node, nodeId, savedNode, mode, nodeName]);
 
   useEffect(() => {
     if (pathname !== '/dag') setIsEditable(false);
@@ -168,7 +203,10 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
         // custom proto
         if (custom_protobuf_cls) {
           const attrVal = val;
-          const { unserializer } = customSerializerRegistry[custom_protobuf_cls];
+          const { unserializer } =
+            customSerializerRegistry[
+              custom_protobuf_cls as keyof typeof customSerializerRegistry
+            ];
 
           ret[path] = unserializer(attrVal);
         } else {
@@ -198,26 +236,28 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
     };
 
     // serialize the params according to type
-    componentConfig?.map((node: ConfigItem) => {
-      if (!isStructConfigNode(node)) {
-        const name =
-          node.prefixes && node.prefixes.length > 0
-            ? node.prefixes.join('/') + '/' + node.name
-            : node.name;
+    componentConfig?.map((config: ConfigItem) => {
+      if (!isStructConfigNode(config)) {
+        const name = getAttrPath(config);
 
         params.attrPaths.push(name);
-        const { type } = node;
+        const { type } = config;
 
-        if (hideSaveBtnCustomProtobufClsList.includes(node.custom_protobuf_cls)) {
+        if (
+          hideSaveBtnCustomProtobufClsList.includes(
+            (config as CustomConfigNode).custom_protobuf_cls,
+          )
+        ) {
           setIsShowSaveBtn(false);
         } else {
           setIsShowSaveBtn(true);
         }
 
         if (type === 'AT_CUSTOM_PROTOBUF') {
-          const typeKey = node['custom_protobuf_cls'];
+          const typeKey = config['custom_protobuf_cls'];
           const param: Record<string, ValueOf<Attribute>> = {};
-          const { unserializer } = customSerializerRegistry[typeKey];
+          const { unserializer } =
+            customSerializerRegistry[typeKey as keyof typeof customSerializerRegistry];
 
           const initVal = unserializer();
 
@@ -233,7 +273,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
           let attrVal: ValueOf<AtomicParameter> | undefined =
             typeKey === 'ss' ? [] : undefined;
 
-          if (node.default_value) attrVal = node.default_value[typeKey];
+          if (config.default_value) attrVal = config.default_value[typeKey];
 
           // {ss: []}
           param[typeKey] = attrVal;
@@ -260,21 +300,22 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
     let isFinished = true;
 
     const valKeys = Object.keys(val);
-    componentConfig?.forEach((_node) => {
-      const { type } = _node as AtomicConfigNode | CustomConfigNode;
 
-      const name =
-        _node.prefixes && _node.prefixes.length > 0
-          ? _node.prefixes.join('/') + '/' + _node.name
-          : _node.name;
+    componentConfig?.forEach((config: ConfigItem) => {
+      const { type } = config;
+
+      const name = getAttrPath(config);
 
       if (!valKeys.includes(name)) return;
 
       params.attrPaths.push(name);
 
       if (type === 'AT_CUSTOM_PROTOBUF') {
-        const { custom_protobuf_cls } = _node as unknown as CustomConfigNode;
-        const { serializer } = customSerializerRegistry[custom_protobuf_cls];
+        const { custom_protobuf_cls } = config as unknown as CustomConfigNode;
+        const { serializer } =
+          customSerializerRegistry[
+            custom_protobuf_cls as keyof typeof customSerializerRegistry
+          ];
         const formattedVal = serializer(val[name], custom_protobuf_cls);
 
         params.attrs.push(formattedVal as Attribute);
@@ -286,9 +327,9 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
       const param: Record<string, ValueOf<Attribute>> = {};
       const typeKey = typesMap[type];
 
-      const attrVal =
+      // 去掉了 attrVal.filter((i) => i)，考虑到值有可能是 boolean 或 0 的情况
+      const formedAttrVal =
         typeKey === 'ss' && !Array.isArray(val[name]) ? [val[name]] : val[name];
-      const formedAttrVal = Array.isArray(attrVal) ? attrVal.filter((i) => i) : attrVal;
 
       param[typeKey] = formedAttrVal as ValueOf<Attribute>;
 
@@ -305,7 +346,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
       /**
        * 假如当前配置节点是 isRequired，但是数据为空 isNA，就是未配置状态：isFinished = false
        */
-      if ((_node as AtomicConfigNode).isRequired && isNA) {
+      if ((config as AtomicConfigNode).isRequired && isNA) {
         isFinished = false;
       }
 
@@ -346,11 +387,91 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
   //   500,
   // );
 
+  const [advancedConfigs, setAdvancedConfigs] = useState<ConfigItem[]>([]);
+  const [renderConfigs, setRenderConfigs] = useState<ConfigItem[]>([]);
+  const [isShowAdvancedBtn, setIsShowAdvancedBtn] = useState(false);
   const [advancedConfigOpen, setAdvancedConfigOpen] = useState(false);
+
+  const panelStyleConfigs = componentPanelStyleConfigs.getData(mode as ComputeMode);
+
+  const CustomAdvancedBtn =
+    panelStyleConfigs[nodeName]?.['extraOptions']?.['getCustomAdvancedBtn']?.();
+
+  /** 设置高级配置按钮显隐 */
+  useEffect(() => {
+    if (CustomAdvancedBtn) {
+      setIsShowAdvancedBtn(false);
+    } else {
+      if (advancedConfigs.length > 0) {
+        setIsShowAdvancedBtn(true);
+      } else {
+        setIsShowAdvancedBtn(false);
+      }
+    }
+  }, [CustomAdvancedBtn, advancedConfigs]);
+
+  /** 重设配置项顺序、显示、高级配置的关系 */
+  useEffect(() => {
+    if (componentConfig && panelStyleConfigs[nodeName]?.['attrs']) {
+      // 去掉 isShow 为 false 的
+      const filteredConfigs = componentConfig.filter((config) => {
+        const key = getAttrPath(config);
+
+        const attrConfig = panelStyleConfigs[nodeName]['attrs'][key];
+        return attrConfig?.['isShow'] === undefined ? true : attrConfig['isShow'];
+      });
+
+      const orderedConfigs = [...filteredConfigs];
+
+      // 给元素重新排序
+      for (let i = 0; i < filteredConfigs.length; i++) {
+        const config = filteredConfigs[i];
+        const key = getAttrPath(config);
+
+        const attrConfig = panelStyleConfigs[nodeName]['attrs'][key];
+
+        if (attrConfig?.['order'] !== undefined) {
+          const originalPosition = orderedConfigs.findIndex(
+            (cfg) => cfg.name === config.name,
+          );
+
+          const newPosition = attrConfig?.['order'];
+          // 移除原位置的元素并保存
+          const item = orderedConfigs.splice(originalPosition, 1)[0];
+          // 在新位置插入被移除的元素
+          orderedConfigs.splice(newPosition, 0, item);
+        }
+      }
+
+      // 过滤掉高级配置
+      const commonConfigs = orderedConfigs.filter((config) => {
+        const key = getAttrPath(config);
+        const attrConfig = panelStyleConfigs[nodeName]['attrs'][key];
+        return !(attrConfig?.['isAdvancedConfig'] === undefined
+          ? false
+          : attrConfig['isAdvancedConfig']);
+      });
+
+      // 获取高级配置
+      const adConfigs = orderedConfigs.filter((config) => {
+        const key = getAttrPath(config);
+        const attrConfig = panelStyleConfigs[nodeName]['attrs'][key];
+        return attrConfig?.['isAdvancedConfig'] === undefined
+          ? false
+          : attrConfig['isAdvancedConfig'];
+      });
+
+      setAdvancedConfigs(adConfigs);
+      setRenderConfigs(commonConfigs);
+    } else {
+      setRenderConfigs(componentConfig || []);
+      setAdvancedConfigs([]);
+    }
+  }, [componentConfig, nodeName]);
 
   return (
     <div className={styles.configForm}>
-      {componentConfig && componentConfig.length > 0 && isEditable && (
+      {renderConfigs && renderConfigs.length > 0 && isEditable && (
         <Alert
           key={'warning'}
           message="修改的内容需要保存才能生效，未保存退出则恢复至上次保存的配置"
@@ -358,7 +479,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
         />
       )}
 
-      {componentConfig && componentConfig.length > 0 && (
+      {renderConfigs && renderConfigs.length > 0 && (
         <Form
           {...layout}
           form={form}
@@ -369,136 +490,69 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
           validateMessages={{ required: '「${label}」是必填字段' }}
           preserve={false}
         >
-          {renderIndex
-            ? renderIndex.map((order) => {
-                // 开启了高级配置
-                if (advancedConfigOpen) {
-                  return (
-                    <div key={order}>
-                      {exif.advancedConfigIndex?.[0] === order ? (
-                        <Button
-                          type="link"
-                          style={{ padding: 0, margin: '8px 0' }}
-                          onClick={() => {
-                            setAdvancedConfigOpen(!advancedConfigOpen);
-                          }}
-                        >
-                          高级配置
-                        </Button>
-                      ) : null}
-                      {exif.hideIndex?.includes(order) ? null : (
-                        <ConfigurationNodeRender
-                          form={form}
-                          componentConfig={componentConfig}
-                          config={componentConfig[order]}
-                          node={node}
-                          key={order}
-                          index={order}
-                          exif={exif}
-                          translation={translation}
-                          disabled={!isEditable}
-                        />
-                      )}
-                    </div>
-                  );
-                } else {
-                  return exif.hideIndex?.includes(order) ? null : (
-                    <div key={order}>
-                      {exif.advancedConfigIndex?.[0] === order ? (
-                        <Button
-                          type="link"
-                          style={{ padding: 0, margin: '8px 0' }}
-                          onClick={() => {
-                            setAdvancedConfigOpen(!advancedConfigOpen);
-                          }}
-                        >
-                          高级配置
-                        </Button>
-                      ) : null}
-                      <ConfigurationNodeRender
-                        style={{
-                          display: !exif.advancedConfigIndex?.includes(order)
-                            ? 'block'
-                            : 'none',
-                        }}
-                        form={form}
-                        componentConfig={componentConfig}
-                        config={componentConfig[order]}
-                        node={node}
-                        key={order}
-                        index={order}
-                        exif={exif}
-                        translation={translation}
-                        disabled={!isEditable}
-                      />
-                    </div>
-                  );
-                }
-              })
-            : componentConfig.map((_, index) => {
-                if (advancedConfigOpen) {
-                  return (
-                    <div key={index}>
-                      {exif.advancedConfigIndex?.[0] === index ? (
-                        <Button
-                          type="link"
-                          style={{ padding: 0, margin: '8px 0' }}
-                          onClick={() => {
-                            setAdvancedConfigOpen(!advancedConfigOpen);
-                          }}
-                        >
-                          高级配置
-                        </Button>
-                      ) : null}
-                      {exif.hideIndex?.includes(index) ? null : (
-                        <ConfigurationNodeRender
-                          form={form}
-                          componentConfig={componentConfig}
-                          config={componentConfig[index]}
-                          node={node}
-                          key={index}
-                          index={index}
-                          exif={exif}
-                          translation={translation}
-                          disabled={!isEditable}
-                        />
-                      )}
-                    </div>
-                  );
-                } else {
-                  return exif.hideIndex?.includes(index) ? null : (
-                    <div key={index}>
-                      <ConfigurationNodeRender
-                        style={{
-                          display: !exif.advancedConfigIndex?.includes(index)
-                            ? 'block'
-                            : 'none',
-                        }}
-                        form={form}
-                        componentConfig={componentConfig}
-                        config={componentConfig[index]}
-                        node={node}
-                        key={index}
-                        index={index}
-                        exif={exif}
-                        translation={translation}
-                        disabled={!isEditable}
-                      />
-                      {exif.advancedConfigIndex?.[0] === index ? (
-                        <Button
-                          type="link"
-                          style={{ padding: 0, margin: '8px 0' }}
-                          onClick={() => {
-                            setAdvancedConfigOpen(!advancedConfigOpen);
-                          }}
-                        >
-                          高级配置
-                        </Button>
-                      ) : null}
-                    </div>
-                  );
-                }
-              })}
+          {renderConfigs.map((config, index) => {
+            const key = getAttrPath(config);
+            const attrConfig = panelStyleConfigs[nodeName]?.['attrs']?.[key];
+
+            return (
+              <ConfigurationNodeRender
+                form={form}
+                componentConfig={componentConfig || []}
+                config={renderConfigs[index]}
+                node={node}
+                key={index}
+                index={index}
+                exif={exif}
+                attrConfig={attrConfig}
+                translation={translation}
+                disabled={!isEditable}
+              />
+            );
+          })}
+
+          {isShowAdvancedBtn ? (
+            <AdvanceBtn
+              onChange={() => {
+                setAdvancedConfigOpen(!advancedConfigOpen);
+              }}
+              value={advancedConfigOpen}
+            />
+          ) : null}
+
+          {CustomAdvancedBtn ? (
+            <CustomAdvancedBtn
+              form={form}
+              onChange={() => {
+                setAdvancedConfigOpen(!advancedConfigOpen);
+              }}
+              value={advancedConfigOpen}
+            />
+          ) : null}
+
+          {advancedConfigs &&
+            advancedConfigs.length > 0 &&
+            advancedConfigs.map((config, index) => {
+              const key = getAttrPath(config);
+              const attrConfig = panelStyleConfigs[nodeName]?.['attrs']?.[key];
+
+              return (
+                <ConfigurationNodeRender
+                  style={{
+                    display: advancedConfigOpen ? 'block' : 'none',
+                  }}
+                  form={form}
+                  componentConfig={componentConfig || []}
+                  config={advancedConfigs[index]}
+                  node={node}
+                  key={`advanced-${index}`}
+                  index={renderConfigs.length + index}
+                  exif={exif}
+                  translation={translation}
+                  disabled={!isEditable}
+                  attrConfig={attrConfig}
+                />
+              );
+            })}
 
           {isEditable && isShowSaveBtn && (
             <div className={styles.footer}>
@@ -527,9 +581,10 @@ export const ConfigurationNodeRender = ({
   style,
   disabled = false,
   componentConfig,
+  attrConfig,
 }: {
   form: FormInstance;
-  config: AtomicConfigNode;
+  config: ConfigItem;
   node: NodeAllInfo;
   exif: Record<string, any>;
   index: number;
@@ -537,6 +592,7 @@ export const ConfigurationNodeRender = ({
   disabled?: boolean;
   style?: Record<any, any>;
   componentConfig: ConfigItem[];
+  attrConfig?: AttrConfig;
 }) => {
   const configRenderRegistry = useModel(ConfigRenderRegistry);
   const Render = configRenderRegistry.getRender(config, exif);
@@ -555,7 +611,7 @@ export const ConfigurationNodeRender = ({
         componentConfig={componentConfig}
         node={config}
         nodeAllInfo={node}
-        type={config.type}
+        type={config.type!}
         onChange={(val: ValueOf<Attribute> | undefined | null) => {
           setValue(val);
         }}
@@ -563,6 +619,7 @@ export const ConfigurationNodeRender = ({
         index={index}
         translation={translation}
         disabled={disabled}
+        attrConfig={attrConfig}
       />
     </div>
   ) : (

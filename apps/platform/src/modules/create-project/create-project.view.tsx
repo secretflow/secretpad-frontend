@@ -80,6 +80,10 @@ export const CreateProjectModal = ({ visible, data, close }: ICreateProjectModal
     });
   }, []);
 
+  const handleComputeModeChange = () => {
+    form.setFieldsValue({ templateId: undefined });
+  };
+
   return (
     <Drawer
       className={!data.showBlank ? styles.createModal : styles.createModalMax}
@@ -153,7 +157,7 @@ export const CreateProjectModal = ({ visible, data, close }: ICreateProjectModal
           name="computeMode"
           initialValue={hasAccess({ mode: [PadMode.TEE] }) ? 'TEE' : 'MPC'}
         >
-          <Radio.Group>
+          <Radio.Group onChange={handleComputeModeChange}>
             <AccessWrapper
               accessType={{
                 mode: [PadMode.MPC, PadMode['ALL-IN-ONE']],

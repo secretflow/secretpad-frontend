@@ -1,11 +1,15 @@
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Divider, Button, Alert, Tooltip, Breadcrumb, Popconfirm } from 'antd';
 import classNames from 'classnames';
+import { parse } from 'query-string';
 import { history } from 'umi';
 
+import { PadMode } from '@/components/platform-wrapper';
 import { Log, LogLabel } from '@/modules/dag-log/log-viewer.view';
 import { DagLogDrawer } from '@/modules/dag-log/log.drawer.layout';
 import { DagLog } from '@/modules/dag-log/log.view';
+import { SlsLog, SlsLogLabel } from '@/modules/dag-log/sls-log-viewer.view';
+import { SlsService } from '@/modules/dag-log/sls-service';
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import { ModalWidth } from '@/modules/dag-modal-manager/modal-manger-protocol';
 import {
@@ -13,17 +17,18 @@ import {
   SubmissionDrawer,
 } from '@/modules/dag-model-submission';
 import { ModelSubmissionDrawerItem } from '@/modules/dag-model-submission/submission-drawer';
+import { SubmissionDrawerService } from '@/modules/dag-model-submission/submission-service';
 import { SubmitGraphComponent } from '@/modules/dag-submit/graph';
 import { ToolbuttonComponent } from '@/modules/dag-submit/toolbutton';
 import { Model, useModel, getModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
-import { SubmissionDrawerService } from '@/modules/dag-model-submission/submission-service';
 
 const RIGHT_DIST = 20;
 
 export const ModelSubmissionLayout = () => {
   const viewInstance = useModel(ModelSubmissionView);
+  const slsLogService = useModel(SlsService);
 
   const goBack = async () => {
     viewInstance.submissionDrawerService.cancelSubmitTimer();
@@ -32,6 +37,27 @@ export const ModelSubmissionLayout = () => {
       search: window.location.search,
     });
   };
+
+  const searchDagParams = window.location.search;
+  const { mode } = parse(searchDagParams);
+
+  const logItems = [
+    {
+      key: '1',
+      label: <LogLabel />,
+      children: <Log />,
+      disabled: false,
+    },
+  ];
+
+  if (mode === PadMode.MPC) {
+    logItems.push({
+      key: '2',
+      label: <SlsLogLabel />,
+      disabled: !slsLogService.slsLogIsConfig,
+      children: <SlsLog />,
+    });
+  }
 
   return (
     <div className={styles.wrap}>
@@ -104,16 +130,7 @@ export const ModelSubmissionLayout = () => {
       </div>
       <SubmissionDrawer />
       <DagLogDrawer>
-        <DagLog
-          items={[
-            {
-              key: '1',
-              label: <LogLabel />,
-              children: <Log />,
-              disabled: false,
-            },
-          ]}
-        />
+        <DagLog items={logItems} />
       </DagLogDrawer>
     </div>
   );

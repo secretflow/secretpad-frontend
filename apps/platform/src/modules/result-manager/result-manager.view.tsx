@@ -1,5 +1,5 @@
 import { SearchOutlined } from '@ant-design/icons';
-import { Input, Table, Typography, Button, Badge, Space } from 'antd';
+import { Input, Table, Typography, Button, Badge, Space, Tooltip } from 'antd';
 import type { FilterValue, SorterResult } from 'antd/es/table/interface';
 import { parse } from 'query-string';
 import { useEffect, type ChangeEvent } from 'react';
@@ -15,6 +15,8 @@ import {
   ResultDetailsDrawer,
 } from '@/modules/result-details/result-details-drawer';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
+
+import { DataSourceType } from '../data-source-list/type';
 
 import { BatchDeleteModal } from './batch-delete/batch-delete.view';
 import styles from './index.less';
@@ -50,13 +52,22 @@ export const ResultManagerComponent = () => {
               </Button>
             </Popconfirm>
           )} */}
-          <Button
-            type="link"
-            style={{ paddingLeft: 0 }}
-            onClick={() => viewInstance.download(record)}
+          <Tooltip
+            title={
+              record?.datasourceType === DataSourceType.OSS
+                ? `OSS 文件不支持直接下载，请到 OSS 对应 bucket 的预设路径下找到文件下载，地址：${record.relativeUri}`
+                : ''
+            }
           >
-            下载
-          </Button>
+            <Button
+              type="link"
+              style={{ paddingLeft: 0 }}
+              onClick={() => viewInstance.download(record)}
+              disabled={record?.datasourceType === DataSourceType.OSS}
+            >
+              下载
+            </Button>
+          </Tooltip>
           {/* <Button
             type="link"
             style={{ paddingLeft: 0 }}
@@ -71,13 +82,22 @@ export const ResultManagerComponent = () => {
       record?.pullFromTeeStatus === ''
     ) {
       return (
-        <Button
-          type="link"
-          style={{ paddingLeft: 0 }}
-          onClick={() => viewInstance.download(record)}
+        <Tooltip
+          title={
+            record?.datasourceType === DataSourceType.OSS
+              ? `OSS 文件不支持直接下载，请到 OSS 对应 bucket 的预设路径下找到文件下载，地址：${record.relativeUri}`
+              : ''
+          }
         >
-          下载
-        </Button>
+          <Button
+            type="link"
+            style={{ paddingLeft: 0 }}
+            onClick={() => viewInstance.download(record)}
+            disabled={record?.datasourceType === DataSourceType.OSS}
+          >
+            下载
+          </Button>
+        </Tooltip>
       );
     } else if (record?.pullFromTeeStatus === ResultTableState.FAILED) {
       return (
@@ -172,7 +192,7 @@ export const ResultManagerComponent = () => {
       render: (gmtCreate: string) => (
         <Typography.Text
           ellipsis={{
-            tooltip: gmtCreate,
+            tooltip: formatTimestamp(gmtCreate),
           }}
         >
           {formatTimestamp(gmtCreate as string)}

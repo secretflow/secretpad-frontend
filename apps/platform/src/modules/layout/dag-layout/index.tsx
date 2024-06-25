@@ -3,10 +3,10 @@ import type { TabsProps } from 'antd';
 import { Divider, Tabs, Space } from 'antd';
 import classnames from 'classnames';
 import { parse } from 'query-string';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { history } from 'umi';
 
-import { AccessWrapper, Platform } from '@/components/platform-wrapper';
+import { AccessWrapper, PadMode, Platform } from '@/components/platform-wrapper';
 import { AdvancedConfigComponent } from '@/modules/advanced-config/advanced-config-entry';
 import BinningResultDrawer from '@/modules/component-config/config-item-render/custom-render/binning-modification/drawer';
 import {
@@ -71,8 +71,7 @@ export const DagLayout = () => {
   const loginService = useModel(LoginService);
   const slsLogService = useModel(SlsService);
 
-  const { type = 'DAG', mode } = parse(window.location.search);
-
+  const { type = 'DAG', mode, projectId } = parse(window.location.search);
   const goBack = async () => {
     const userInfo = await loginService.getUserInfo();
     if (userInfo.platformType === Platform.AUTONOMY) {
@@ -80,6 +79,7 @@ export const DagLayout = () => {
       history.push(`/edge?nodeId=${userInfo.ownerId}&tab=${origin || 'my-project'}`);
     } else {
       history.push('/home?tab=project-management');
+      viewInstance.setInitActiveMenu('');
     }
   };
 
@@ -123,17 +123,18 @@ export const DagLayout = () => {
     ALL: [],
   };
 
-  useEffect(() => {
+  /**  初始化active menu */
+  const setInitActiveMenu = useCallback(() => {
     const currentMenu = P2pMenuList[type as keyof typeof P2pMenuList]?.find(
       (item) => item.isInit,
     );
     viewInstance.setActiveMenu(currentMenu?.id || DagLayoutMenu.PROJECTDATA);
     currentMenu?.callBack && currentMenu.callBack();
-  }, [type, mode]);
+  }, [type, mode, projectId]);
 
   useEffect(() => {
+    const currentMenuList = P2pMenuList[type as keyof typeof P2pMenuList];
     if (viewInstance.initActiveMenu) {
-      const currentMenuList = P2pMenuList[type as keyof typeof P2pMenuList];
       const currentMenu = currentMenuList.find(
         (item) => item.id === viewInstance.initActiveMenu,
       );
@@ -141,8 +142,10 @@ export const DagLayout = () => {
         viewInstance.setActiveMenu(viewInstance.initActiveMenu);
         currentMenu?.callBack && currentMenu.callBack();
       }
+    } else {
+      setInitActiveMenu();
     }
-  }, [viewInstance.initActiveMenu]);
+  }, [viewInstance.initActiveMenu, type, mode, projectId]);
 
   const logItems = [
     {
@@ -151,13 +154,16 @@ export const DagLayout = () => {
       children: <Log />,
       disabled: false,
     },
-    {
+  ];
+
+  if (mode === PadMode.MPC) {
+    logItems.push({
       key: '2',
       label: <SlsLogLabel />,
       disabled: !slsLogService.slsLogIsConfig,
       children: <SlsLog />,
-    },
-  ];
+    });
+  }
 
   return (
     <div className={styles.wrap}>

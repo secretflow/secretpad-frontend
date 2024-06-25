@@ -61,7 +61,10 @@ export type AtomicParameterList = {
 export type AtomicParameter = AtomicParameterSingle & AtomicParameterList;
 
 // The value of an attribute
-export type Attribute = OneOf<AtomicParameter> & { is_na?: boolean };
+export type Attribute = OneOf<AtomicParameter> & {
+  is_na?: boolean;
+  custom_protobuf_cls?: string;
+};
 
 export type AtomicParameterDef = {
   // If True, when Atomic Attr is not provided or is_na, default_value would
@@ -166,4 +169,9 @@ export type ComponentTreeItem = {
   category: string;
 };
 
-export type ComputeMode = 'MPC' | 'TEE';
+export enum ComputeModeEnum {
+  MPC = 'MPC',
+  TEE = 'TEE',
+}
+
+export type ComputeMode = keyof typeof ComputeModeEnum;
