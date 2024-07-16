@@ -12,9 +12,11 @@ import { getModel, useModel } from '@/util/valtio-helper';
 
 import { advancedConfigService } from './advanced-config-service';
 import styles from './index.less';
+import { ProjectEditService } from '@/modules/layout/header-project-list/project-edit.service';
 
 export const AdvancedConfig = () => {
   const modalManager = useModel(DefaultModalManager);
+  const projectEditService = useModel(ProjectEditService);
   const service = useModel(advancedConfigService);
   const loginService = useModel(LoginService);
 
@@ -183,7 +185,12 @@ export const AdvancedConfig = () => {
           </Form.List>
           <div className={styles.footer}>
             <Space>
-              <Button type="primary" size="small" onClick={handleOk}>
+              <Button
+                type="primary"
+                size="small"
+                onClick={handleOk}
+                disabled={projectEditService.canEdit.advancedConfigDisabled}
+              >
                 保存配置
               </Button>
             </Space>

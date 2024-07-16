@@ -119,28 +119,51 @@ export const DefaultInputNumber: React.FC<RenderProp<number>> = (config) => {
         },
         {
           validator: (_, value) => {
+            let errorText = '取值应该';
             if (value === null || value === undefined) return Promise.resolve();
             if (minVal !== null && minVal !== undefined) {
               if (minInclusive) {
-                if (value < minVal)
-                  return Promise.reject(new Error(`取值应该大于等于${minVal}`));
+                errorText += `大于等于${minVal}`;
               } else {
-                if (value <= minVal)
-                  return Promise.reject(new Error(`取值应该大于${minVal}`));
+                errorText +=
+                  (errorText.replace('取值应该', '') ? `且` : '') + `大于${minVal}`;
+              }
+            }
+
+            if (maxVal !== null && maxVal !== undefined) {
+              if (maxInclusive) {
+                errorText +=
+                  (errorText.replace('取值应该', '') ? `且` : '') + `小于等于${maxVal}`;
+              } else {
+                errorText +=
+                  (errorText.replace('取值应该', '') ? `且` : '') + `小于${maxVal}`;
+              }
+            }
+
+            if (minVal !== null && minVal !== undefined) {
+              if (minInclusive) {
+                if (value < minVal) {
+                  return Promise.reject(new Error(errorText));
+                }
+              } else {
+                if (value <= minVal) {
+                  return Promise.reject(new Error(errorText));
+                }
               }
             }
 
             if (maxVal !== null && maxVal !== undefined) {
               if (maxInclusive) {
                 if (value > maxVal) {
-                  return Promise.reject(new Error(`取值应该小于等于${maxVal}`));
+                  return Promise.reject(new Error(errorText));
                 }
               } else {
                 if (value >= maxVal) {
-                  return Promise.reject(new Error(`取值应该小于${maxVal}`));
+                  return Promise.reject(new Error(errorText));
                 }
               }
             }
+
             return Promise.resolve();
           },
         },

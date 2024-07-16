@@ -16,6 +16,8 @@ export class ProjectEditService extends Model {
     recordStoptaskDisabled: false,
     pipelineEditDisabled: false,
     submitModelDisabled: false,
+    advancedConfigDisabled: false,
+    gotoDataManagerDisabled: false,
   };
 
   changeCanEditTrue = () => {
@@ -30,6 +32,8 @@ export class ProjectEditService extends Model {
       recordStoptaskDisabled: true,
       pipelineEditDisabled: true,
       submitModelDisabled: true,
+      advancedConfigDisabled: true,
+      gotoDataManagerDisabled: true,
     };
   };
 
@@ -45,6 +49,8 @@ export class ProjectEditService extends Model {
       recordStoptaskDisabled: false,
       pipelineEditDisabled: false,
       submitModelDisabled: false,
+      advancedConfigDisabled: false,
+      gotoDataManagerDisabled: false,
     };
   };
 
@@ -85,4 +91,8 @@ type CanEditType = {
   pipelineEditDisabled: boolean;
   /** 画布提交模型 */
   submitModelDisabled: boolean;
+  /** 全局配置保存配置 */
+  advancedConfigDisabled: boolean;
+  /** 画布数据集展示去节点管理添加数据按钮 */
+  gotoDataManagerDisabled: boolean;
 };

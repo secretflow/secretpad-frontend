@@ -4,17 +4,14 @@ import { Button, Space, Tooltip } from 'antd';
 import React, { useEffect } from 'react';
 
 import type { GraphNodeDetail } from '@/modules/component-config/component-config-protocol';
-import mainDag from '@/modules/main-dag/dag';
-import { Model, getModel, useModel } from '@/util/valtio-helper';
+import { getModel, useModel } from '@/util/valtio-helper';
 
-import type { NodeAllInfo } from '../../config-render-protocol';
 import { ParamsModificationsRenderView } from '../parameters-modification/parameters-modification-view';
 import { DefaultRedoUndoService } from '../redo-undo/redo-undo-service';
 
 import { ParametersResultDrawerView } from './drawer';
 import { ModelParametersModificationService } from './model-parameters-modification-service';
-import { SourceTypeEnum } from './types';
-import type { CurrOperationEnum, ParametersData, ParametersDatum } from './types';
+import type { ParametersData, ParametersDatum } from './types';
 
 /** 2. 把表单格式，serializer 序列化，转换成 node info */
 export const modelModificationsSerializer = (data: ParametersData) => {

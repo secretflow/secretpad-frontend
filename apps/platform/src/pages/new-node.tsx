@@ -62,7 +62,7 @@ const NodePage = () => {
   const myNodeService = useModel(MyNodeService);
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>(defaultMenuItems);
-  const [defaultTabKey, setDefaultTabKey] = useState<string>('data-source');
+  const [defaultTabKey, setDefaultTabKey] = useState<string>('');
 
   useEffect(() => {
     const getNodeList = async () => {
@@ -90,6 +90,8 @@ const NodePage = () => {
     const getNodeInfo = async () => {
       await myNodeService.getNodeInfo(nodeId as string);
 
+      let _defaultKey = 'data-source';
+
       /**
        * 遇到 tee 节点，先屏蔽 数据源管理
        * 原因：tee 暂不支持 oss 数据源管理
@@ -100,9 +102,11 @@ const NodePage = () => {
       ) {
         const items = menuItems.filter((item) => item.key !== 'data-source');
 
-        setDefaultTabKey('data-management');
+        _defaultKey = 'data-management';
         setMenuItems(items);
       }
+
+      setDefaultTabKey(_defaultKey);
     };
 
     getNodeInfo();

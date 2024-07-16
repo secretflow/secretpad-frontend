@@ -24,9 +24,13 @@ export const EditProjectModal = ({
   };
 
   useEffect(() => {
-    form.setFieldValue('projectName', data.projectName);
-    form.setFieldValue('description', data.description);
-  }, [data]);
+    if (isModalOpen) {
+      form.setFieldValue('projectName', data.projectName);
+      form.setFieldValue('description', data.description);
+    } else {
+      form.resetFields();
+    }
+  }, [data, isModalOpen]);
 
   return (
     <Modal
@@ -43,12 +47,23 @@ export const EditProjectModal = ({
           rules={[
             { required: true, message: '请输入项目名称' },
             { max: 32, message: '长度限制32' },
+            {
+              pattern: /^[\u4E00-\u9FA5A-Za-z0-9-_]+$/,
+              message: '只能包含中文/英文/数字/下划线/中划线',
+            },
           ]}
         >
           <Input placeholder="请输入项目名称" />
         </Form.Item>
         <Form.Item
           name="description"
+          rules={[
+            { max: 128, message: '长度限制128' },
+            {
+              pattern: /^[\u4E00-\u9FA5A-Za-z0-9-_]+$/,
+              message: '只能包含中文/英文/数字/下划线/中划线',
+            },
+          ]}
           label={
             <>
               项目描述

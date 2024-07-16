@@ -24,11 +24,14 @@ import { getModel, Model, useModel } from '@/util/valtio-helper';
 import { DatatableTreeService } from './datatable-tree.service';
 import styles from './index.less';
 import { openNewTab } from '@/util/path';
+import { ProjectEditService } from '../layout/header-project-list/project-edit.service';
 
 const { Text } = Typography;
 
 export const DatatableTreeComponent = () => {
   const viewInstance = useModel(DatatableTreeView);
+  const projectEditService = useModel(ProjectEditService);
+
   const ref1 = useRef(null);
   const { pathname, search } = useLocation();
   const { projectId } = parse(search);
@@ -191,7 +194,8 @@ export const DatatableTreeComponent = () => {
                       </EdgeAuthWrapper>
                     )}
                     {item.nodeId === currentLoginNodeId &&
-                      hasAccess({ type: [Platform.AUTONOMY] }) && (
+                      hasAccess({ type: [Platform.AUTONOMY] }) &&
+                      !projectEditService.canEdit.gotoDataManagerDisabled && (
                         <Button
                           type="link"
                           onClick={() => {

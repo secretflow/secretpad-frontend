@@ -1,6 +1,11 @@
 import type { Edge, Graph } from '@antv/x6';
 import { ActionType, NodeStatus } from '@secretflow/dag';
-import type { GraphNode, Node, GraphEventHandlerProtocol } from '@secretflow/dag';
+import type {
+  GraphNode,
+  Node,
+  GraphEventHandlerProtocol,
+  GraphModel,
+} from '@secretflow/dag';
 import { Emitter } from '@secretflow/utils';
 import { message } from 'antd';
 import { parse } from 'query-string';
@@ -12,7 +17,10 @@ import {
 import { updateGraphNode } from '@/services/secretpad/GraphController';
 import { getModel } from '@/util/valtio-helper';
 
-import type { ComponentConfig } from '../component-config/component-config-protocol';
+import type {
+  ComponentConfig,
+  StructConfigNode,
+} from '../component-config/component-config-protocol';
 import { ComponentConfigRegistry } from '../component-config/component-config-registry';
 import { DefaultComponentConfigService } from '../component-config/component-config-service';
 import { componentConfigDrawer } from '../component-config/config-modal';
@@ -250,7 +258,8 @@ export class GraphService implements GraphEventHandlerProtocol {
           CUSTOM_COMPONENT.ModelParamModification,
         ].includes(node?.codeName)
       ) {
-        const { attrs, attrPaths, ...restNodeDef } = node.nodeDef || {};
+        const defaultNodeDef = this.getDefaultNodeDef(node);
+        const { attrs, attrPaths, ...restNodeDef } = node.nodeDef || defaultNodeDef;
         const updatedNode = {
           ...node,
           inputs: [sourcePortId],
@@ -264,7 +273,7 @@ export class GraphService implements GraphEventHandlerProtocol {
           node: updatedNode,
         });
 
-        mainDag.dataService.fetch();
+        await mainDag.dataService.fetch();
       }
     }
   }
@@ -289,8 +298,25 @@ export class GraphService implements GraphEventHandlerProtocol {
         ].includes(node?.codeName),
       )
       .map((node) => node.id);
+    await this.cleanNodeDef(binningModificationNodeIds);
+  }
 
-    this.cleanNodeDef(binningModificationNodeIds);
+  getDefaultNodeDef(node: GraphNode) {
+    const { mode } = parse(window.location.search);
+    const { codeName } = node;
+    const config = this.componentConfigRegistry.getComponentConfig(
+      codeName,
+      mode as ComputeMode,
+    );
+    const { version, domain } = config as StructConfigNode;
+
+    const [, name] = codeName.split('/');
+
+    return {
+      version,
+      domain,
+      name,
+    };
   }
 
   async cleanNodeDef(nodeIds: string[]) {
@@ -301,11 +327,13 @@ export class GraphService implements GraphEventHandlerProtocol {
     const { search } = window.location;
     const { dagId } = parse(search);
 
-    const dataNodes = mainDag.dataService.nodes;
+    const dataNodes = (mainDag.requestService.graphData as GraphModel).nodes;
 
-    const nodes = dataNodes.map((node) => {
+    const nodes = dataNodes.map((node: GraphNode) => {
+      const defaultNodeDef = this.getDefaultNodeDef(node);
+
       if (nodeIds.includes(node?.id)) {
-        const { attrs, attrPaths, ...restNodeDef } = node?.nodeDef || {};
+        const { attrs, attrPaths, ...restNodeDef } = node?.nodeDef || defaultNodeDef;
         return {
           ...node,
           nodeDef: {
@@ -323,7 +351,7 @@ export class GraphService implements GraphEventHandlerProtocol {
     });
 
     // 更新最新的 nodes
-    mainDag.dataService.fetch();
+    await mainDag.dataService.fetch();
   }
 
   saveTemplateQuickConfig = async (quickConfig: {
@@ -401,7 +429,7 @@ export class GraphService implements GraphEventHandlerProtocol {
         )
         .map((node) => node.id);
 
-      this.cleanNodeDef(binningModificationNodeIds);
+      await this.cleanNodeDef(binningModificationNodeIds);
     } else {
       message.error(status?.msg || '操作失败');
     }

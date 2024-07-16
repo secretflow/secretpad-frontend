@@ -136,6 +136,8 @@ export class DefaultPipelineService extends Model {
         if (project.status !== ProjectStatus.ARCHIVED) {
           this.projectEditService.changeCanEdit({
             pipelineEditDisabled: false,
+            advancedConfigDisabled: false,
+            gotoDataManagerDisabled: false,
           });
         }
         const pipeline = this.pipelines.find((p) => p.graphId === pipelineId);
@@ -156,6 +158,8 @@ export class DefaultPipelineService extends Model {
             pipelineEditDisabled: false,
             runAllToolTip: '非我方节点创建，仅可查看',
             submitModelDisabled: false,
+            advancedConfigDisabled: false,
+            gotoDataManagerDisabled: false,
           });
         } else {
           this.projectEditService.changeCanEditFalse();

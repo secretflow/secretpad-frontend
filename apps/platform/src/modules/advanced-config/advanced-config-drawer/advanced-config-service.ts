@@ -52,7 +52,13 @@ export class advancedConfigService extends Model {
   };
 
   getSetting = async (graphId: string, projectId: string) => {
-    if (!graphId || !projectId) return;
+    if (!graphId || !projectId) {
+      this.config = {
+        maxParallelism: 1,
+        dataSourceConfig: [],
+      };
+      return;
+    }
     this.loading = true;
     const { status, data } = await getGraphDetail({
       graphId,

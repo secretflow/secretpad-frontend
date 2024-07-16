@@ -29,9 +29,7 @@ const QuatitiesWrapper = (props: { children: React.ReactNode }) => {
           采样方式
           <Tooltip
             placement={'top'}
-            title={
-              '下采样时可选择采样方式；当上采样时，如选择不放回采样时，系统还是按照放回采样进行。'
-            }
+            title={'如采样倍率>1，但选择不放回采样则会报错处理。'}
           >
             <QuestionCircleOutlined />
           </Tooltip>
@@ -95,7 +93,9 @@ const ObservationsQuantilesRender: React.FC<RenderProp<string>> = (prop) => {
       <Form.Item
         name={quantilesStringFieldName}
         tooltip={translation[node.docString!] || node.docString}
-        label={<span className={styles.font}>观测值分位点</span>}
+        label={
+          <span className={styles.font}>{translation[node.name] || node.name}</span>
+        }
         labelCol={{ span: 12 }}
         rules={[
           { required: true, message: '请输入观测值分位点' },

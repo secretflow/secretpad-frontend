@@ -1,5 +1,6 @@
 import { list, reply, pending, detail } from '@/services/secretpad/MessageController';
 import { Model } from '@/util/valtio-helper';
+import { message } from 'antd';
 
 /**
  * This is the service for a message center list. There are list of message items. It allows processing
@@ -105,6 +106,7 @@ export class MessageService extends Model {
       this.messageDetail = info.data;
     } else {
       this.messageDetail = {};
+      message.error(info?.status?.msg);
     }
     this.messageInfoLoading = false;
   };
