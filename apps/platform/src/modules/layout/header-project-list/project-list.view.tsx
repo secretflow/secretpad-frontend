@@ -15,6 +15,8 @@ import { Model, getModel, useModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
 import { ProjectEditService } from './project-edit.service';
+import { DefaultModalManager } from '@/modules/dag-modal-manager';
+import { AdvancedConfigDrawer } from '@/modules/advanced-config/advanced-config-drawer/advanced-config-view';
 
 export type ProjectVO = API.ProjectVO;
 
@@ -80,6 +82,7 @@ export const ProjectListComponent: React.FC = () => {
 export class HeaderProjectListView extends Model {
   projectEditService = getModel(ProjectEditService);
   dagLayoutView = getModel(DagLayoutView);
+  modalManager = getModel(DefaultModalManager);
 
   projectList: ProjectVO[] = [];
 
@@ -130,7 +133,7 @@ export class HeaderProjectListView extends Model {
       },
       { origin },
     );
-
+    this.modalManager.closeModal(AdvancedConfigDrawer.id);
     this.dagLayoutView.setActiveKey('pipeline');
   };
 }

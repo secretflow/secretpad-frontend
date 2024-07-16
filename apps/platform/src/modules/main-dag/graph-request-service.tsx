@@ -220,6 +220,8 @@ export class GraphRequestService extends DefaultRequestService {
 
   async saveDag(dagId: string, model: GraphModel) {
     const { nodes: n, edges: e } = model;
+    this.graphData = model;
+
     const { mode } = parse(window.location.search);
     const nodes = await Promise.all(
       n.map(async (i) => {
