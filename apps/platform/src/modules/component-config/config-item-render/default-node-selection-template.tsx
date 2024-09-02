@@ -1,9 +1,11 @@
 import { Form, Select } from 'antd';
+import { uniqBy } from 'lodash';
 import { parse } from 'query-string';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'umi';
 
 import { NodeService } from '@/modules/node';
+import { getGraphNodeOutput } from '@/services/secretpad/GraphController';
 import { getProject } from '@/services/secretpad/ProjectController';
 import { useModel } from '@/util/valtio-helper';
 
@@ -32,7 +34,7 @@ export const DefaultNodeSelect: React.FC<RenderProp<string>> = (config) => {
   const { prefixes, list_max_length_inclusive } = node;
 
   const { search } = useLocation();
-  const { projectId } = parse(search) as { projectId: string };
+  const { projectId, dagId } = parse(search) as { projectId: string; dagId: string };
 
   let isMultiple = true;
   if (list_max_length_inclusive === 1) isMultiple = false;
@@ -61,22 +63,42 @@ export const DefaultNodeSelect: React.FC<RenderProp<string>> = (config) => {
           );
         });
 
-        upstreamTables.map((upstream) => {
-          if (upstream) {
-            const participatedNode = dataTableList.find(
-              (table) => table.datatableId === upstream,
-            );
-            if (
-              participatedNode &&
-              !nodeList.find(({ value }) => value === participatedNode.nodeId)
-            )
-              nodeList.push({
-                value: participatedNode.nodeId as string,
-                label: participatedNode.nodeName as string,
-              });
-            setNodes(nodeList);
-          }
-        });
+        await Promise.all(
+          upstreamTables.map(async (upstream) => {
+            if (upstream) {
+              // 优先从上游输出查找
+              const [, graphNodeId] = upstream.match(/(.*)-output-([0-9]+)$/) || [];
+              if (graphNodeId) {
+                const { data: outputData } = await getGraphNodeOutput({
+                  projectId,
+                  graphId: dagId,
+                  graphNodeId,
+                  outputId: upstream,
+                });
+                if (outputData?.meta?.rows?.[0]) {
+                  const { nodeId, nodeName } = outputData.meta.rows[0];
+                  nodeList.push({
+                    value: nodeId as string,
+                    label: nodeName as string,
+                  });
+                  return;
+                }
+              }
+              const participatedNode = dataTableList.find(
+                (table) => table.datatableId === upstream,
+              );
+              if (
+                participatedNode &&
+                !nodeList.find(({ value }) => value === participatedNode.nodeId)
+              )
+                nodeList.push({
+                  value: participatedNode.nodeId as string,
+                  label: participatedNode.nodeName as string,
+                });
+            }
+          }),
+        );
+        setNodes(uniqBy(nodeList, 'value'));
       } else {
         const fetchedNodes = await nodeService.listNode();
         fetchedNodes.forEach((i) => {
@@ -86,7 +108,7 @@ export const DefaultNodeSelect: React.FC<RenderProp<string>> = (config) => {
             label: i.nodeName,
           });
         });
-        setNodes(nodeList);
+        setNodes(uniqBy(nodeList, 'value'));
       }
     };
     getNodes();
@@ -110,10 +132,31 @@ export const DefaultNodeSelect: React.FC<RenderProp<string>> = (config) => {
         {
           required: node.isRequired,
         },
+        {
+          validator: (_, val) => {
+            if (node.isRequired) {
+              if (Array.isArray(val) && val.length > 0) {
+                const filtered = val.filter((i) => i);
+                if (filtered.length === 0)
+                  return Promise.reject(
+                    `${translation[node.name] || node.name}是必填字段`,
+                  );
+              }
+            }
+
+            return Promise.resolve();
+          },
+        },
       ]}
       initialValue={defaultVal}
       colon={false}
       labelCol={isNoWrap ? { span: 12 } : undefined}
+      getValueProps={(val) => {
+        if (val?.length === 1 && !val[0]) {
+          return { value: undefined };
+        }
+        return { value: val };
+      }}
     >
       <Select
         mode={isMultiple ? 'multiple' : undefined}

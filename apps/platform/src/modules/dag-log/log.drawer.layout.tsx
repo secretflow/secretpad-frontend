@@ -2,9 +2,9 @@ import { Drawer } from 'antd';
 import classNames from 'classnames';
 import classnames from 'classnames';
 import { parse } from 'query-string';
-import React from 'react';
+import React, { useEffect } from 'react';
 
-import { Platform } from '@/components/platform-wrapper';
+import { hasAccess, Platform } from '@/components/platform-wrapper';
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import dagLayoutStyle from '@/modules/layout/dag-layout/index.less';
 import recordLayoutStyle from '@/modules/layout/record-layout/index.less';
@@ -15,6 +15,7 @@ import { LoginService } from '../login/login.service';
 import { DagLogService } from './dag-log.service';
 import styles from './index.less';
 import { SlsService } from './sls-service';
+import { useLocation } from 'umi';
 
 const CONFIG_MIN_WIDTH = 30;
 const CONFIG_MAX_WIDTH = 600;
@@ -44,6 +45,16 @@ export const DagLogDrawer = ({ children }: IDagLogDrawer) => {
     }
   };
 
+  const isAutonomyMode = hasAccess({ type: [Platform.AUTONOMY] });
+  const { search } = useLocation();
+  const { ownerId } = parse(search);
+
+  useEffect(() => {
+    if (isAutonomyMode) {
+      loginService.getAutonomyNodeList(ownerId as string);
+    }
+  }, []);
+
   React.useEffect(() => {
     if (!data) return;
 
@@ -57,9 +68,8 @@ export const DagLogDrawer = ({ children }: IDagLogDrawer) => {
         slsService.nodePartiesList = nodeParties;
       } else {
         slsService.nodePartiesList =
-          nodeParties?.filter(
-            (item: { nodeId: string | undefined }) =>
-              item.nodeId === loginService?.userInfo?.ownerId,
+          nodeParties?.filter((item: { nodeId: string | undefined }) =>
+            loginService.autonomyNodeList.find((node) => node.nodeId === item.nodeId),
           ) || [];
       }
     } else {
@@ -83,7 +93,7 @@ export const DagLogDrawer = ({ children }: IDagLogDrawer) => {
         slsService.currentNodePartiesId,
       );
     }
-  }, [data, visible]);
+  }, [data, visible, loginService.autonomyNodeList]);
 
   React.useEffect(() => {
     handleClose();

@@ -342,7 +342,11 @@ export class DataTableAuth extends Model {
       datatableId: tableInfo.datatableId,
       nodeId: this.nodeService.currentNode?.nodeId,
     });
-    this.tableInfo = response.data || {};
+    this.tableInfo = {
+      ...(response.data?.datatableVO || {}),
+      nodeId: response.data?.nodeId,
+      nodeName: response.data?.nodeName,
+    };
     this.authList = [...(this.tableInfo.authProjects || [])].reverse() || [];
   }
 

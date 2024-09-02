@@ -111,7 +111,7 @@ export class NodeView extends Model {
 
   changeCurrentNode(node: NodeVO) {
     const url = new URL(window.location.href);
-    url.searchParams.set('nodeId', node.nodeId as string);
+    url.searchParams.set('ownerId', node.nodeId as string);
     history.push(url.toString());
     this.setCurrentNode(node);
   }
@@ -122,7 +122,7 @@ export class NodeView extends Model {
 
   async loadData() {
     this.nodeList = await this.nodeService.listNode();
-    const { nodeId } = parse(window.location.search);
-    this.setCurrentNodeById(nodeId as string);
+    const { ownerId } = parse(window.location.search);
+    this.setCurrentNodeById(ownerId as string);
   }
 }

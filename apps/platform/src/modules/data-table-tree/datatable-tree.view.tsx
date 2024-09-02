@@ -181,7 +181,7 @@ export const DatatableTreeComponent = () => {
                             openNewTab(
                               pathname,
                               '/node',
-                              `nodeId=${item.nodeId}&tab=data-management`,
+                              `ownerId=${item.nodeId}&tab=data-management`,
                             );
                           }}
                           style={{
@@ -202,7 +202,7 @@ export const DatatableTreeComponent = () => {
                             openNewTab(
                               pathname,
                               '/edge',
-                              `nodeId=${item.nodeId}&tab=data-management`,
+                              `ownerId=${item.nodeId}&tab=data-management`,
                             );
                           }}
                           style={{
@@ -281,8 +281,8 @@ export class DatatableTreeView extends Model {
     // history.push(`node?nodeId=${nodeId}`);
     const isP2p = this.loginService.userInfo?.platformType === Platform.AUTONOMY;
     const search = isP2p
-      ? `tab=data-management&nodeId=${nodeId}`
-      : `nodeId=${nodeId}&tab=data-management`;
+      ? `tab=data-management&ownerId=${nodeId}`
+      : `ownerId=${nodeId}&tab=data-management`;
     const router = isP2p ? '/edge' : '/node';
     openNewTab(pathname, router, search);
   }

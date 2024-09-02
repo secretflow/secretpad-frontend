@@ -111,11 +111,18 @@ export const CooperativeNodeDetailDrawer = ({
         <div className={styles.baseContent}>
           <Descriptions column={1} className={styles.descriptionClass}>
             {hasAccess({ type: [Platform.AUTONOMY] }) && (
-              <Descriptions.Item label="管控节点ID">
-                <EllipsisText>
-                  {cooperativeNodeDetail?.srcNode?.masterNodeId}
-                </EllipsisText>
-              </Descriptions.Item>
+              <>
+                <Descriptions.Item label="所属机构">
+                  <EllipsisText>
+                    {cooperativeNodeDetail?.srcNode?.instName || '-'}
+                  </EllipsisText>
+                </Descriptions.Item>
+                <Descriptions.Item label="管控节点ID">
+                  <EllipsisText>
+                    {cooperativeNodeDetail?.srcNode?.masterNodeId}
+                  </EllipsisText>
+                </Descriptions.Item>
+              </>
             )}
             <Descriptions.Item label="计算节点名">
               <EllipsisText>{cooperativeNodeDetail?.srcNode?.nodeName}</EllipsisText>

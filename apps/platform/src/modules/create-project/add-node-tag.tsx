@@ -10,6 +10,7 @@ import { LoginService } from '@/modules/login/login.service';
 import { useModel } from '@/util/valtio-helper';
 
 import styles from './add-node-tag.less';
+import { hasAccess, Platform } from '@/components/platform-wrapper';
 
 export type Datatable = API.DatatableVO;
 
@@ -32,8 +33,10 @@ export const AddNodeTag: React.FC<{
       if (loginService.userInfo.ownerId) {
         setTags([...tags, loginService.userInfo.ownerId]);
       }
+    } else {
+      setTags(value || []);
     }
-  }, []);
+  }, [value]);
 
   const [tags, setTags] = React.useState<CheckboxValueType[]>(value || []);
 
@@ -164,7 +167,9 @@ export const AddNodeTag: React.FC<{
                           内置
                         </Tag>
                       )}
-                      {`${item.nodeName} (${item.nodeId})`}
+                      {hasAccess({ type: [Platform.AUTONOMY] })
+                        ? `${item.instName}-${item.nodeName} (${item.nodeId})`
+                        : `${item.nodeName} (${item.nodeId})`}
                     </Checkbox>
                   </div>
                 );

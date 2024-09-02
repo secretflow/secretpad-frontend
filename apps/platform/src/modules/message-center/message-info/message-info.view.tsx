@@ -47,13 +47,13 @@ export const MessageInfoModal = ({
   const service = useModel(MessageService);
   const { messageDetail, messageInfoLoading } = service;
   const [comment, setComment] = React.useState('');
-  const { nodeId } = parse(window.location.search);
+  const { ownerId } = parse(window.location.search);
 
   const getMessageInfo = () => {
-    if (!data.voteID || !nodeId) return;
+    if (!data.voteID || !ownerId) return;
     service.getMessageDetail({
-      nodeID: nodeId as string,
-      voteID: data.voteID,
+      ownerId: ownerId as string,
+      voteId: data.voteID,
       isInitiator: activeTab === MessageActiveTabType.APPLY ? true : false,
       voteType: data.type,
     });
@@ -69,8 +69,8 @@ export const MessageInfoModal = ({
     const { status } = await service.process({
       action,
       reason: comment,
-      voteID: data.voteID,
-      voteParticipantID: nodeId as string,
+      voteId: data.voteID,
+      voteParticipantId: ownerId as string,
     });
     if (status && status.code !== 0) {
       message.error(status.msg);
@@ -87,12 +87,13 @@ export const MessageInfoModal = ({
   return (
     <Drawer
       title={
-        <div style={{ width: 400 }}>
+        <div style={{ width: 500 }}>
           <Space>
-            <EllipsisText style={{ maxWidth: 180, width: '100% !important' }}>
-              {data.messageName}
+            <EllipsisText style={{ width: '100%' }}>
+              {data.initiatingTypeMessage?.initiatorNodeName
+                ? `来自${data.initiatingTypeMessage.initiatorNodeName}机构的${data.messageName}${itemObj.suffix}`
+                : `${data.messageName}${itemObj.suffix}`}
             </EllipsisText>
-            <div>{itemObj.suffix}</div>
             <MessageStateTagWrap
               label={
                 activeTab === MessageActiveTabType.PROCESS ? '本方状态' : '当前状态'

@@ -18,7 +18,7 @@ import {
 import type { InputRef } from 'antd';
 import { toNumber } from 'lodash';
 import { parse } from 'query-string';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { history } from 'umi';
 import { useLocation } from 'umi';
 
@@ -35,6 +35,8 @@ import { NodeState, NodeStateText } from '../managed-node-list';
 import { NodeFunc } from './components/node-func';
 import styles from './index.less';
 import { MyNodeService } from './my-node.service';
+import { SwitchNode } from './switch-node';
+import { RefreshToken } from './refreshToken';
 
 const { Title } = Typography;
 
@@ -51,13 +53,12 @@ enum DomainCertConfigEnum {
 }
 
 export const MyNodeComponent: React.FC = () => {
-  // const myNodeService = useModel(MyNodeService);
   const myNodeService = useModel(MyNodeService);
   const [form] = Form.useForm();
   const values = Form.useWatch([], form);
 
   const { search } = useLocation();
-  const { nodeId } = parse(search);
+  const { ownerId } = parse(search);
 
   const [isEdit, setIsEdit] = useState(false);
 
@@ -70,9 +71,25 @@ export const MyNodeComponent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [disabled, setDisabled] = useState(true);
 
+  const queryAutonomyNodeList = useCallback(async () => {
+    await myNodeService.getAutonomyNodeList();
+    await myNodeService.getNodeInfo(myNodeService.currentPageNodeId as string);
+  }, []);
+
+  const isAutonomyMode = hasAccess({ type: [Platform.AUTONOMY] });
+
   useEffect(() => {
-    myNodeService.getNodeInfo(nodeId as string);
-  }, [nodeId]);
+    /** P2P 模式下获取机构下所有节点，然后获取节点详情 */
+    if (isAutonomyMode) {
+      /** 这里的 ownerId 其实是 instId */
+      queryAutonomyNodeList();
+    } else {
+      /** 其他模式下直接使用 ownerId */
+      myNodeService.currentPageNodeId = ownerId as string;
+      myNodeService.getNodeInfo(myNodeService.currentPageNodeId as string);
+    }
+    /** 获取节点详情 */
+  }, [ownerId]);
 
   useEffect(() => {
     if (isModalOpen) {
@@ -233,8 +250,8 @@ export const MyNodeComponent: React.FC = () => {
   const handleOk = async () => {
     await form.validateFields().then(async (value) => {
       const res = await myNodeService.resetEdgeNodePwd(
-        nodeId as string,
-        nodeId as string,
+        ownerId as string,
+        ownerId as string,
         value.passwordHash,
         value.newPassword,
       );
@@ -272,7 +289,7 @@ export const MyNodeComponent: React.FC = () => {
             ),
           },
           {
-            title: '我的节点',
+            title: isAutonomyMode ? '我的机构' : '我的节点',
           },
         ]}
       />
@@ -283,12 +300,15 @@ export const MyNodeComponent: React.FC = () => {
               <div className={styles.header}>
                 <Title className={styles.title} level={4}>
                   {nodeInfo?.nodeName}
+                  {isAutonomyMode && '节点中心'}
                 </Title>
                 <Tooltip
-                  placement="right"
-                  defaultOpen={false}
-                  open={TooltipOpen}
-                  title="节点不可用，建议检查节点容器是否正常"
+                  placement="top"
+                  title={
+                    TooltipOpen && !!nodeInfo?.nodeStatus
+                      ? '节点不可用，建议检查节点容器是否正常'
+                      : null
+                  }
                 >
                   <Tag
                     icon={
@@ -315,22 +335,18 @@ export const MyNodeComponent: React.FC = () => {
                     </span>
                   </Tag>
                 </Tooltip>
+                {isAutonomyMode && <SwitchNode />}
               </div>
             }
             bordered={false}
           >
-            <Descriptions column={2}>
+            <Descriptions column={isAutonomyMode ? 3 : 2}>
               <Descriptions.Item label="节点ID">{nodeInfo?.nodeId}</Descriptions.Item>
-              {hasAccess({ type: [Platform.AUTONOMY] }) && (
-                <Descriptions.Item label="中心管控节点ID">
-                  {nodeInfo?.masterNodeId}
-                </Descriptions.Item>
-              )}
               <Descriptions.Item
                 label={
                   <Space>
                     通讯地址
-                    {hasAccess({ type: [Platform.AUTONOMY] }) && (
+                    {isAutonomyMode && (
                       <Tooltip title="通讯地址改变,节点认证码也会改变" placement="top">
                         <QuestionCircleOutlined />
                       </Tooltip>
@@ -346,14 +362,18 @@ export const MyNodeComponent: React.FC = () => {
                       setIsEdit(false);
                       myNodeService.changeCommonNetAddress(
                         inputValue,
-                        nodeId as string,
+                        isAutonomyMode
+                          ? (myNodeService.currentPageNodeId as string)
+                          : (ownerId as string),
                       );
                     }}
                     onPressEnter={() => {
                       setIsEdit(false);
                       myNodeService.changeCommonNetAddress(
                         inputValue,
-                        nodeId as string,
+                        isAutonomyMode
+                          ? (myNodeService.currentPageNodeId as string)
+                          : (ownerId as string),
                       );
                     }}
                     onChange={(e) => setInputValue(e.target.value)}
@@ -376,7 +396,7 @@ export const MyNodeComponent: React.FC = () => {
                     : '待配置'}
                 </Descriptions.Item>
               )}
-              {hasAccess({ type: [Platform.AUTONOMY] }) && (
+              {isAutonomyMode && (
                 <>
                   <Descriptions.Item label="公钥">
                     <PopoverCopy
@@ -404,6 +424,9 @@ export const MyNodeComponent: React.FC = () => {
                       copyText={nodeInfo?.nodeAuthenticationCode}
                     />
                   </Descriptions.Item>
+                  <Descriptions.Item label="token">
+                    <RefreshToken />
+                  </Descriptions.Item>
                 </>
               )}
               {hasAccess({ type: [Platform.CENTER, Platform.EDGE] }) && (
@@ -414,7 +437,7 @@ export const MyNodeComponent: React.FC = () => {
                         <Space>
                           中心平台账号
                           <Tooltip
-                            title={`初始化密码是: ${nodeId}12#$qwER`}
+                            title={`初始化密码是: ${ownerId}12#$qwER`}
                             placement="top"
                           >
                             <QuestionCircleOutlined />
@@ -422,7 +445,7 @@ export const MyNodeComponent: React.FC = () => {
                         </Space>
                       }
                     >
-                      <div style={{ marginRight: '8px' }}>{nodeId}</div>
+                      <div style={{ marginRight: '8px' }}>{ownerId}</div>
                       <Typography.Link onClick={showModal}>设置密码</Typography.Link>
                       <Modal
                         className={styles.passwordModel}
@@ -432,7 +455,7 @@ export const MyNodeComponent: React.FC = () => {
                         okButtonProps={{ disabled }}
                         onCancel={handleCancel}
                       >
-                        <div className={styles.name}>账号名：{nodeId}</div>
+                        <div className={styles.name}>账号名：{ownerId}</div>
                         <Form
                           form={form}
                           layout="vertical"

@@ -1,5 +1,6 @@
 import { message } from 'antd';
 
+import { listNode } from '@/services/secretpad/InstController';
 import { listResults } from '@/services/secretpad/NodeController';
 import { Model } from '@/util/valtio-helper';
 
@@ -25,6 +26,9 @@ export enum ResultTableState {
 export class ResultManagerService extends Model {
   list = [];
   loading = false;
+
+  /** AUTONOMY 模式 - 机构下的所有可用节点 */
+  autonomyNodeList: API.NodeVO[] = [];
 
   download = async (nodeId: string, tableInfo: API.NodeResultsVO) => {
     message.info('开始下载,请稍等...');
@@ -68,20 +72,22 @@ export class ResultManagerService extends Model {
   };
 
   async getResultList(
-    nodeId: string,
+    ownerId: string,
     pageNumber: number,
     pageSize: number,
     search: string,
     types: string[],
     sortRule: string,
+    nodeNamesFilter: string[] | null,
   ) {
     const result = await listResults({
-      nodeId,
+      ownerId,
       pageNumber,
       pageSize,
       nameFilter: search,
       kindFilters: types,
       timeSortingRule: sortRule,
+      nodeNamesFilter,
     });
     return result.data;
   }
@@ -92,4 +98,14 @@ export class ResultManagerService extends Model {
     // this.list = result.data;
     this.loading = false;
   }
+
+  /** AUTONOMY 模式下获取机构下所有节点列表 */
+  getAutonomyNodeList = async () => {
+    const { status, data } = await listNode();
+    if (status && status.code === 0) {
+      this.autonomyNodeList = data || [];
+    } else {
+      message.error(status?.msg);
+    }
+  };
 }

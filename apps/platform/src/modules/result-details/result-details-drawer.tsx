@@ -10,6 +10,7 @@ import {
   Space,
   Badge,
   Tooltip,
+  message,
 } from 'antd';
 import classNames from 'classnames';
 import React, { useEffect } from 'react';
@@ -18,7 +19,6 @@ import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import { getTabsName, getVisComponents } from '@/modules/dag-result/result-report';
 import { formatTimestamp } from '@/modules/dag-result/utils';
 import type { ResultOriginData } from '@/modules/dag-result/vis/typing';
-import { NodeService } from '@/modules/node';
 import type { TableType } from '@/modules/result-manager/result-manager.protocol';
 import {
   ResultManagerService,
@@ -38,7 +38,6 @@ export const DagPreviewArea = 'DagPreviewArea';
 
 export const ResultDetailsDrawer: React.FC = () => {
   const viewInstance = useModel(ResultDetailsView);
-
   const modalManager = useModel(DefaultModalManager);
   const modal = modalManager.modals[resultDetailsDrawer.id];
   const fullScreenRef = React.useRef(null);
@@ -51,7 +50,7 @@ export const ResultDetailsDrawer: React.FC = () => {
   const { nodeResultsVO = {} } = viewInstance.resultDetail;
 
   useEffect(() => {
-    visible && viewInstance.getResultDetail(data?.id);
+    visible && viewInstance.getResultDetail(data?.id, data?.nodeId);
   }, [data?.id, visible]);
 
   const tableColumns = [
@@ -98,23 +97,25 @@ export const ResultDetailsDrawer: React.FC = () => {
       open={visible}
       onClose={close}
       footer={
-        nodeResultsVO?.datatableType !== 'report' &&
-        viewInstance.nodeService?.currentNode?.nodeId !== 'tee' ? (
+        nodeResultsVO?.datatableType !== 'report' && data?.nodeId !== 'tee' ? (
           <div className={style.actions}>
             {(nodeResultsVO?.pullFromTeeStatus === ResultTableState.SUCCESS ||
               nodeResultsVO?.pullFromTeeStatus === '') && (
               <Tooltip
                 title={
-                  nodeResultsVO?.datasourceType === DataSourceType.OSS
-                    ? `OSS 文件不支持直接下载，请到 OSS 对应 bucket 的预设路径下找到文件下载，地址：${nodeResultsVO?.relativeUri}`
+                  nodeResultsVO?.datasourceType === DataSourceType.OSS ||
+                  nodeResultsVO?.datasourceType === DataSourceType.ODPS
+                    ? `${nodeResultsVO?.datasourceType} 文件不支持直接下载，请到 ${nodeResultsVO?.datasourceType} 对应 bucket 的预设路径下找到文件下载，地址：${nodeResultsVO?.relativeUri}`
                     : ''
                 }
               >
                 <Button
                   type="primary"
-                  // disabled={nodeService.currentNode?.type !== 'embedded'}
-                  disabled={nodeResultsVO?.datasourceType === DataSourceType.OSS}
-                  onClick={() => viewInstance.download()}
+                  disabled={
+                    nodeResultsVO?.datasourceType === DataSourceType.OSS ||
+                    nodeResultsVO?.datasourceType === DataSourceType.ODPS
+                  }
+                  onClick={() => viewInstance.download(data?.nodeId)}
                 >
                   下载结果
                 </Button>
@@ -123,12 +124,16 @@ export const ResultDetailsDrawer: React.FC = () => {
             {nodeResultsVO.pullFromTeeStatus === ResultTableState.FAILED && (
               <Tooltip
                 title={
-                  nodeResultsVO?.datasourceType === DataSourceType.OSS
-                    ? `OSS 文件不支持直接下载，请到 OSS 对应 bucket 的预设路径下找到文件下载，地址：${nodeResultsVO?.relativeUri}`
+                  nodeResultsVO?.datasourceType === DataSourceType.OSS ||
+                  nodeResultsVO?.datasourceType === DataSourceType.ODPS
+                    ? `${nodeResultsVO?.datasourceType} 文件不支持直接下载，请到 ${nodeResultsVO?.datasourceType} 对应 bucket 的预设路径下找到文件下载，地址：${nodeResultsVO?.relativeUri}`
                     : ''
                 }
               >
-                <Button type="primary" onClick={() => viewInstance.download()}>
+                <Button
+                  type="primary"
+                  onClick={() => viewInstance.download(data?.nodeId)}
+                >
                   重新获取
                 </Button>
               </Tooltip>
@@ -272,20 +277,24 @@ type NodeResultDetailVO = API.NodeResultDetailVO;
 export class ResultDetailsView extends Model {
   resultDetail: NodeResultDetailVO = {};
 
-  nodeService = getModel(NodeService);
   resultManagerService = getModel(ResultManagerService);
 
-  async getResultDetail(id: string) {
+  async getResultDetail(id: string, nodeId: string) {
     const resultResponse = await getNodeResultDetail({
       domainDataId: id,
-      nodeId: this.nodeService.currentNode?.nodeId,
+      nodeId: nodeId,
     });
-    this.resultDetail = resultResponse.data || {};
+    if (resultResponse.status?.code === 0) {
+      this.resultDetail = resultResponse.data || {};
+    } else {
+      message.error(resultResponse.status?.msg);
+      this.resultDetail = {};
+    }
   }
 
-  download = () => {
+  download = (nodeId: string) => {
     this.resultManagerService.download(
-      this.nodeService.currentNode?.nodeId || '',
+      nodeId || '',
       this.resultDetail.nodeResultsVO as API.NodeResultsVO,
     );
   };

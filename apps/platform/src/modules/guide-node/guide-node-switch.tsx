@@ -129,7 +129,7 @@ export const NodeSwitch: React.FC<NodeSwitchType> = (props) => {
                                   onClick={() => {
                                     history.push({
                                       pathname: '/node',
-                                      search: `nodeId=${nodeId}&tab=data-management`,
+                                      search: `ownerId=${nodeId}&tab=data-management`,
                                     });
                                   }}
                                 />

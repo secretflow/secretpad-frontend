@@ -40,7 +40,7 @@ export async function detail(
   body?: API.DatasourceDetailRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.SecretPadResponse_DatasourceDetailVO_>(
+  return request<API.SecretPadResponse_DatasourceDetailAggregateVO_>(
     '/api/v1alpha1/datasource/detail',
     {
       method: 'POST',
@@ -60,6 +60,27 @@ export async function list(
 ) {
   return request<API.SecretPadResponse_DatasourceListVO_>(
     '/api/v1alpha1/datasource/list',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: body,
+      ...(options || {}),
+    },
+  );
+}
+
+/** query the datasource belongs to which nodes
+@param datasourceNodesRequest
+@return DatasourceNodesVO
+ POST /api/v1alpha1/datasource/nodes */
+export async function nodes(
+  body?: API.DatasourceNodesRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.SecretPadResponse_DatasourceNodesVO_>(
+    '/api/v1alpha1/datasource/nodes',
     {
       method: 'POST',
       headers: {

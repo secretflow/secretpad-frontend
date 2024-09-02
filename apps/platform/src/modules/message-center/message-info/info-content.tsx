@@ -1,8 +1,12 @@
-import { Descriptions, Tag, Typography } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
+import { Descriptions, Space, Tag, Typography } from 'antd';
+import { useState } from 'react';
 
 import { EllipsisText } from '@/components/text-ellipsis.tsx';
+import { VoteInstNodesGraph } from '@/components/vote-insts-graph';
 import { formatTimestamp } from '@/modules/dag-result/utils';
 import { DataTableStructure } from '@/modules/data-table-info/component/data-table-structure';
+import { convertToNodeData } from '@/modules/p2p-project-detail/helper';
 import { PreviewGraphComponents } from '@/modules/result-details/graph';
 import { FullscreenGraphModalComponent } from '@/modules/result-details/graph-fullscreen-modal';
 
@@ -134,6 +138,11 @@ export const NodeAuthInfo = (props: IProps) => {
 // 项目邀约&项目归档
 export const ProjectInviteInfo = (props: IProps) => {
   const { info } = props;
+
+  const { nodeData, edgeData, groupNodeIds } = convertToNodeData(info);
+
+  const [isToggle, setIsToggle] = useState(true);
+  const [graphHeight, setGraphHeight] = useState(240);
   return (
     <div>
       <Descriptions column={1}>
@@ -143,8 +152,13 @@ export const ProjectInviteInfo = (props: IProps) => {
         <Descriptions.Item label="项目名称">
           <EllipsisText>{info?.projectName}</EllipsisText>
         </Descriptions.Item>
+        <Descriptions.Item label="发起机构">
+          <EllipsisText>{info?.initiatorName}</EllipsisText>
+        </Descriptions.Item>
         <Descriptions.Item label="发起端节点">
-          <EllipsisText>{info.initiatorNodeName}</EllipsisText>
+          <EllipsisText>
+            {info.participantNodeInstVOS.map((i) => i.initiatorNodeName).join('、')}
+          </EllipsisText>
         </Descriptions.Item>
         <Descriptions.Item label="创建时间">
           <EllipsisText>
@@ -152,7 +166,29 @@ export const ProjectInviteInfo = (props: IProps) => {
           </EllipsisText>
         </Descriptions.Item>
         <Descriptions.Item label="受邀节点" className={styles.descNodeStatusList}>
-          <NodeStatusList list={info?.partyVoteStatuses || []} />
+          <Space
+            onClick={() => {
+              setIsToggle(!isToggle);
+            }}
+            className={styles.configToggle}
+          >
+            <DownOutlined
+              style={{
+                transform: isToggle ? `rotate(180deg)` : `rotate(0)`,
+              }}
+            />
+            {isToggle ? '收起' : '展开'}
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="" style={{ display: isToggle ? 'block' : 'none' }}>
+          <div style={{ height: graphHeight, width: 500 }}>
+            <VoteInstNodesGraph
+              nodes={nodeData}
+              edges={edgeData}
+              groupNodeIds={groupNodeIds}
+              setGraphHeight={setGraphHeight}
+            />
+          </div>
         </Descriptions.Item>
         <Descriptions.Item label="计算功能">
           <EllipsisText>

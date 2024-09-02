@@ -3,20 +3,22 @@ import { Model } from '@/util/valtio-helper';
 
 export class DataManagerService extends Model {
   async listDataTables(
-    nodeId: string,
+    ownerId: string,
     pageNum: number,
     pageSize: number,
     status: string,
     search: string,
-    typeFilters: string,
+    typeFilters: string[],
+    nodeNamesFilter: string[] | null,
   ) {
     const result = await listDatatables({
-      nodeId,
+      ownerId,
       pageNumber: pageNum,
       pageSize,
       statusFilter: status,
       datatableNameFilter: search,
       types: typeFilters,
+      nodeNamesFilter,
     });
     return result.data;
   }

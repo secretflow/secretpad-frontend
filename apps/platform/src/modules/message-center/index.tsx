@@ -41,7 +41,7 @@ import {
 } from './message.service';
 
 export const MessagBreadcrumb = ({ children }: { children: ReactNode }) => {
-  const { nodeId } = parse(window.location.search);
+  const { ownerId } = parse(window.location.search);
   return (
     <div className={styles.messagePage}>
       <Breadcrumb
@@ -53,12 +53,12 @@ export const MessagBreadcrumb = ({ children }: { children: ReactNode }) => {
                   if (hasAccess({ type: [Platform.AUTONOMY] })) {
                     history.push({
                       pathname: '/edge',
-                      search: `nodeId=${nodeId}&tab=workbench`,
+                      search: `ownerId=${ownerId}&tab=workbench`,
                     });
                   } else {
                     history.push({
                       pathname: '/node',
-                      search: `nodeId=${nodeId}&tab=data-management`,
+                      search: `ownerId=${ownerId}&tab=data-management`,
                     });
                   }
                 }}
@@ -89,7 +89,7 @@ export const MessagePageView = () => {
 export const MessageComponent: React.FC = () => {
   const viewInstance = useModel(MessageModel);
   const { pathname } = useLocation();
-  const { activeTab, changeTabs, messageService, filterState, nodeId } = viewInstance;
+  const { activeTab, changeTabs, messageService, filterState, ownerId } = viewInstance;
   const items: TabsProps['items'] = [
     {
       key: MessageActiveTabType.PROCESS,
@@ -114,9 +114,9 @@ export const MessageComponent: React.FC = () => {
 
   useEffect(() => {
     const onViewMount = async () => {
-      const { active, nodeId } = parse(window.location.search);
-      if (nodeId) {
-        viewInstance.nodeId = nodeId as string;
+      const { active, ownerId } = parse(window.location.search);
+      if (ownerId) {
+        viewInstance.ownerId = ownerId as string;
       }
       await changeTabs(
         (active as MessageActiveTabType) || MessageActiveTabType.PROCESS,
@@ -143,7 +143,7 @@ export const MessageComponent: React.FC = () => {
     <div className={styles.showAll}>
       <Link
         onClick={() => {
-          history.push(`/message?active=${activeTab}&nodeId=${nodeId}`);
+          history.push(`/message?active=${activeTab}&ownerId=${ownerId}`);
         }}
       >
         查看全部
@@ -431,7 +431,7 @@ export class MessageModel extends Model {
 
   chickMessageRecord: API.MessageVO | undefined = undefined;
 
-  nodeId: string | undefined = undefined;
+  ownerId: string | undefined = undefined;
 
   resetPagination = (pathname: string) => {
     this.pageNumber = 1;
@@ -443,6 +443,7 @@ export class MessageModel extends Model {
   };
 
   changefilterState = (value: MessageState) => {
+    this.pageNumber = 1;
     this.filterState = value;
   };
 
@@ -480,6 +481,7 @@ export class MessageModel extends Model {
     this.search = e.target.value;
     clearTimeout(this.searchDebounce);
     this.searchDebounce = setTimeout(() => {
+      this.pageNumber = 1;
       this.getList();
     }, 300) as unknown as number;
   };
@@ -489,7 +491,7 @@ export class MessageModel extends Model {
       page: this.pageNumber,
       size: this.pageSize,
       isInitiator: this.activeTab === MessageActiveTabType.APPLY ? true : false,
-      nodeID: this.nodeId,
+      ownerId: this.ownerId,
       isProcessed: MessageStateObj[this.filterState],
       type:
         this.selectType === SelectOptionsValueEnum.ALL ? undefined : this.selectType,
@@ -513,8 +515,8 @@ export class MessageModel extends Model {
     const { status } = await this.messageService.process({
       action,
       reason: this.comment,
-      voteID: id,
-      voteParticipantID: this.nodeId,
+      voteId: id,
+      voteParticipantId: this.ownerId,
     });
     if (status && status.code !== 0) {
       message.error(status.msg);
@@ -528,8 +530,8 @@ export class MessageModel extends Model {
   };
 
   getProcessMessage = async () => {
-    if (!this.nodeId) return;
-    const res = await this.messageService.getMessageCount(this.nodeId);
+    if (!this.ownerId) return;
+    const res = await this.messageService.getMessageCount(this.ownerId);
     if (res.status) {
       this.homeLayoutService.setMessageCount(res?.data || 0);
       this.messageService.processCount = res?.data || 0;

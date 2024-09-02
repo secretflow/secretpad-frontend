@@ -205,7 +205,6 @@ export class PipelineView extends Model {
         this.refresh();
         this.pipelineService.setCurrentPipeline(pipelineData.key);
       } catch (e) {
-        // TODO
         message.error('rename fail');
       }
     }

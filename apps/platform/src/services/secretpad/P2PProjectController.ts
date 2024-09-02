@@ -56,6 +56,24 @@ export async function projectArchive(
   );
 }
 
+/** 此处后端没有提供注释 POST /api/v1alpha1/p2p/project/participants */
+export async function projectParticipants(
+  body?: API.ProjectParticipantsRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.SecretPadResponse_ProjectParticipantsDetailVO_>(
+    '/api/v1alpha1/p2p/project/participants',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: body,
+      ...(options || {}),
+    },
+  );
+}
+
 /** Update project api
 @param request update project request
 @return successful SecretPadResponse with null data

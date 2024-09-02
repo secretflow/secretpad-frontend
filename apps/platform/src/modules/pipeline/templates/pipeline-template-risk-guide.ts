@@ -383,14 +383,14 @@ export class TemplateGuideRisk extends Model implements PipelineTemplateContribu
         outputs: [`${graphId}-node-3-output-0`],
         nodeDef: {
           attrPaths: [
-            'input/receiver_input/key',
-            'input/sender_input/key',
+            'input/input_table_1/key',
+            'input/input_table_2/key',
             'protocol',
             'sort_result',
             'allow_duplicate_keys',
             'allow_duplicate_keys/no/skip_duplicates_check',
-            'fill_value_int',
             'ecdh_curve',
+            'allow_duplicate_keys/no/receiver_parties',
           ],
           attrs: [
             {
@@ -417,16 +417,14 @@ export class TemplateGuideRisk extends Model implements PipelineTemplateContribu
               is_na: true,
             },
             {
-              is_na: true,
-            },
-            {
               s: 'CURVE_FOURQ',
               is_na: false,
             },
+            { ss: ['alice', 'bob'], is_na: false },
           ],
           domain: 'data_prep',
           name: 'psi',
-          version: '0.0.5',
+          version: '0.0.7',
         },
         inputs: [`${graphId}-node-1-output-0`, `${graphId}-node-2-output-0`],
         codeName: `data_prep/psi`,

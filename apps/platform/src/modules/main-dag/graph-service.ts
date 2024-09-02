@@ -176,13 +176,19 @@ export class GraphService implements GraphEventHandlerProtocol {
     }
 
     const graphNode = await mainDag.requestService.getGraphNode(id);
-    const inputNodes = await mainDag.dataService.getInputsNodes();
     const upstreamNodes = await mainDag.dataService.getUpstreamNodes(id);
+    const inputNodes = await mainDag.dataService.getInputsNodes();
+
+    const arr: string[] = [];
+    await mainDag.dataService.getUpstreamInputNodes(id, arr);
+    const upstreamSampleNodes = await mainDag.dataService.getInputsSampleNodes(arr);
+
     this.modalManager.openModal(componentConfigDrawer.id, {
       ...data,
       graphNode,
       upstreamNodes,
       inputNodes,
+      upstreamSampleNodes, // 上游样本表
     });
   };
 
@@ -298,7 +304,7 @@ export class GraphService implements GraphEventHandlerProtocol {
         ].includes(node?.codeName),
       )
       .map((node) => node.id);
-    await this.cleanNodeDef(binningModificationNodeIds);
+    this.cleanNodeDef(binningModificationNodeIds);
   }
 
   getDefaultNodeDef(node: GraphNode) {
@@ -429,7 +435,7 @@ export class GraphService implements GraphEventHandlerProtocol {
         )
         .map((node) => node.id);
 
-      await this.cleanNodeDef(binningModificationNodeIds);
+      this.cleanNodeDef(binningModificationNodeIds);
     } else {
       message.error(status?.msg || '操作失败');
     }

@@ -1,5 +1,5 @@
 import { CloseOutlined } from '@ant-design/icons';
-import { Descriptions, Drawer, Spin } from 'antd';
+import { Descriptions, Drawer, Space, Spin, Tag } from 'antd';
 import { parse } from 'query-string';
 import React from 'react';
 import { useLocation } from 'umi';
@@ -7,14 +7,15 @@ import { useLocation } from 'umi';
 import { EllipsisMiddle } from '@/components/text-ellipsis.tsx';
 import {
   DataSourceService,
+  DataSourceStatusText,
   DataSourceType,
 } from '@/modules/data-source-list/data-source-list.service';
+import { HttpQueryExample } from '@/modules/data-table-add/component/httpQueryExample';
 import { useModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
-import { HttpQueryExample } from '@/modules/data-table-add/component/httpQueryExample';
 
-const DataSourceOSSTypeInfo = (props: { data: API.DatasourceDetailVO }) => {
+const DataSourceOSSTypeInfo = (props: { data: API.DatasourceDetailAggregateVO }) => {
   const { data } = props;
 
   return (
@@ -38,7 +39,7 @@ const DataSourceOSSTypeInfo = (props: { data: API.DatasourceDetailVO }) => {
   );
 };
 
-const DataSourceHTTPTypeInfo = (props: { data: API.DatasourceDetailVO }) => {
+const DataSourceHTTPTypeInfo = (props: { data: API.DatasourceDetailAggregateVO }) => {
   const { data } = props;
 
   return (
@@ -53,23 +54,26 @@ const DataSourceHTTPTypeInfo = (props: { data: API.DatasourceDetailVO }) => {
   );
 };
 
-const DataSourceODPSTypeInfo = (props: { data: API.DatasourceDetailVO }) => {
+const DataSourceODPSTypeInfo = (props: { data: API.DatasourceDetailAggregateVO }) => {
   const { data } = props;
 
   return (
     <div>
       <Descriptions column={1}>
         <Descriptions.Item label="数据源类型">{data.type}</Descriptions.Item>
-        <Descriptions.Item label="ODPS Project名称">--</Descriptions.Item>
-        <Descriptions.Item label="系统账号名">--</Descriptions.Item>
-        <Descriptions.Item label="AccessKeyID">{data?.info?.ak}</Descriptions.Item>
+        <Descriptions.Item label="ODPS Project名称">
+          {data?.info?.project || '--'}
+        </Descriptions.Item>
+        <Descriptions.Item label="AccessKeyID">
+          {data?.info?.accessId || '--'}
+        </Descriptions.Item>
         <Descriptions.Item label="AccessKeySecret">******</Descriptions.Item>
       </Descriptions>
     </div>
   );
 };
 
-const DataSourceInfoRender = (props: { item: API.DatasourceDetailVO }) => {
+const DataSourceInfoRender = (props: { item: API.DatasourceDetailAggregateVO }) => {
   const { item } = props;
   if (!item.type) return <>{'--'}</>;
   const ContentMap = React.useMemo(
@@ -86,18 +90,18 @@ const DataSourceInfoRender = (props: { item: API.DatasourceDetailVO }) => {
 export const DataSourceInfoDrawer: React.FC<{
   onClose: () => void;
   visible: boolean;
-  data: API.DatasourceListInfo;
+  data: API.DatasourceListInfoAggregate;
 }> = ({ visible, onClose, data }) => {
   const service = useModel(DataSourceService);
   const { search } = useLocation();
-  const { nodeId } = parse(search);
+  const { ownerId } = parse(search);
 
   React.useEffect(() => {
     if (!visible) {
       return;
     }
     service.getDataSourceDetail({
-      nodeId: nodeId as string,
+      ownerId: ownerId as string,
       datasourceId: data.datasourceId,
       type: data.type,
     });
@@ -129,8 +133,28 @@ export const DataSourceInfoDrawer: React.FC<{
         <DataSourceInfoRender item={service.dataSourceDetail} />
         <div className={styles.nodeTitle}>节点连接配置</div>
         <div className={styles.nodeContent}>
-          <span className={styles.nodeNumber}>节点1：</span>
-          <span className={styles.nodeName}>{data?.nodeId || nodeId}</span>
+          <Space direction="vertical">
+            {(service.dataSourceDetail.nodes || []).map((item, index) => (
+              <Space key={item.nodeId}>
+                <span className={styles.nodeNumber}>{`节点${index + 1}:`}</span>
+                <span className={styles.nodeName}>{item?.nodeName}</span>
+                <Tag
+                  bordered={false}
+                  color={
+                    DataSourceStatusText[
+                      item.status as keyof typeof DataSourceStatusText
+                    ]?.color
+                  }
+                >
+                  {
+                    DataSourceStatusText[
+                      item.status as keyof typeof DataSourceStatusText
+                    ]?.text
+                  }
+                </Tag>
+              </Space>
+            ))}
+          </Space>
         </div>
       </Spin>
     </Drawer>

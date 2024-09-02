@@ -1,5 +1,6 @@
 import { Form, Input, message, Modal } from 'antd';
 import { useEffect, useState } from 'react';
+
 import { hasAccess, Platform } from '@/components/platform-wrapper';
 import { useModel } from '@/util/valtio-helper';
 
@@ -80,7 +81,7 @@ export const EditCooperativeNodeModal = ({
               },
               {
                 pattern:
-                  /^.{1,50}:([0-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])$/,
+                  /^(?!.*\s)(.{1,50}):([0-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])$/,
                 message: `请输入正确的${isP2p ? '合作节点' : '本方'}通讯地址`,
               },
             ]}

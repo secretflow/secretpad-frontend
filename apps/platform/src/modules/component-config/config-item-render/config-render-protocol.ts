@@ -21,6 +21,7 @@ export interface NodeAllInfo {
   upstreamNodes: GraphNodeDetail[];
   graphNode: GraphNodeDetail;
   inputNodes: GraphNode[];
+  upstreamSampleNodes: GraphNode[];
 }
 
 export type RenderProp<T> = {

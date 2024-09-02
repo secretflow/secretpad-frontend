@@ -13,13 +13,13 @@ import { EdgeRouteWrapper, isP2PWorkbench } from '@/components/platform-wrapper'
 import { P2PCreateProjectModal } from '@/modules/create-project/p2p-create-project/p2p-create-project.view';
 import { formatTimestamp } from '@/modules/dag-result/utils';
 import { EditProjectModal } from '@/modules/project-list/components/edit-project';
-import {
-  ProjectNodePopover,
-  ProjectPipeLinePopover,
-  ProjectTaskPopover,
-} from '@/modules/project-list/components/popover';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
+import { DefaultModalManager } from '../dag-modal-manager';
+import {
+  P2pProjectDetailDrawer,
+  p2pProjectDetailDrawer,
+} from '../p2p-project-detail/project-detail-drawer';
 import { AuthProjectTag } from '../p2p-project-list/components/auth-project-tag';
 import {
   SelectProjectState,
@@ -40,10 +40,16 @@ import { ProjectTypeTag } from './components/project-type-tag';
 import styles from './index.less';
 import { P2pProjectListService } from './p2p-project-list.service';
 
+export enum TabKey {
+  'PARTIES' = 'parties',
+  'PIPELINES' = 'pipelines',
+  'TASKS' = 'tasks',
+}
+
 export const P2pProjectListComponent: React.FC = () => {
   const projectListModel = useModel(ProjectListModel);
   const p2pProjectService = useModel(P2pProjectListService);
-
+  const modalManager = useModel(DefaultModalManager);
   const { pathname } = useLocation();
 
   const { handleCreateProject } = projectListModel;
@@ -54,7 +60,7 @@ export const P2pProjectListComponent: React.FC = () => {
 
   const { Title, Paragraph } = Typography;
 
-  const { nodeId } = parse(window.location.search);
+  const { ownerId } = parse(window.location.search);
 
   useEffect(() => {
     p2pProjectService.getListProject();
@@ -71,7 +77,7 @@ export const P2pProjectListComponent: React.FC = () => {
       <Link
         style={{ color: 'rgba(0,0,0,0.45)' }}
         onClick={() => {
-          history.push(`/edge?nodeId=${nodeId}&tab=my-project`);
+          history.push(`/edge?ownerId=${ownerId}&tab=my-project`);
         }}
       >
         查看全部
@@ -92,6 +98,15 @@ export const P2pProjectListComponent: React.FC = () => {
     projectListModel.computeMode,
     projectListModel.selectState,
   ]);
+
+  const handleOpenProjectDetail = (item: API.ProjectVO, tabKey: string) => {
+    return () => {
+      modalManager.openModal(p2pProjectDetailDrawer.id, {
+        ...item,
+        tabKey,
+      });
+    };
+  };
 
   return (
     <div
@@ -207,7 +222,7 @@ export const P2pProjectListComponent: React.FC = () => {
                           </Tooltip>
                           {/* 只有项目发起方才可编辑，并且项目不是已归档项目 */}
                           {item.status !== ProjectStatus.ARCHIVED &&
-                            item.initiator === nodeId && (
+                            item.initiator === ownerId && (
                               <EditOutlined
                                 className={styles.editButton}
                                 onClick={() => {
@@ -225,7 +240,7 @@ export const P2pProjectListComponent: React.FC = () => {
                       {!checkAllApproved(item) && (
                         <div className={styles.authProjectTagContent}>
                           <AuthProjectTag
-                            currentNode={{ id: nodeId as string }}
+                            currentInst={{ id: ownerId as string }}
                             simple={hoverCurrent !== index}
                             project={item}
                           />
@@ -235,22 +250,18 @@ export const P2pProjectListComponent: React.FC = () => {
                       {checkAllApproved(item) && (
                         <div className={styles.projects}>
                           <div className={styles.task}>
-                            <div className={styles.titleName}>参与节点</div>
-
-                            <div className={styles.count}>
-                              <ProjectNodePopover
-                                project={{
-                                  nodes: [
-                                    {
-                                      nodeId: item.initiator,
-                                      nodeName: item.initiatorName,
-                                    },
-                                    ...(item.partyVoteInfos || []),
-                                  ],
-                                }}
-                                isP2P
-                                currentId={nodeId as string}
-                              />
+                            <div className={styles.titleName}>参与机构</div>
+                            <div
+                              className={styles.count}
+                              onClick={handleOpenProjectDetail(item, TabKey.PARTIES)}
+                            >
+                              {[
+                                {
+                                  instId: item.initiator,
+                                  nodeName: item.initiatorName,
+                                },
+                                ...(item.partyVoteInfos || []),
+                              ].length || 0}
                             </div>
                           </div>
                           <div
@@ -261,14 +272,20 @@ export const P2pProjectListComponent: React.FC = () => {
                             }}
                           >
                             <div className={styles.titleName}>训练流</div>
-                            <span className={styles.count}>
-                              <ProjectPipeLinePopover project={item} />
+                            <span
+                              className={styles.count}
+                              onClick={handleOpenProjectDetail(item, TabKey.PIPELINES)}
+                            >
+                              {item.graphCount}
                             </span>
                           </div>
                           <div className={styles.task}>
                             <div className={styles.titleName}>任务数</div>
-                            <div className={styles.count}>
-                              <ProjectTaskPopover project={item} />
+                            <div
+                              className={styles.count}
+                              onClick={handleOpenProjectDetail(item, TabKey.TASKS)}
+                            >
+                              {item.jobCount}
                             </div>
                           </div>
                         </div>
@@ -302,6 +319,7 @@ export const P2pProjectListComponent: React.FC = () => {
         data={editProjectData}
         onEdit={p2pProjectService.projectEdit}
       />
+      <P2pProjectDetailDrawer />
     </div>
   );
 };
@@ -314,12 +332,12 @@ export class ProjectListModel extends Model {
     this.projectListService = getModel(P2pProjectListService);
   }
 
-  nodeId: string | undefined = undefined;
+  instId: string | undefined = undefined;
 
   onViewMount() {
-    const { nodeId } = parse(window.location.search);
-    if (nodeId) {
-      this.nodeId = nodeId as string;
+    const { ownerId } = parse(window.location.search);
+    if (ownerId) {
+      this.instId = ownerId as string;
     }
     this.resetFilters();
   }
@@ -340,11 +358,11 @@ export class ProjectListModel extends Model {
         if (value === RadioGroupState.ALL) {
           return i;
         } else if (value === RadioGroupState.APPLY) {
-          return i.initiator && i.initiator === this.nodeId;
+          return i.initiator && i.initiator === this.instId;
         } else if (value === RadioGroupState.PROCESS) {
           return (
             i.partyVoteInfos &&
-            (i.partyVoteInfos || []).some((item) => item.nodeId === this.nodeId)
+            (i.partyVoteInfos || []).some((item) => item.partyId === this.instId)
           );
         }
       });

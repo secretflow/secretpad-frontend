@@ -21,6 +21,7 @@ import { P2pProjectListComponent } from '@/modules/p2p-project-list';
 import { P2PWorkbenchComponent } from '@/modules/p2p-workbench/workbench.view';
 import { ResultManagerComponent } from '@/modules/result-manager/result-manager.view';
 import { useModel } from '@/util/valtio-helper';
+import { hasAccess, Platform } from '@/components/platform-wrapper';
 
 const menuItems: {
   label: string;
@@ -67,29 +68,33 @@ const menuItems: {
 ];
 const EdgePage = () => {
   const { search } = useLocation();
-  const { nodeId } = parse(search);
+  const { ownerId } = parse(search);
   const homeLayoutService = useModel(HomeLayoutService);
   const messageService = useModel(MessageService);
   const nodeService = useModel(NodeService);
 
+  const isAutonomyMode = hasAccess({ type: [Platform.AUTONOMY] });
+
   useEffect(() => {
     const getNodeList = async () => {
       const nodeList = await nodeService.listNode();
-      if (nodeId) {
-        const node = nodeList.find((n) => nodeId === n.nodeId);
+      if (ownerId) {
+        const node = nodeList.find((n) => ownerId === n.nodeId);
         if (node) nodeService.setCurrentNode(node);
       }
     };
     const getMessageTotal = async () => {
-      if (nodeId) {
-        const res = await messageService.getMessageCount(nodeId as string);
+      if (ownerId) {
+        const res = await messageService.getMessageCount(ownerId as string);
         if (res.status) {
           homeLayoutService.setMessageCount(res?.data || 0);
         }
       }
     };
     homeLayoutService.setSubTitle('Edge');
-    getNodeList();
+    if (!isAutonomyMode) {
+      getNodeList();
+    }
     // 获取未处理消息数量
     getMessageTotal();
   }, []);

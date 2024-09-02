@@ -1,7 +1,7 @@
 import { CloseOutlined } from '@ant-design/icons';
 import { Drawer, Button } from 'antd';
 import { parse, stringify } from 'query-string';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useEffect } from 'react';
 import { history, useLocation } from 'umi';
 
 import { Platform, hasAccess } from '@/components/platform-wrapper';

@@ -1,6 +1,6 @@
 import { ExclamationCircleFilled } from '@ant-design/icons';
 import type { RadioChangeEvent } from 'antd';
-import { Select, Radio, Modal, Button, Tooltip } from 'antd';
+import { Select, Radio, Modal, Button, Tooltip, Space } from 'antd';
 import classNames from 'classnames';
 import { parse } from 'query-string';
 import React from 'react';
@@ -138,9 +138,12 @@ export const confirmArchive = (props: {
   });
 };
 
-export const P2pProjectButtons = (props: { project: API.ProjectVO }) => {
-  const { project } = props;
-  const { nodeId } = parse(window.location.search);
+export const P2pProjectButtons = (props: {
+  project: API.ProjectVO;
+  inDrawer?: boolean;
+}) => {
+  const { project, inDrawer = false } = props;
+  const { ownerId } = parse(window.location.search);
   const { pathname } = useLocation();
 
   const p2pProjectService = useModel(P2pProjectListService);
@@ -170,45 +173,71 @@ export const P2pProjectButtons = (props: { project: API.ProjectVO }) => {
     });
   };
 
-  const [visible, setVisible] = React.useState(false);
-  const [data, setData] = React.useState<API.ProjectVO | undefined>();
+  // const [visible, setVisible] = React.useState(false);
+  // const [data, setData] = React.useState<API.ProjectVO | undefined>();
 
-  const handleUpdate = () => {
-    setVisible(true);
-    setData(project);
-  };
+  // const handleUpdate = () => {
+  //   setVisible(true);
+  //   setData(project);
+  // };
+
+  const EntryBtn = (
+    <Tooltip
+      placement="top"
+      title={checkAllApproved(project) ? '' : '未达成合作暂不可进入'}
+    >
+      <Button
+        disabled={!checkAllApproved(project)}
+        className={classNames({
+          [styles.intoProjectDisabled]: !checkAllApproved(project),
+        })}
+        type="primary"
+        size={inDrawer ? 'middle' : 'small'}
+        style={{ flex: 1 }}
+        onClick={() => {
+          history.push(
+            {
+              pathname: '/dag',
+              search: `projectId=${project.projectId}&mode=${
+                project.computeMode || 'MPC'
+              }&type=${project.computeFunc || 'DAG'}`,
+            },
+            {
+              origin: isP2PWorkbench(pathname) ? 'workbench' : 'my-project',
+            },
+          );
+        }}
+      >
+        进入项目
+      </Button>
+    </Tooltip>
+  );
+
+  // 只有审批成功才发起归档审批
+  // 待审批状态只有发起者才能发起审批
+  const ArchiveBtn = projectCanArchived(project, ownerId as string) && (
+    <Button
+      size={inDrawer ? 'middle' : 'small'}
+      onClick={() => handleArchiveProject(project)}
+      style={{ flex: 1 }}
+    >
+      归档
+    </Button>
+  );
 
   return (
     <>
-      <Tooltip
-        placement="top"
-        title={checkAllApproved(project) ? '' : '未达成合作暂不可进入'}
-      >
-        <Button
-          disabled={!checkAllApproved(project)}
-          className={classNames({
-            [styles.intoProjectDisabled]: !checkAllApproved(project),
-          })}
-          type="primary"
-          size="small"
-          style={{ flex: 1 }}
-          onClick={() => {
-            history.push(
-              {
-                pathname: '/dag',
-                search: `projectId=${project.projectId}&mode=${
-                  project.computeMode || 'MPC'
-                }&type=${project.computeFunc || 'DAG'}`,
-              },
-              {
-                origin: isP2PWorkbench(pathname) ? 'workbench' : 'my-project',
-              },
-            );
-          }}
-        >
-          进入项目
-        </Button>
-      </Tooltip>
+      {inDrawer ? (
+        <Space>
+          {ArchiveBtn}
+          {EntryBtn}
+        </Space>
+      ) : (
+        <>
+          {EntryBtn}
+          {ArchiveBtn}
+        </>
+      )}
       {/* 全家桶无升级入口 */}
       {/* 项目发起方才可以操作项目 发起id 与当前nodeId判断 */}
       {/* 功能升级隐藏 */}
@@ -227,7 +256,7 @@ export const P2pProjectButtons = (props: { project: API.ProjectVO }) => {
       )} */}
       {/* 只有审批成功才发起归档审批 */}
       {/* 待审批状态只有发起者才能发起审批 */}
-      {projectCanArchived(project, nodeId as string) && (
+      {/* {projectCanArchived(project, ownerId as string) && (
         <Button
           size="small"
           onClick={() => handleArchiveProject(project)}
@@ -235,17 +264,17 @@ export const P2pProjectButtons = (props: { project: API.ProjectVO }) => {
         >
           归档
         </Button>
-      )}
+      )} */}
     </>
   );
 };
 
-const projectCanArchived = (project: API.ProjectVO, nodeId: string) => {
+const projectCanArchived = (project: API.ProjectVO, ownerId: string) => {
   if (project.status === ProjectStatus.ARCHIVED) return false;
   if (checkAllApproved(project)) return true;
   if (checkProjectIsReviewing(project)) {
-    if (!nodeId) return false;
-    if (project.initiator === nodeId) return true;
+    if (!ownerId) return false;
+    if (project.initiator === ownerId) return true;
     return false;
   }
 };

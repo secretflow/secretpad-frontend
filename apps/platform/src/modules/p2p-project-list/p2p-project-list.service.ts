@@ -16,12 +16,12 @@ export class P2pProjectListService extends Model {
 
   comment = '';
 
-  nodeId: string | undefined = undefined;
+  instId: string | undefined = undefined;
 
   onViewMount() {
-    const { nodeId } = parse(window.location.search);
-    if (nodeId) {
-      this.nodeId = nodeId as string;
+    const { ownerId } = parse(window.location.search);
+    if (ownerId) {
+      this.instId = ownerId as string;
     }
   }
 
@@ -64,8 +64,8 @@ export class P2pProjectListService extends Model {
     const { status } = await API.MessageController.reply({
       action,
       reason: this.comment,
-      voteID: id,
-      voteParticipantID: this.nodeId,
+      voteId: id,
+      voteParticipantId: this.instId,
     });
     if (status && status.code !== 0) {
       message.error(status.msg);
@@ -80,7 +80,11 @@ export class P2pProjectListService extends Model {
     }
   };
 
-  // 归档项目  isVote ? 发起审批 : 直接归档
+  /**
+   * 归档项目  isVote ? 发起审批 : 直接归档
+   * - 所有受邀方都同意，就发起审批：所有合作节点同意后才可归档
+   * - 有一个没同意，直接归档
+   */
   ArchiveProject = async (
     isVote: boolean,
     projectId?: string,
@@ -89,7 +93,7 @@ export class P2pProjectListService extends Model {
     if (!projectId || !projectName) return;
     const { status } = await (isVote
       ? API.ApprovalController.create({
-          nodeID: this.nodeId,
+          initiatorId: this.instId,
           voteType: 'PROJECT_ARCHIVE',
           voteConfig: {
             projectId: projectId,

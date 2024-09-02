@@ -20,6 +20,7 @@ const typeMap = {
   float64: 'FLOAT',
   i32: 'INTEGER',
   int: 'INTEGER',
+  int32: 'INTEGER',
   int64: 'INTEGER',
 };
 

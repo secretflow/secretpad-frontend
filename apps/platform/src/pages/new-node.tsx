@@ -55,7 +55,7 @@ const defaultMenuItems: MenuItem[] = [
 
 const NodePage = () => {
   const { search } = useLocation();
-  const { nodeId } = parse(search);
+  const { ownerId } = parse(search);
   const homeLayoutService = useModel(HomeLayoutService);
   const messageService = useModel(MessageService);
   const nodeService = useModel(NodeService);
@@ -67,14 +67,14 @@ const NodePage = () => {
   useEffect(() => {
     const getNodeList = async () => {
       const nodeList = await nodeService.listNode();
-      if (nodeId) {
-        const node = nodeList.find((n) => nodeId === n.nodeId);
+      if (ownerId) {
+        const node = nodeList.find((n) => ownerId === n.nodeId);
         if (node) nodeService.setCurrentNode(node);
       }
     };
     const getMessageTotal = async () => {
-      if (nodeId) {
-        const res = await messageService.getMessageCount(nodeId as string);
+      if (ownerId) {
+        const res = await messageService.getMessageCount(ownerId as string);
         if (res.status) {
           homeLayoutService.setMessageCount(res?.data || 0);
         }
@@ -88,7 +88,7 @@ const NodePage = () => {
 
   useEffect(() => {
     const getNodeInfo = async () => {
-      await myNodeService.getNodeInfo(nodeId as string);
+      await myNodeService.getNodeInfo(ownerId as string);
 
       let _defaultKey = 'data-source';
 
@@ -110,7 +110,7 @@ const NodePage = () => {
     };
 
     getNodeInfo();
-  }, [nodeId]);
+  }, [ownerId]);
 
   return (
     <HomeLayout>

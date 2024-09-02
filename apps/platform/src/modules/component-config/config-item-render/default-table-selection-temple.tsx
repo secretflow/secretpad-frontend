@@ -1,6 +1,6 @@
-import { Form, Select, Tag, Typography } from 'antd';
+import { Form, Input, Select, Tag, Typography } from 'antd';
 import { parse } from 'query-string';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { getProject } from '@/services/secretpad/ProjectController';
 
@@ -11,22 +11,31 @@ import type { RenderProp } from './config-render-protocol';
 const { Option } = Select;
 
 export const DefaultTableSelect: React.FC<RenderProp<string>> = (config) => {
-  const { onChange, value, defaultVal, node, translation } = config;
+  const { onChange, value, defaultVal, node, translation, form } = config;
   const [tables, setTables] = useState<
-    { datatableId: string; nodeName: string; datatableName: string }[]
+    {
+      datatableId: string;
+      nodeName: string;
+      datatableName: string;
+      isPartitionTable: boolean;
+    }[]
   >([]);
+
+  const [projectMode, setProjectMode] = useState<string | undefined>();
   useEffect(() => {
     const getTables = async () => {
       const dataTableList: {
         datatableId: string;
         nodeName: string;
         datatableName: string;
+        isPartitionTable: boolean; // 是否是ODPS分区表
       }[] = [];
       const { search } = window.location;
       const { projectId } = parse(search) as { projectId: string };
       const { data } = await getProject({ projectId });
       if (!data) return;
-      const { nodes } = data;
+      const { nodes, computeMode } = data;
+      setProjectMode(computeMode);
       if (!nodes) return;
       nodes.map((nodeInst) => {
         const { datatables } = nodeInst;
@@ -37,6 +46,8 @@ export const DefaultTableSelect: React.FC<RenderProp<string>> = (config) => {
               datatableId: table.datatableId,
               nodeName: nodeInst.nodeName as string,
               datatableName: table.datatableName,
+              isPartitionTable:
+                table.partition?.type === 'odps' && table.partition?.fields,
             });
         });
       });
@@ -46,53 +57,104 @@ export const DefaultTableSelect: React.FC<RenderProp<string>> = (config) => {
 
     getTables();
   }, []);
+  const selectedTable = Form.useWatch(
+    node.prefixes && node.prefixes.length > 0
+      ? node.prefixes.join('/') + '/' + node.name
+      : node.name,
+    form,
+  );
+
+  const isPartitionTableSelected = useCallback(
+    (selectedTableId: string) => {
+      const selected = tables.find((t) => t.datatableId === selectedTableId);
+      if (selected) {
+        return selected.isPartitionTable;
+      }
+      return false;
+    },
+    [tables],
+  );
 
   return (
-    <Form.Item
-      label={
-        <div className={styles.configItemLabel}>
-          {translation[node.name] || node.name}
-        </div>
-      }
-      name={
-        node.prefixes && node.prefixes.length > 0
-          ? node.prefixes.join('/') + '/' + node.name
-          : node.name
-      }
-      messageVariables={{ label: translation[node.name] || node.name }}
-      tooltip={translation[node.docString] || node.docString}
-      rules={[
-        {
-          required: node.isRequired,
-        },
-      ]}
-      initialValue={defaultVal}
-      colon={false}
-    >
-      <Select
-        value={value}
-        optionLabelProp="label"
-        onChange={(val) => {
-          onChange(val);
-        }}
-        showSearch
-        filterOption={(input: string, option?: { label: string; value: string }) =>
-          (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+    <Form.Item noStyle>
+      <Form.Item
+        label={
+          <div className={styles.configItemLabel}>
+            {translation[node.name] || node.name}
+          </div>
         }
+        name={
+          node.prefixes && node.prefixes.length > 0
+            ? node.prefixes.join('/') + '/' + node.name
+            : node.name
+        }
+        messageVariables={{ label: translation[node.name] || node.name }}
+        tooltip={
+          node.docString ? translation[node.docString] || node.docString : undefined
+        }
+        rules={[
+          {
+            required: node.isRequired,
+          },
+        ]}
+        initialValue={defaultVal}
+        colon={false}
       >
-        {tables.map((table) => (
-          <Option
-            key={table.datatableId}
-            value={table.datatableId}
-            label={table.datatableName}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography.Text ellipsis>{table.datatableName}</Typography.Text>
-              <Tag>{table.nodeName}</Tag>
+        <Select
+          value={value}
+          onChange={(val) => {
+            onChange(val);
+          }}
+          showSearch
+          filterOption={(input: string, option?: { label: string; value: string }) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+          optionLabelProp="title"
+        >
+          {tables.map((table) => (
+            <Option
+              key={table.datatableId}
+              value={table.datatableId}
+              label={table.datatableName}
+              title={
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Typography.Text ellipsis>{table.datatableName}</Typography.Text>
+                  <div>{table.isPartitionTable && <Tag color="green">分区表</Tag>}</div>
+                </div>
+              }
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography.Text ellipsis>{table.datatableName}</Typography.Text>
+                <div>
+                  {table.isPartitionTable && <Tag color="green">分区表</Tag>}
+                  <Tag>{table.nodeName}</Tag>
+                </div>
+              </div>
+            </Option>
+          ))}
+        </Select>
+      </Form.Item>
+
+      {projectMode === 'MPC' && isPartitionTableSelected(selectedTable) && (
+        <Form.Item
+          tooltip={
+            <div style={{ whiteSpace: 'pre-wrap' }}>
+              {`1. 目前解析支持 “>=|<=|<>|!=|=|>|<| LIKE | like ”，不建议使用 like 以及 ' !=
+                '\n2. 多个条件使用,隔开，多个条件使用and聚合`}
             </div>
-          </Option>
-        ))}
-      </Select>
+          }
+          label={<div className={styles.configItemLabel}>分区</div>}
+          name={'datatable_partition'}
+        >
+          <Input></Input>
+        </Form.Item>
+      )}
     </Form.Item>
   );
 };

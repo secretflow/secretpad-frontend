@@ -81,7 +81,7 @@ export const DatatablePreview = (props: DatatablePreviewInterface) => {
         <EdgeAuthWrapper>
           <Link
             onClick={() => {
-              const serarch = `nodeId=${props.node.nodeId}&tab=data-management`;
+              const serarch = `ownerId=${props.node.nodeId}&tab=data-management`;
               openNewTab(pathname, '/node', serarch);
             }}
           >

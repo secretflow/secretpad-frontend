@@ -119,7 +119,7 @@ export const ManagedNodeListComponent = () => {
                 type="link"
                 style={{ padding: 0 }}
                 onClick={() => {
-                  const search = `nodeId=${record.nodeId}`;
+                  const search = `ownerId=${record.nodeId}`;
                   openNewTab(pathname, '/node', search);
                 }}
               >

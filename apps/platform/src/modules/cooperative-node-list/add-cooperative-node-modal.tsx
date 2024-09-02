@@ -11,9 +11,8 @@ import { useModel } from '@/util/valtio-helper';
 import { NodeState } from '../managed-node-list';
 
 import { CooperativeNodeService } from './cooperative-node.service';
-
-import { SelectBefore, getProtocol, replaceProtocol } from './slectBefore';
 import styles from './index.less';
+import { SelectBefore, getProtocol, replaceProtocol } from './slectBefore';
 
 export const AddCooperativeNodeDrawer = ({
   open,
@@ -26,11 +25,13 @@ export const AddCooperativeNodeDrawer = ({
 }) => {
   const service = useModel(CooperativeNodeService);
 
-  const { computeNodeList, computeNodeLoading } = service;
+  const { computeNodeList, computeNodeLoading, autonomyNodeList } = service;
   const [messageApi, contextHolder] = message.useMessage();
   const [submittable, setSubmittable] = useState(false);
   const [serviceType, setServiceType] = useState('http://');
   const [cooperativeServiceType, setCooperativeServiceType] = useState('http://');
+  const [instInfo, setInstInfo] = useState<{ instId?: string; instName?: string }>({});
+  const isAutonomyMode = hasAccess({ type: [Platform.AUTONOMY] });
 
   const [form] = Form.useForm();
 
@@ -40,17 +41,21 @@ export const AddCooperativeNodeDrawer = ({
   const values = Form.useWatch([], form);
 
   const { search } = useLocation();
-  const { nodeId } = parse(search);
+  const { ownerId } = parse(search);
 
   useEffect(() => {
     if (service.nodeInfo.netAddress) {
       setServiceType(getProtocol(service.nodeInfo.netAddress));
+      form.setFieldValue(
+        ['selfNode', 'nodeAddress'],
+        replaceProtocol(service.nodeInfo.netAddress),
+      );
     }
-  }, [service.nodeInfo.netAddress]);
+  }, [service.nodeInfo]);
 
   useEffect(() => {
     if (open) {
-      if (!hasAccess({ type: [Platform.AUTONOMY] })) {
+      if (!isAutonomyMode) {
         service.getComputeNodeList();
       }
     }
@@ -68,7 +73,7 @@ export const AddCooperativeNodeDrawer = ({
   }, [values]);
 
   useEffect(() => {
-    if (!hasAccess({ type: [Platform.AUTONOMY] })) {
+    if (!isAutonomyMode) {
       // AUTONOMY 模式下，需要手动填写计算节点ID和计算节点名称
       form.setFieldValue(['cooperativeNode', 'computeNodeId'], computeNodeId);
       const address = computeNodeList.find(
@@ -80,24 +85,26 @@ export const AddCooperativeNodeDrawer = ({
         setCooperativeServiceType(protocol);
       }
     }
-    form.setFieldValue(['cooperativeNode', 'computeControlNodeId'], 'master');
   }, [computeNodeId]);
 
-  useEffect(() => {
-    service.getNodeInfo();
-  }, []);
+  const handleNodeIdChange = (value: string) => {
+    service.getNodeInfo(value);
+  };
 
   const handleOk = () => {
     form.validateFields().then(async (value) => {
-      if (hasAccess({ type: [Platform.AUTONOMY] })) {
+      if (isAutonomyMode) {
         const { status } = await service.addCooperativeNode({
           mode: 1,
-          masterNodeId: 'master', // 管控节点默认 master 服务端预留字段
+          masterNodeId: value.cooperativeNode.masterNodeId,
           dstNodeId: value.cooperativeNode.computeNodeId,
           name: value.cooperativeNode.computeNodeName,
           certText: value.cooperativeNode.cert,
           srcNetAddress: `${serviceType}${value.selfNode.nodeAddress}`,
           dstNetAddress: `${cooperativeServiceType}${value.cooperativeNode.nodeAddress}`,
+          dstInstId: instInfo.instId,
+          dstInstName: instInfo.instName,
+          srcNodeId: value.selfNode.nodeId,
         });
         if (status && status.code !== 0) {
           message.error(status.msg);
@@ -108,10 +115,10 @@ export const AddCooperativeNodeDrawer = ({
         }
       } else {
         const { status } = await service.addApprovalAudit({
-          nodeID: nodeId as string,
+          initiatorId: ownerId as string,
           voteType: 'NODE_ROUTE',
           voteConfig: {
-            srcNodeId: nodeId as string,
+            srcNodeId: ownerId as string,
             desNodeId: value.cooperativeNode.computeNodeId,
             srcNodeAddr: `${serviceType}${value.selfNode.nodeAddress}`,
             desNodeAddr: `${cooperativeServiceType}${value.cooperativeNode.nodeAddress}`,
@@ -129,7 +136,7 @@ export const AddCooperativeNodeDrawer = ({
               添加成功！请到
               <a
                 onClick={() => {
-                  history.push(`/message?nodeId=${nodeId}`);
+                  history.push(`/message?ownerId=${ownerId}`);
                 }}
               >
                 消息中心
@@ -146,6 +153,7 @@ export const AddCooperativeNodeDrawer = ({
     form.resetFields();
     setServiceType('http://');
     setCooperativeServiceType('http://');
+    setInstInfo({});
     onClose();
   };
 
@@ -161,25 +169,41 @@ export const AddCooperativeNodeDrawer = ({
     }
   }, [verifyCodeValue]);
 
+  const base64ToBytes = (base64: string) => {
+    const binString = atob(base64);
+    const arr = Uint8Array.from(binString, (m) => m.codePointAt(0)!);
+    return new TextDecoder().decode(arr);
+  };
+
   const handleParseVerifyCode = () => {
     try {
-      const base64String = atob(verifyCodeValue);
+      const base64String = base64ToBytes(verifyCodeValue);
       const jsonObj = JSON.parse(base64String);
       // 全部解析出值才算成功
       if (
         jsonObj.certText &&
         jsonObj.dstNodeId &&
         jsonObj.name &&
-        jsonObj.dstNetAddress
+        jsonObj.dstNetAddress &&
+        jsonObj.instId &&
+        jsonObj.instName &&
+        jsonObj.masterNodeId
       ) {
         const protocol = getProtocol(jsonObj.dstNetAddress);
         setCooperativeServiceType(protocol);
+        setInstInfo({
+          instId: jsonObj.instId,
+          instName: jsonObj.instName,
+        });
         form.setFieldsValue({
           cooperativeNode: {
             cert: jsonObj.certText,
             computeNodeId: jsonObj.dstNodeId,
             computeNodeName: jsonObj.name,
             nodeAddress: replaceProtocol(jsonObj.dstNetAddress),
+            instName: jsonObj.instName,
+            instId: jsonObj.instId,
+            masterNodeId: jsonObj.masterNodeId,
           },
         });
         setShowAlert(true);
@@ -223,6 +247,14 @@ export const AddCooperativeNodeDrawer = ({
           </Space>
         }
       >
+        {isAutonomyMode && (
+          <Alert
+            type="warning"
+            showIcon
+            message="如存在多节点，本机构主节点和对方机构主节点之间需要相互授权"
+            style={{ marginBottom: 16 }}
+          ></Alert>
+        )}
         <Form form={form} layout="vertical">
           <div className={styles.subTitle}>合作节点</div>
           <div className={styles.formGroup}>
@@ -260,10 +292,40 @@ export const AddCooperativeNodeDrawer = ({
                 />
               )}
               <Form.Item
-                name={['cooperativeNode', 'computeControlNodeId']}
-                label={'管控节点ID'}
+                name={['cooperativeNode', 'instName']}
+                label={'所属机构'}
+                rules={[
+                  {
+                    required: true,
+                    message: '请输入合作方认证码自动解析',
+                  },
+                ]}
               >
-                <Input placeholder="选择计算节点后自动填充" disabled></Input>
+                <Input placeholder="输入合作方认证码后自动解析"></Input>
+              </Form.Item>
+              <Form.Item
+                name={['cooperativeNode', 'instId']}
+                label={'所属机构ID'}
+                rules={[
+                  {
+                    required: true,
+                    message: '请输入合作方认证码自动解析',
+                  },
+                ]}
+              >
+                <Input placeholder="输入合作方认证码后自动解析"></Input>
+              </Form.Item>
+              <Form.Item
+                name={['cooperativeNode', 'masterNodeId']}
+                label={'管控节点ID'}
+                rules={[
+                  {
+                    required: true,
+                    message: '请输入合作方认证码自动解析',
+                  },
+                ]}
+              >
+                <Input placeholder="输入合作方认证码后自动解析"></Input>
               </Form.Item>
             </AccessWrapper>
             <Form.Item
@@ -272,13 +334,11 @@ export const AddCooperativeNodeDrawer = ({
               rules={[
                 {
                   required: true,
-                  message: hasAccess({ type: [Platform.AUTONOMY] })
-                    ? '请输入'
-                    : '请选择',
+                  message: isAutonomyMode ? '请输入' : '请选择',
                 },
               ]}
             >
-              {hasAccess({ type: [Platform.AUTONOMY] }) ? (
+              {isAutonomyMode ? (
                 <Input placeholder="请输入计算节点名" />
               ) : (
                 <Select
@@ -286,7 +346,7 @@ export const AddCooperativeNodeDrawer = ({
                   options={computeNodeList
                     .filter(
                       (item) =>
-                        item.nodeId !== nodeId && item.nodeStatus === NodeState.READY,
+                        item.nodeId !== ownerId && item.nodeStatus === NodeState.READY,
                     )
                     .map((item) => ({
                       value: item.nodeId,
@@ -302,12 +362,12 @@ export const AddCooperativeNodeDrawer = ({
               label={'计算节点ID'}
               rules={[
                 {
-                  required: hasAccess({ type: [Platform.AUTONOMY] }) ? true : false,
+                  required: isAutonomyMode ? true : false,
                   message: '请输入',
                 },
               ]}
             >
-              {hasAccess({ type: [Platform.AUTONOMY] }) ? (
+              {isAutonomyMode ? (
                 <Input placeholder="请输入计算节点ID" />
               ) : (
                 <Input placeholder="选择计算节点后自动填充" disabled />
@@ -320,7 +380,7 @@ export const AddCooperativeNodeDrawer = ({
                 { required: true, message: '请输入通讯地址' },
                 {
                   pattern:
-                    /^.{1,50}:([0-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])$/,
+                    /^(?!.*\s)(.{1,50}):([0-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])$/,
                   message: '请输入正确的通讯地址',
                 },
               ]}
@@ -361,6 +421,24 @@ export const AddCooperativeNodeDrawer = ({
           </div>
           <div className={styles.subTitle}>本方节点</div>
           <div className={styles.formGroup}>
+            {isAutonomyMode && (
+              <Form.Item
+                name={['selfNode', 'nodeId']}
+                label={'节点选择'}
+                rules={[{ required: true, message: '请选择本方节点' }]}
+              >
+                <Select
+                  placeholder="请选择"
+                  options={autonomyNodeList
+                    .filter((item) => item.nodeStatus === NodeState.READY)
+                    .map((item) => ({
+                      label: item.nodeName,
+                      value: item.nodeId,
+                    }))}
+                  onChange={(value: string) => handleNodeIdChange(value)}
+                />
+              </Form.Item>
+            )}
             <Form.Item
               name={['selfNode', 'nodeAddress']}
               label={'节点通讯地址'}
@@ -368,11 +446,15 @@ export const AddCooperativeNodeDrawer = ({
                 { required: true, message: '请输入通讯地址' },
                 {
                   pattern:
-                    /^.{1,50}:([0-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])$/,
+                    /^(?!.*\s)(.{1,50}):([0-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])$/,
                   message: '请输入正确的通讯地址',
                 },
               ]}
-              initialValue={replaceProtocol(service.nodeInfo.netAddress)}
+              initialValue={
+                isAutonomyMode
+                  ? undefined
+                  : replaceProtocol(service.nodeInfo.netAddress)
+              }
             >
               <Input
                 addonBefore={
