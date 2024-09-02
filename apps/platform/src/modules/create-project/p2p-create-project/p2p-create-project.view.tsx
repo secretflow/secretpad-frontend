@@ -6,14 +6,12 @@ import React from 'react';
 
 import { AccessWrapper, PadMode, hasAccess } from '@/components/platform-wrapper';
 import { SwitchCard } from '@/components/switch-card';
-import { HeaderModel } from '@/modules/layout/home-layout/header-view';
 import { useModel } from '@/util/valtio-helper';
-
-import { AddNodeTag } from '../add-node-tag';
 
 import { computeFuncList } from './compute-func-data';
 import styles from './index.less';
 import { P2PCreateProjectService } from './p2p-create-project.service';
+import { NodeVoters } from './node-voters';
 
 interface ICreateProjectModal {
   visible: boolean;
@@ -30,19 +28,17 @@ export const P2PCreateProjectModal = ({
   const [form] = Form.useForm();
 
   const viewInstance = useModel(P2PCreateProjectService);
-  const headerModel = useModel(HeaderModel);
 
   const projectName = Form.useWatch('projectName', form);
-  const nodes = Form.useWatch('nodes', form);
+  const nodeVoters = Form.useWatch('nodeVoters', form);
 
-  const { nodeId } = parse(window.location.search);
+  const { ownerId } = parse(window.location.search);
 
   React.useEffect(() => {
-    if (visible && nodeId) {
-      viewInstance.getNodeList(nodeId as string);
-      // viewInstance.getNodeData(nodeId as string);
+    if (visible && ownerId) {
+      viewInstance.getNodeList();
     }
-  }, [nodeId, visible]);
+  }, [ownerId, visible]);
 
   const handleClose = () => {
     close();
@@ -56,6 +52,10 @@ export const P2PCreateProjectModal = ({
       onOk && onOk();
     });
   };
+
+  const hasNodeVoters = (nodeVoters || []).some(
+    (item: { nodes?: string[] }) => !item || (item?.nodes || []).length === 0,
+  );
 
   return (
     <Drawer
@@ -71,7 +71,7 @@ export const P2PCreateProjectModal = ({
             type="primary"
             onClick={handleOk}
             className={classnames({
-              [styles.buttonDisable]: !projectName || !nodes || nodes.length < 1,
+              [styles.buttonDisable]: !projectName || !nodeVoters || hasNodeVoters,
             })}
             loading={viewInstance.loading}
           >
@@ -168,48 +168,15 @@ export const P2PCreateProjectModal = ({
             </AccessWrapper>
           </Radio.Group>
         </Form.Item>
-        <Form.Item label="节点信息" required className={styles.formBoldLabelItem}>
-          <div className={styles.nodeInfoContent}>
+        <Form.Item label="节点信息" className={styles.formBoldLabelItem} required>
+          <div>
             <Alert
               showIcon
               type="warning"
               message="请确保项目参与方节点两两建立节点授权"
               style={{ marginBottom: 16 }}
             />
-            <div className={styles.currentNode}>
-              <div>本方节点：</div>
-              <div>{`${headerModel.nodeName || '--'} 节点`} </div>
-              <div>{`(${nodeId || '--'})`}</div>
-            </div>
-            {/* <Form.Item
-              className={styles.nodeInfoformLabel}
-              label="授权给项目的数据"
-              name="dataSheet"
-            >
-              <Select
-                mode="multiple"
-                allowClear
-                style={{ width: '100%' }}
-                placeholder="请选择，可多选，可暂不配置"
-                options={viewInstance.nodeDataSheet.map((item) => ({
-                  labe: item.label,
-                  value: item.id,
-                }))}
-              />
-            </Form.Item> */}
-            <Form.Item
-              className={styles.nodeInfoformLabel}
-              label="受邀节点"
-              name="nodes"
-              required
-              tooltip="只能选择已建立好授权的节点，最多可选9个"
-            >
-              <AddNodeTag
-                nodeList={viewInstance.nodeList}
-                className={styles.addTag}
-                max={9}
-              />
-            </Form.Item>
+            <NodeVoters />
           </div>
         </Form.Item>
       </Form>

@@ -202,15 +202,12 @@ export class DagLogService extends Model {
     const logData = logResponse.data || { logs: [] };
     this.logContent = `${logData.logs?.map((log) => this.formatLog(log)).join('\n')}`;
     const status = logData.status ? StatusMap[logData.status] : 'default';
-    // TODO: request
     this.logTipContent = {
       status,
       name: label,
       // current: 2,
       // total: 12,
     };
-    // TODO: running 轮询
-
     if (status === 'running' || status === 'pending') {
       // clearTimeout(this.timer);
       this.timer = window.setTimeout(() => {

@@ -49,7 +49,7 @@ export const ListItemTitleMap = {
     // tagColor: 'orange',
     tagIcon: <Icon component={projectManager} style={{ color: '#1677ff' }} />,
     tagText: '项目邀约',
-    suffix: '邀约',
+    suffix: '项目邀约',
     style: {
       backgroundImage: 'linear-gradient(180deg, #FCFEFF 0%, #E6F4FF 100%)',
     },
@@ -122,7 +122,7 @@ export const MessageStateTagWrap = ({
 };
 
 export const NodeStatusList = ({ list }: { list: NodeStatusList[] }) => {
-  const { nodeId: userID } = parse(window.location.search);
+  const { ownerId: userID } = parse(window.location.search);
   return (
     <>
       {list.map((item) => (

@@ -1,35 +1,39 @@
 import { SearchOutlined } from '@ant-design/icons';
 import type { RadioChangeEvent } from 'antd';
-import { Button, Input, Popover, Radio, Table, Tag, Tooltip } from 'antd';
+import { Button, Input, Popover, Radio, Space, Table, Tag, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { FilterValue } from 'antd/es/table/interface';
 import { parse } from 'query-string';
 import type { ChangeEvent } from 'react';
 import { useLocation } from 'umi';
-import { list } from '@/services/secretpad/DataSourceController';
+
 import { confirmDelete } from '@/components/comfirm-delete';
+import { hasAccess, Platform } from '@/components/platform-wrapper';
+import { list } from '@/services/secretpad/DataSourceController';
 import { Model, getModel, useModel } from '@/util/valtio-helper';
-import { NodeService } from '../node';
+
 import { CreateDataSourceModal } from './components/create-data-source';
 import { DataSourceInfoDrawer } from './components/data-source-info';
+import { NodeList } from './components/node-list';
 import { DataSourceService, DataSourceType } from './data-source-list.service';
 import styles from './index.less';
 
 export const DataSourceListComponent = () => {
   const viewInstance = useModel(DataSourceView);
   const dataSourceService = useModel(DataSourceService);
+  const isAutonomy = hasAccess({ type: [Platform.AUTONOMY] });
 
   const { search } = useLocation();
-  const { nodeId } = parse(search);
+  const { ownerId } = parse(search);
 
-  const handleDelete = (record: API.DatasourceListInfo) => {
+  const handleDelete = (record: API.DatasourceListInfoAggregate) => {
     confirmDelete({
       name: record.name || '',
       description: '',
       onOk: async () => {
         await dataSourceService.deleteDataSource({
           datasourceId: record.datasourceId,
-          nodeId: nodeId as string,
+          ownerId: ownerId as string,
           type: record.type,
         });
         viewInstance.getDataSourceList();
@@ -37,14 +41,14 @@ export const DataSourceListComponent = () => {
     });
   };
 
-  const columns: ColumnsType<API.DatasourceListInfo> = [
+  const columns: ColumnsType<API.DatasourceListInfoAggregate> = [
     {
       title: '数据源名',
       dataIndex: 'name',
       key: 'name',
       ellipsis: true,
       width: '30%',
-      render: (text: string, record: API.DatasourceListInfo) => (
+      render: (text: string, record: API.DatasourceListInfoAggregate) => (
         <Tooltip title={text}>
           <a
             onClick={() => {
@@ -64,29 +68,15 @@ export const DataSourceListComponent = () => {
       filters: [
         { text: 'OSS', value: DataSourceType.OSS },
         { text: 'HTTP', value: DataSourceType.HTTP },
-        // { text: 'ODPS', value: DataSourceType.ODPS },
+        { text: 'ODPS', value: DataSourceType.ODPS },
       ],
     },
     {
       title: '状态',
-      dataIndex: 'status',
-      key: 'status',
-      width: '20%',
-      render: (status: string) => {
-        return (
-          <>
-            {status === 'Available' ? (
-              <Tag bordered={false} color="success">
-                可用
-              </Tag>
-            ) : (
-              <Tag bordered={false} color="error">
-                不可用
-              </Tag>
-            )}
-          </>
-        );
-      },
+      dataIndex: 'nodes',
+      key: 'nodes',
+      width: isAutonomy ? '35%' : '20%',
+      render: (nodes: API.DataSourceRelatedNode[]) => <NodeList nodeIds={nodes} />,
     },
     // {
     //   title: '创建时间',
@@ -108,7 +98,7 @@ export const DataSourceListComponent = () => {
       title: '操作',
       dataIndex: 'action',
       width: '15%',
-      render: (_: string, record: API.DatasourceListInfo) =>
+      render: (_: string, record: API.DatasourceListInfoAggregate) =>
         record.relatedDatas && record.relatedDatas?.length > 0 ? (
           <Popover
             placement="rightTop"
@@ -155,33 +145,35 @@ export const DataSourceListComponent = () => {
   return (
     <div className={styles.main}>
       <div className={styles.toolbar}>
-        <div style={{ marginRight: 12, width: 220 }}>
-          <Input
-            placeholder="搜索数据源名称"
-            onChange={(e) => {
-              viewInstance.searchTable(e);
-            }}
-            suffix={
-              <SearchOutlined
-                style={{
-                  color: '#aaa',
-                }}
-              />
-            }
-          />
-        </div>
-        <div style={{ flex: 1 }}>
-          <Radio.Group
-            defaultValue="all"
-            onChange={(e) => {
-              viewInstance.dataFilter(e);
-            }}
-          >
-            <Radio.Button value="all">全部</Radio.Button>
-            <Radio.Button value="Available">可用</Radio.Button>
-            <Radio.Button value="UnAvailable">不可用</Radio.Button>
-          </Radio.Group>
-        </div>
+        <Space>
+          <div style={{ marginRight: 12, width: 220 }}>
+            <Input
+              placeholder="搜索数据源名称"
+              onChange={(e) => {
+                viewInstance.searchTable(e);
+              }}
+              suffix={
+                <SearchOutlined
+                  style={{
+                    color: '#aaa',
+                  }}
+                />
+              }
+            />
+          </div>
+          {!isAutonomy && (
+            <Radio.Group
+              defaultValue="all"
+              onChange={(e) => {
+                viewInstance.dataFilter(e);
+              }}
+            >
+              <Radio.Button value="all">全部</Radio.Button>
+              <Radio.Button value="Available">可用</Radio.Button>
+              <Radio.Button value="UnAvailable">不可用</Radio.Button>
+            </Radio.Group>
+          )}
+        </Space>
         <div>
           <Button type="primary" onClick={() => viewInstance.addDataSource()}>
             注册数据源
@@ -240,7 +232,7 @@ export const DataSourceListComponent = () => {
 };
 
 export class DataSourceView extends Model {
-  dataSourceList: API.DatasourceListInfo[] = [];
+  dataSourceList: API.DatasourceListInfoAggregate[] = [];
 
   pageNumber = 1;
 
@@ -250,7 +242,11 @@ export class DataSourceView extends Model {
 
   statusFilter = '';
 
-  typeFilters: FilterValue | null = [DataSourceType.OSS, DataSourceType.HTTP];
+  typeFilters: FilterValue | null = [
+    DataSourceType.OSS,
+    DataSourceType.HTTP,
+    DataSourceType.ODPS,
+  ];
 
   search = '';
 
@@ -264,21 +260,14 @@ export class DataSourceView extends Model {
 
   showDataSourceInfoDrawer = false;
 
-  DataSourceData: API.DatasourceListInfo = {};
+  DataSourceData: API.DatasourceListInfoAggregate = {};
 
   currentNode: API.NodeVO = {};
 
-  nodeService = getModel(NodeService);
   dataSourceService = getModel(DataSourceService);
 
   onViewMount() {
-    if (this.nodeService.currentNode) {
-      this.getDataSourceList();
-    }
-    this.nodeService.eventEmitter.on((currentNode) => {
-      this.getDataSourceList();
-      this.currentNode = currentNode;
-    });
+    this.getDataSourceList();
   }
 
   async getDataSourceList(isUpload?: boolean) {
@@ -287,9 +276,9 @@ export class DataSourceView extends Model {
     } else {
       this.tableLoading = true;
     }
-    const nodeId = this.nodeService.currentNode?.nodeId;
+    const { ownerId } = parse(window.location.search);
     const listData = await list({
-      nodeId: nodeId || '',
+      ownerId: (ownerId as string) || '',
       page: this.pageNumber,
       size: this.pageSize,
       status: this.statusFilter,
@@ -325,7 +314,7 @@ export class DataSourceView extends Model {
     this.showAddDataSourceDrawer = true;
   }
 
-  showDataSourceInfo(data: API.DatasourceListInfo) {
+  showDataSourceInfo(data: API.DatasourceListInfoAggregate) {
     this.showDataSourceInfoDrawer = true;
     this.DataSourceData = data;
   }

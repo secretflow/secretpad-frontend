@@ -1,6 +1,7 @@
+import { message } from 'antd';
+
 import { list, reply, pending, detail } from '@/services/secretpad/MessageController';
 import { Model } from '@/util/valtio-helper';
-import { message } from 'antd';
 
 /**
  * This is the service for a message center list. There are list of message items. It allows processing
@@ -15,7 +16,7 @@ export class MessageService extends Model {
   /**
    * Message detail
    */
-  messageDetail: Record<string, any> = {};
+  messageDetail: API.MessageDetailVO = {};
 
   /**
    * Message list loading state
@@ -89,8 +90,8 @@ export class MessageService extends Model {
    * @param nodeID
    * @returns
    */
-  getMessageCount = async (nodeID: string) => {
-    const res = await pending({ nodeID });
+  getMessageCount = async (ownerId: string) => {
+    const res = await pending({ ownerId });
     return res;
   };
 
@@ -101,12 +102,16 @@ export class MessageService extends Model {
    */
   getMessageDetail = async (params: API.MessageDetailRequest) => {
     this.messageInfoLoading = true;
-    const info = await detail(params);
-    if (info.status && info.status.code === 0 && info.data) {
-      this.messageDetail = info.data;
-    } else {
-      this.messageDetail = {};
-      message.error(info?.status?.msg);
+    try {
+      const { data, status } = await detail(params);
+      if (status?.code === 0 && data) {
+        this.messageDetail = data;
+      } else {
+        message.error(status?.msg);
+        this.messageDetail = {};
+      }
+    } catch (e) {
+      message.error(e);
     }
     this.messageInfoLoading = false;
   };

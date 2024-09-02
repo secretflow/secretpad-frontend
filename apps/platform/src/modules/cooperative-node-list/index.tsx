@@ -7,9 +7,9 @@ import { Badge, Button, Input, Space, Table, Tag, Tooltip, Typography } from 'an
 import type { ColumnsType } from 'antd/es/table';
 import type { FilterValue } from 'antd/es/table/interface';
 import { parse } from 'query-string';
-import type { ChangeEvent } from 'react';
+import { useEffect, type ChangeEvent } from 'react';
 
-import { AccessWrapper, Platform } from '@/components/platform-wrapper';
+import { AccessWrapper, hasAccess, Platform } from '@/components/platform-wrapper';
 import { page as requestList } from '@/services/secretpad/NodeRouteController';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
@@ -23,10 +23,22 @@ import { CooperativeNodeService } from './cooperative-node.service';
 import { DeleteCooperativeNodeModal } from './delete-modal';
 import { EditCooperativeNodeModal } from './edit-modal';
 import styles from './index.less';
+import { useLocation } from 'umi';
 
 export const CooperativeNodeListComponent = () => {
   const viewInstance = useModel(CooperativeNodeView);
   const service = useModel(CooperativeNodeService);
+  const isAutonomyMode = hasAccess({ type: [Platform.AUTONOMY] });
+  const { search } = useLocation();
+  const { ownerId } = parse(search);
+  useEffect(() => {
+    if (isAutonomyMode) {
+      service.getAutonomyNodeList();
+    } else {
+      service.getNodeInfo(ownerId as string);
+    }
+  }, []);
+
   const columns: ColumnsType<API.NodeRouterVO> = [
     {
       title: '合作节点',
@@ -62,6 +74,18 @@ export const CooperativeNodeListComponent = () => {
                 {text}
               </Typography.Text>
             </div>
+            <AccessWrapper accessType={{ type: [Platform.AUTONOMY] }}>
+              <div>
+                <Typography.Text
+                  className={styles.idText}
+                  ellipsis={{
+                    tooltip: record.srcNode?.instName || '- -',
+                  }}
+                >
+                  {record.srcNode?.instName || '- -'}
+                </Typography.Text>
+              </div>
+            </AccessWrapper>
           </>
         );
       },
@@ -149,7 +173,13 @@ export const CooperativeNodeListComponent = () => {
       width: '15%',
       sorter: true,
       render: (gmtCreate: string) => (
-        <div style={{ width: 80 }}>{formatTimestamp(gmtCreate as string)}</div>
+        <Typography.Text
+          ellipsis={{
+            tooltip: formatTimestamp(gmtCreate as string),
+          }}
+        >
+          {formatTimestamp(gmtCreate as string)}
+        </Typography.Text>
       ),
     },
     {
@@ -158,7 +188,13 @@ export const CooperativeNodeListComponent = () => {
       width: '15%',
       sorter: true,
       render: (gmtModified: string) => (
-        <div style={{ width: 80 }}>{formatTimestamp(gmtModified as string)}</div>
+        <Typography.Text
+          ellipsis={{
+            tooltip: formatTimestamp(gmtModified as string),
+          }}
+        >
+          {formatTimestamp(gmtModified as string)}
+        </Typography.Text>
       ),
     },
     {
@@ -219,6 +255,13 @@ export const CooperativeNodeListComponent = () => {
     },
   ];
 
+  const getTooltipText = () => {
+    const isNodeUnavailable = isAutonomyMode
+      ? service.autonomyAddDisabled
+      : service.nodeInfo.nodeStatus !== NodeState.READY;
+    return isNodeUnavailable ? '当前节点状态不可用' : '';
+  };
+
   return (
     <div className={styles.cooperativeNodeList}>
       <div className={styles.nodeListHeader}>
@@ -236,15 +279,15 @@ export const CooperativeNodeListComponent = () => {
             }
           />
         </Space>
-        <Tooltip
-          title={
-            service.nodeInfo.nodeStatus !== NodeState.READY ? '当前节点状态不可用' : ''
-          }
-        >
+        <Tooltip title={getTooltipText()}>
           <Button
             type="primary"
             onClick={() => (viewInstance.showAddCooperativeNodeDrawer = true)}
-            disabled={service.nodeInfo.nodeStatus !== NodeState.READY}
+            disabled={
+              isAutonomyMode
+                ? service.autonomyAddDisabled
+                : service.nodeInfo.nodeStatus !== NodeState.READY
+            }
           >
             添加合作节点
           </Button>
@@ -346,15 +389,15 @@ export class CooperativeNodeView extends Model {
   }
 
   async getNodeList() {
-    const { nodeId } = parse(window.location.search);
-    if (!nodeId) return;
+    const { ownerId } = parse(window.location.search);
+    if (!ownerId) return;
     this.loading = true;
     const list = await requestList({
       page: this.pageNumber,
       size: this.pageSize,
       search: this.search,
       sort: this.sortRule,
-      nodeId: nodeId as string,
+      ownerId: ownerId as string,
     });
     this.loading = false;
     this.totalNum = list?.data?.total || 0;

@@ -1,6 +1,6 @@
 /* eslint-disable */
-// API 更新时间：2024-06-04 13:57:14
-// API 唯一标识：665eacba54bc56bcae52a03d
+// API 更新时间：2024-08-09 11:26:19
+// API 唯一标识：66b58c5b3f8f03846ba9342f
 // 该文件由 OneAPI 自动生成，请勿手动修改！
 
 import * as ApprovalController from './ApprovalController';
@@ -15,14 +15,15 @@ import * as DatatableController from './DatatableController';
 import * as FeatureDatasourceController from './FeatureDatasourceController';
 import * as GraphController from './GraphController';
 import * as IndexController from './IndexController';
+import * as InstController from './InstController';
 import * as MessageController from './MessageController';
 import * as ModelExportController from './ModelExportController';
 import * as ModelManagementController from './ModelManagementController';
 import * as NodeController from './NodeController';
 import * as NodeRouteController from './NodeRouteController';
 import * as NodeUserController from './NodeUserController';
-import * as P2pNodeController from './P2pNodeController';
 import * as P2PProjectController from './P2PProjectController';
+import * as P2pNodeController from './P2pNodeController';
 import * as ProjectController from './ProjectController';
 import * as RemoteUserController from './RemoteUserController';
 import * as UserController from './UserController';
@@ -40,6 +41,7 @@ export default {
   FeatureDatasourceController,
   GraphController,
   IndexController,
+  InstController,
   MessageController,
   ModelExportController,
   ModelManagementController,

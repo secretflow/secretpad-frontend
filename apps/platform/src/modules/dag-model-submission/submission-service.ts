@@ -64,10 +64,12 @@ export class SubmissionDrawerService extends Model {
       graphNodeOutPutId: modelId,
       graphNodeId: graphNodeId,
     });
+
     const userInfo = await this.loginService.getUserInfo();
     if (userInfo.platformType === Platform.AUTONOMY) {
-      const currentId = userInfo.ownerId;
-      this.showAlert = !(data || [])?.some((item) => item.nodeId === currentId);
+      this.showAlert = !(data || [])?.some((item) =>
+        this.loginService.autonomyNodeList.find((n) => n.nodeId === item.nodeId),
+      );
     } else {
       this.showAlert = false;
     }

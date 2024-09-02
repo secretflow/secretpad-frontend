@@ -50,8 +50,8 @@ export const ProjectAuthConfigDrawer = ({
   onOk?: () => void;
 }) => {
   const [form] = Form.useForm();
-  const { nodeId } = parse(window.location.search);
-
+  const { ownerId } = parse(window.location.search);
+  const isAutonomyMode = hasAccess({ type: [Platform.AUTONOMY] });
   const viewInstance = useModel(ProjectAuthConfigModel);
   const dataManagerViewService = useModel(DataManagerView);
 
@@ -65,7 +65,6 @@ export const ProjectAuthConfigDrawer = ({
     onClose();
     form.resetFields();
   };
-
   useEffect(() => {
     const getProjectList = async () => {
       const isP2p = hasAccess({ type: [Platform.AUTONOMY] });
@@ -76,7 +75,11 @@ export const ProjectAuthConfigDrawer = ({
         return;
       } else {
         const projectData = isP2p
-          ? (data || []).filter((item) => item.status === 'APPROVED')
+          ? (data || []).filter(
+              (item) =>
+                item.status === 'APPROVED' &&
+                (item?.nodes || []).some((node) => node.nodeId === tableInfo.nodeId),
+            )
           : data || [];
         setProjectOptions(
           projectData.map((item) => ({
@@ -112,7 +115,7 @@ export const ProjectAuthConfigDrawer = ({
     const getProjectDatatableRequest = async () => {
       const res = await getProjectDatatable({
         projectId: data?.projectId,
-        nodeId: nodeId as string,
+        nodeId: isAutonomyMode ? tableInfo?.nodeId : (ownerId as string),
         datatableId: tableInfo.datatableId,
         type: tableInfo.type,
       });
@@ -133,7 +136,7 @@ export const ProjectAuthConfigDrawer = ({
     if (type === 'ADD') {
       const res = await addProjectDatatable({
         projectId: value.project,
-        nodeId: nodeId as string,
+        nodeId: isAutonomyMode ? tableInfo?.nodeId : (ownerId as string),
         datatableId: tableInfo.datatableId,
         configs: value.fields,
         type: tableInfo.type,
@@ -150,7 +153,7 @@ export const ProjectAuthConfigDrawer = ({
       if (!value.fields) return;
       const res = await updateProjectTableConfig({
         projectId: data?.projectId,
-        nodeId: nodeId as string,
+        nodeId: isAutonomyMode ? tableInfo?.nodeId : (ownerId as string),
         datatableId: tableInfo.datatableId,
         configs: value.fields,
         type: tableInfo.type,

@@ -9,6 +9,8 @@ import { history, useLocation } from 'umi';
 import { isWindows } from '@/util/platform';
 
 import styles from './index.less';
+import { DefaultModalManager } from '@/modules/dag-modal-manager';
+import { useModel } from '@/util/valtio-helper';
 
 type ManagementLayoutComponentProps = {
   menuItems: {
@@ -26,23 +28,25 @@ export const foldHotKey = {
 };
 
 export const ManagementLayoutComponent = (props: ManagementLayoutComponentProps) => {
+  const modalManager = useModel(DefaultModalManager);
+
   const { menuItems, defaultTabKey } = props;
   const [collapsed, setCollapsed] = useState(false);
 
   const { pathname, search } = useLocation();
   const parsedSearch = parse(search);
 
-  const { tab, nodeId } = parsedSearch as { tab?: string; nodeId?: string };
+  const { tab, ownerId } = parsedSearch as { tab?: string; ownerId?: string };
   const [tabKey, setTabKey] = useState<string>();
 
   useEffect(() => {
     history.replace({
       pathname: pathname === '/' ? '/home' : pathname,
       search: stringify(
-        nodeId
+        ownerId
           ? {
               ...parsedSearch,
-              nodeId,
+              ownerId,
               tab: tab || defaultTabKey,
             }
           : { tab: tab || defaultTabKey },
@@ -73,6 +77,10 @@ export const ManagementLayoutComponent = (props: ManagementLayoutComponentProps)
     toggleCollapsed();
   });
 
+  const closeAllModal = () => {
+    modalManager.closeAllModals();
+  };
+
   return (
     <div className={styles.layoutContainer}>
       <div
@@ -87,9 +95,10 @@ export const ManagementLayoutComponent = (props: ManagementLayoutComponentProps)
           inlineCollapsed={collapsed}
           items={menuItems}
           onSelect={({ key }) => {
+            closeAllModal();
             history.replace({
               pathname: pathname === '/' ? '/home' : pathname,
-              search: stringify(nodeId ? { nodeId, tab: key } : { tab: key }),
+              search: stringify(ownerId ? { ownerId, tab: key } : { tab: key }),
             });
           }}
         />

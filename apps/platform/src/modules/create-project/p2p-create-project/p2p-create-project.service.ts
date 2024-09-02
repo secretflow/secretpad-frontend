@@ -1,8 +1,13 @@
 import { message } from 'antd';
 import { parse } from 'query-string';
-
+import { listNode } from '@/services/secretpad/InstController';
 import API from '@/services/secretpad';
 import { Model } from '@/util/valtio-helper';
+
+export type Options = {
+  value: string;
+  label: string;
+};
 
 /**
  * P2P模式
@@ -13,51 +18,56 @@ export class P2PCreateProjectService extends Model {
    */
   loading = false;
 
-  /**
-   * 和本方节点已建立好授权的节点列表
-   */
-  nodeList: API.NodeVO[] = [];
+  /** 本方机构下的所有可用节点 */
+  nodeListOptions: Options[] = [];
 
-  /**
-   * 本方节点下的数据表
-   */
-  nodeDataSheet: { label: string; id: string }[] = [];
+  /** 本方节点与之授权的节点 */
+  nodeVotersMaps: Record<
+    string,
+    {
+      nodeId: string;
+      nodeName: string;
+      instId: string;
+      instName: string;
+    }[]
+  > = {};
 
-  /**
-   * 获取已建立好授权的节点列表
-   * @param nodeId
-   */
-  getNodeList = async (nodeId: string) => {
+  /** 获取本方机构下的所有可用节点 */
+  getNodeList = async () => {
+    const { status, data } = await listNode();
+    if (status && status.code === 0) {
+      this.nodeListOptions =
+        (data || [])
+          .filter((node) => node.nodeStatus === 'Ready')
+          .map((item) => ({
+            label: item.nodeName || '',
+            value: item.nodeId || '',
+          })) || [];
+    } else {
+      message.error(status?.msg);
+    }
+  };
+
+  /** 获取本方机构与之授权成功的节点 且合作节点路由是可用状态 */
+  getNodeVoters = async (dstNodeId: string) => {
+    const { ownerId } = parse(window.location.search);
     const { data } = await API.NodeRouteController.page({
       page: 1,
       size: 1000,
       search: '',
       sort: {},
-      nodeId: nodeId as string,
+      ownerId: ownerId as string,
     });
-    this.nodeList = (data?.list || [])
-      .filter((item) => item.status === 'Succeeded')
+    this.nodeVotersMaps[dstNodeId] = (data?.list || [])
+      .filter(
+        (router) => router.dstNodeId === dstNodeId && router.status === 'Succeeded',
+      )
       .map((item: API.NodeRouterVO) => ({
-        nodeId: item.srcNode!.nodeId,
-        nodeName: item.srcNode!.nodeName,
+        nodeId: item.srcNode?.nodeId || '',
+        nodeName: item.srcNode?.nodeName || '',
+        instId: item.srcNode?.instId || '',
+        instName: item.srcNode?.instName || '',
       }));
-  };
-
-  /**
-   * 获取当前节点的数据
-   */
-  getNodeData = async (nodeId: string) => {
-    const { data } = await API.DatatableController.listDatatables({
-      nodeId,
-      pageNumber: 1,
-      pageSize: 1000,
-      statusFilter: '',
-      datatableNameFilter: '',
-    });
-    this.nodeDataSheet = (data?.datatableVOList || []).map((item: API.DatatableVO) => ({
-      label: item?.datatableName || '',
-      id: item?.datatableId || '',
-    }));
   };
 
   /**
@@ -68,10 +78,32 @@ export class P2PCreateProjectService extends Model {
     description: string;
     computeFunc: string;
     computeMode: string;
-    nodes: string[];
+    nodeVoters: { nodes: string[]; nodeId: string }[];
     dataSheet?: string[];
   }) => {
-    const { projectName, description, computeFunc, computeMode, nodes } = value;
+    const { ownerId } = parse(window.location.search);
+    const { projectName, description, computeFunc, computeMode, nodeVoters } = value;
+    const participants = [ownerId]; // 参与方机构
+    const participantNodeInstVOS = (nodeVoters || []).map(
+      (item: { nodes: string[]; nodeId: string }) => {
+        const currentNodeVotersList = this.nodeVotersMaps[item.nodeId];
+        const invitees = (item?.nodes || []).map((id: string) => {
+          const findInstId = currentNodeVotersList?.find(
+            (nodes) => nodes.nodeId === id,
+          )?.instId;
+          if (findInstId) {
+            participants.push(findInstId);
+          }
+          return {
+            inviteeId: id,
+          };
+        });
+        return {
+          initiatorNodeId: item.nodeId,
+          invitees: invitees,
+        };
+      },
+    );
     this.loading = true;
     //  创建项目
     const { data, status: createProjectStatus } =
@@ -85,14 +117,14 @@ export class P2PCreateProjectService extends Model {
       this.loading = false;
       throw new Error(createProjectStatus.msg || '创建失败');
     }
-    const { nodeId } = parse(window.location.search);
     // 发起审批
     const { status } = await API.ApprovalController.create({
-      nodeID: nodeId as string,
+      initiatorId: ownerId as string,
       voteType: 'PROJECT_CREATE',
       voteConfig: {
         projectId: data?.projectId,
-        nodes: [nodeId, ...nodes],
+        participants: [...new Set(participants)], // 机构ID
+        participantNodeInstVOS: participantNodeInstVOS,
       },
     });
     if (status && status.code !== 0) {

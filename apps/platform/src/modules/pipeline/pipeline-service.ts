@@ -24,6 +24,7 @@ import { PipelineTemplateType } from './pipeline-protocol';
 import { PipelineCommands } from './pipeline-protocol';
 
 import { getPipelineTemplates } from '.';
+import { DagLayoutView } from '../layout/dag-layout';
 
 const CUSTOM_COMPONENT = {
   BinningModification: 'feature/binning_modifications',
@@ -60,6 +61,8 @@ export class DefaultPipelineService extends Model {
   projectEditService = getModel(ProjectEditService);
   loginService = getModel(LoginService);
   projectListService = getModel(HeaderProjectListView);
+
+  dagLayoutView = getModel(DagLayoutView);
 
   constructor() {
     super();
@@ -116,7 +119,7 @@ export class DefaultPipelineService extends Model {
    * 归档项目不可编辑。
    * 非本方创建的训练流不可编辑
    */
-  changePipelineCanEdit = async (pipelineId?: string) => {
+  changePipelineCanEdit = async (pipelineId?: string, isAsync?: boolean) => {
     const { projectId } = parse(window.location.search);
     if (await this.projectEditService.isP2pMode()) {
       if (this.projectListService.projectList.length === 0) {
@@ -139,6 +142,9 @@ export class DefaultPipelineService extends Model {
             advancedConfigDisabled: false,
             gotoDataManagerDisabled: false,
           });
+        }
+        if (isAsync) {
+          await this.getPipelines();
         }
         const pipeline = this.pipelines.find((p) => p.graphId === pipelineId);
         // pipelinen不存在，统一置灰画布的toolbar。
@@ -239,6 +245,9 @@ export class DefaultPipelineService extends Model {
         templateType: templateType,
       };
       this.pipelines.push(res);
+      if (this.dagLayoutView.activeKey !== 'pipeline') {
+        this.changePipelineCanEdit(data?.graphId, true);
+      }
       this.onPipelineCreatedEmitter.fire(id);
       return res;
     } else {

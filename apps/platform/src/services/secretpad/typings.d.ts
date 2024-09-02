@@ -45,6 +45,20 @@ declare namespace API {
     type?: string;
   }
 
+  interface AllDatatableListVO {
+    /** Datatable view object list */
+    datatableNodeVOList?: Array<DatatableNodeVO>;
+    /** The total count of datatable */
+    totalDatatableNums?: number;
+  }
+
+  interface AllNodeResultsListVO {
+    /** Node results view object */
+    nodeAllResultsVOList?: Array<NodeAllResultsVO>;
+    /** The count of node results */
+    totalNodeResultNums?: number;
+  }
+
   interface ArchiveProjectRequest {
     projectId?: string;
   }
@@ -102,10 +116,20 @@ declare namespace API {
     kusciaImage?: string;
     /** secretflowImage */
     secretflowImage?: string;
+    /** dataProxyImage */
+    dataProxyImage?: string;
   }
 
+  type ConcurrentErrorCode =
+    | 202012601
+    | 'TASK_INTERRUPTED_ERROR'
+    | 202012602
+    | 'TASK_EXECUTION_ERROR'
+    | 202012603
+    | 'TASK_TIME_OUT_ERROR';
+
   interface CreateApprovalRequest {
-    nodeID?: string;
+    initiatorId?: string;
     voteType?: string;
     voteConfig?: AbstractVoteConfig;
   }
@@ -126,10 +150,13 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     datasourceName?: string;
     /** Datatable schema */
     datatableSchema?: Array<DatatableSchema>;
+    /** When registering a table, users can specify certain specific values to be treated as nulls. */
+    nullStrs?: Array<string>;
   }
 
   interface CreateDatasourceRequest {
-    nodeId?: string;
+    ownerId?: string;
+    nodeIds?: Array<string>;
     type?: string;
     name?: string;
     dataSourceInfo: DataSourceInfo;
@@ -137,11 +164,14 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
 
   interface CreateDatasourceVO {
     datasourceId?: string;
+    failedCreatedNodes?: Record<string, any>;
   }
 
   interface CreateDatatableRequest {
-    /** node ID */
-    nodeId?: string;
+    /** owner ID */
+    ownerId?: string;
+    /** The node ID to which the data belongs. In p2p mode, there may be more than one node ID. */
+    nodeIds?: Array<string>;
     /** table name */
     datatableName?: string;
     /** datasource id */
@@ -156,10 +186,14 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     relativeUri?: string;
     /** table columns */
     columns?: Array<TableColumnVO>;
+    partition?: OdpsPartitionRequest;
+    /** When registering a table, users can specify certain specific values to be treated as nulls. */
+    nullStrs?: Array<string>;
   }
 
   interface CreateFeatureDatasourceRequest {
-    nodeId?: string;
+    ownerId?: string;
+    nodeIds?: Array<string>;
     featureTableName?: string;
     type?: string;
     desc?: string;
@@ -196,7 +230,7 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
 
   interface CreateNodeRequest {
     /** Node name, the value cannot be empty and can be the same */
-    name?: string;
+    name: string;
     /** node feature indicates by bit, bit0 - mpc | bit1 - tee | bit2 mpc&tee */
     mode: number;
   }
@@ -240,23 +274,29 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
 
   type DataSourceInfo = Record<string, any>;
 
-  type DataSourceTypeEnum = 'HTTP' | 'OSS' | 'LOCAL' | 'MYSQL';
+  interface DataSourceRelatedNode {
+    nodeId?: string;
+    nodeName?: string;
+    status?: string;
+  }
+
+  type DataSourceTypeEnum = 'HTTP' | 'OSS' | 'LOCAL' | 'MYSQL' | 'ODPS';
 
   type DataTableTypeEnum = 'HTTP' | 'CSV';
 
-  interface DatasourceDetailRequest {
-    nodeId?: string;
-    datasourceId?: string;
-    type?: string;
-  }
-
-  interface DatasourceDetailVO {
-    nodeId?: string;
+  interface DatasourceDetailAggregateVO {
+    nodes?: Array<DataSourceRelatedNode>;
     datasourceId?: string;
     name?: string;
     type?: string;
     status?: string;
-    info?: OssDatasourceInfo;
+    info?: DataSourceInfo;
+  }
+
+  interface DatasourceDetailRequest {
+    ownerId?: string;
+    datasourceId?: string;
+    type?: string;
   }
 
   type DatasourceErrorCode =
@@ -276,15 +316,18 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     | 'DATASOURCE_UNKNOWN_EXCEPTION'
     | 202012509
     | 'DATA_SOURCE_DELETE_FAIL'
+    | 202012510
+    | 'DATA_SOURCE_NOT_FOUND'
     | 202012505
-    | 'QUERY_DATASOURCE_FAILED';
+    | 'QUERY_DATASOURCE_FAILED'
+    | 202012511
+    | 'UPDATE_DATASOURCE_FAILED';
 
-  interface DatasourceListInfo {
-    nodeId?: string;
+  interface DatasourceListInfoAggregate {
+    nodes?: Array<DataSourceRelatedNode>;
     datasourceId?: string;
     name?: string;
     type?: string;
-    status?: string;
     relatedDatas?: Array<string>;
   }
 
@@ -295,7 +338,7 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     size?: number;
     /** sort，property,property(,ASC|DESC) "createdDate,desc" */
     sort?: Record<string, any>;
-    nodeId?: string;
+    ownerId?: string;
     name?: string;
     status?: string;
     types?: Array<string>;
@@ -306,7 +349,16 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     pageNum?: number;
     total?: number;
     totalPage?: number;
-    infos?: Array<DatasourceListInfo>;
+    infos?: Array<DatasourceListInfoAggregate>;
+  }
+
+  interface DatasourceNodesRequest {
+    ownerId?: string;
+    datasourceId?: string;
+  }
+
+  interface DatasourceNodesVO {
+    nodes?: Array<DataSourceRelatedNode>;
   }
 
   type DatatableErrorCode =
@@ -327,11 +379,12 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     | 202011308
     | 'CREATE_TEE_JOB_FAILED';
 
-  interface DatatableListVO {
-    /** Datatable view object list */
-    datatableVOList?: Array<DatatableVO>;
-    /** The total count of datatable */
-    totalDatatableNums?: number;
+  interface DatatableNodeVO {
+    datatableVO?: DatatableVO;
+    /** Node name the table belongs to */
+    nodeName?: string;
+    /** Node id the table belongs to */
+    nodeId?: string;
   }
 
   interface DatatableSchema {
@@ -360,6 +413,8 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     datasourceType?: string;
     /** The data source name which it belongs to */
     datasourceName?: string;
+    /** The data source node which it belongs to */
+    nodeId?: string;
     /** Relative uri */
     relativeUri?: string;
     /** Datatable type */
@@ -370,6 +425,8 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     schema?: Array<TableColumnVO>;
     /** Authorized project list */
     authProjects?: Array<AuthProjectVO>;
+    partition?: OdpsPartitionRequest;
+    nullStrs?: Array<string>;
   }
 
   type DbChangeAction = 'CREATE' | 'UPDATE' | 'REMOVE';
@@ -380,7 +437,7 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
   }
 
   interface DeleteDatasourceRequest {
-    nodeId?: string;
+    ownerId?: string;
     datasourceId?: string;
     type?: string;
   }
@@ -451,6 +508,8 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     | 202012303
     | 'FEATURE_TABLE_IP_NOT_KNOWN';
 
+  type Field = Record<string, any>;
+
   type FileMeta = Record<string, any>;
 
   interface FullUpdateGraphRequest {
@@ -464,12 +523,10 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     edges?: Array<GraphEdge>;
     /** Graph max parallelism */
     maxParallelism?: number;
-    dataSourceConfig?: Array<FullUpdateGraphRequestGraphDataSourceConfig>;
+    dataSourceConfig?: Array<OrgSecretflowSecretpadServiceModelGraphFullUpdateGraphRequestGraphDataSourceConfig>;
   }
 
   type FullUpdateGraphRequest$GraphDataSourceConfig = Record<string, any>;
-
-  type FullUpdateGraphRequestGraphDataSourceConfig = Record<string, any>;
 
   interface GetComponentRequest {
     /** app of the component, it can not be blank */
@@ -578,12 +635,10 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     /** Graph max parallelism */
     maxParallelism?: number;
     /** data source configuration */
-    dataSourceConfig?: Array<GraphDetailVODataSourceConfig>;
+    dataSourceConfig?: Array<OrgSecretflowSecretpadServiceModelGraphGraphDetailVODataSourceConfig>;
   }
 
   type GraphDetailVO$DataSourceConfig = Record<string, any>;
-
-  type GraphDetailVODataSourceConfig = Record<string, any>;
 
   interface GraphEdge {
     /** Edge id */
@@ -812,7 +867,45 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
 
   type HttpServletResponse = Record<string, any>;
 
-  type InstErrorCode = 202011200 | 'INST_NOT_EXISTS';
+  type InstErrorCode =
+    | 202011200
+    | 'INST_NOT_EXISTS'
+    | 202011201
+    | 'INST_NOT_MATCH_NODE'
+    | 202011202
+    | 'INST_NODE_COUNT_LIMITED'
+    | 202011203
+    | 'INST_MISMATCH_LOGIN'
+    | 202011204
+    | 'INST_REGISTER_CHECK_FAILED'
+    | 202011205
+    | 'INST_TOKEN_MISMATCH'
+    | 202011206
+    | 'INST_DUPLICATED'
+    | 202011207
+    | 'INST_FILE_OPERATION_FAILED';
+
+  interface InstRequest {
+    /** ownerId as instId */
+    instId?: string;
+  }
+
+  interface InstTokenVO {
+    /** id */
+    nodeId?: string;
+    /** nodeName */
+    nodeName?: string;
+    /** inst token */
+    instToken?: string;
+    /** ?? time or modify time */
+    createTime?: string;
+  }
+
+  interface InstVO {
+    instId?: string;
+    instName?: string;
+    localNodeId?: string;
+  }
 
   type JobErrorCode =
     | 202011901
@@ -828,13 +921,21 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     | 202011906
     | 'PROJECT_JOB_NODE_PERMISSION_ERROR';
 
+  type KusciaApiChannelType = 'BLOCKING' | 'STREAMING' | 'ASYNC';
+
   type KusciaGrpcErrorCode = 202012101 | 'RPC_ERROR';
+
+  type KusciaModeEnum = 'MASTER' | 'LITE' | 'P2P';
+
+  type KusciaProtocolEnum = 'TLS' | 'MTLS' | 'NOTLS';
 
   interface ListDatatableRequest {
     /** How many pieces of data are in each page */
     pageSize?: number;
     /** What page is currently requested? Note that starting at 1 represents the first page */
     pageNumber?: number;
+    /** Filter the list by nodeName */
+    nodeNamesFilter?: Array<string>;
     /** Filter the list by status Available：Datatables that filter available status
 Unavailable：Datatables that filter unavailable status Other values or null：All datatables */
     statusFilter?: string;
@@ -842,8 +943,8 @@ Unavailable：Datatables that filter unavailable status Other values or null：A
     datatableNameFilter?: string;
     /** Fuzzy search by table name */
     types?: Array<string>;
-    /** Node Id */
-    nodeId?: string;
+    /** Owner Id */
+    ownerId?: string;
     /** Tee node id, it can be blank and has default value */
     teeNodeId?: string;
   }
@@ -861,14 +962,14 @@ Unavailable：Datatables that filter unavailable status Other values or null：A
   }
 
   interface ListNodeResultRequest {
-    /** Node id */
-    nodeId?: string;
-    /** Tee node id, it can be blank and has default value */
-    teeNodeId?: string;
+    /** Owner id */
+    ownerId?: string;
     /** How many pieces of data are in each page */
     pageSize?: number;
     /** What page is currently requested? Note that starting at 1 represents the first page */
     pageNumber?: number;
+    /** Rules for filtering by node name, not filled when listing all outputs */
+    nodeNamesFilter?: Array<string>;
     /** Rules for filtering by kind, not filled when listing all outputs */
     kindFilters?: Array<string>;
     /** Rules for producer filtering by data vendor, not filled when listing all outputs */
@@ -879,6 +980,8 @@ id here Filter by ID */
     nameFilter?: string;
     /** The rules are sorted by time 1. Ascending：ascending 2. Descending：descending */
     timeSortingRule?: string;
+    /** Tee node id, it can be blank and has default value */
+    teeNodeId?: string;
   }
 
   interface ListProjectFeatureDatasourceRequest {
@@ -905,14 +1008,14 @@ id here Filter by ID */
   }
 
   interface MessageDetailRequest {
-    /** requester nodeID */
-    nodeID?: string;
+    /** requester ownerId */
+    ownerId?: string;
     /** unique voteID */
-    voteID?: string;
+    voteId?: string;
     /** if it is initiator */
     isInitiator: boolean;
     voteType?: string;
-    projectID?: string;
+    projectId?: string;
   }
 
   interface MessageDetailVO {
@@ -931,7 +1034,7 @@ id here Filter by ID */
     /** if i am initiator */
     isInitiator?: boolean;
     /** requester nodeID */
-    nodeID?: string;
+    ownerId?: string;
     /** if the message has been processed */
     isProcessed?: boolean;
     /** vote type {@link VoteTypeEnum} */
@@ -949,8 +1052,8 @@ id here Filter by ID */
   }
 
   interface MessagePendingCountRequest {
-    /** participant node id */
-    nodeID?: string;
+    /** participant owner id */
+    ownerId?: string;
   }
 
   interface MessageVO {
@@ -1056,7 +1159,7 @@ waiting approved
   interface ModelPartyPathResponse {
     nodeId?: string;
     nodeName?: string;
-    dataSources?: Array<ProjectGraphDomainDataSourceVODataSource>;
+    dataSources?: Array<OrgSecretflowSecretpadServiceModelProjectProjectGraphDomainDataSourceVODataSource>;
   }
 
   type ModelStatsEnum =
@@ -1072,6 +1175,14 @@ waiting approved
     | 'PUBLISH_FAIL'
     | 5
     | 'DISCARDED';
+
+  interface NodeAllResultsVO {
+    nodeResultsVO?: NodeResultsVO;
+    /** Node id the result belongs to */
+    nodeId?: string;
+    /** Node name the result belongs to */
+    nodeName?: string;
+  }
 
   interface NodeDatatableVO {
     /** Datatable id */
@@ -1105,6 +1216,8 @@ waiting approved
     nodeId?: string;
   }
 
+  type NodeInstVO = Record<string, any>;
+
   interface NodeInstanceDTO {
     /** domain name */
     name?: string;
@@ -1130,16 +1243,13 @@ waiting approved
     datasource?: string;
   }
 
-  interface NodeResultsListVO {
-    /** Node results view object */
-    nodeResultsVOList?: Array<NodeResultsVO>;
-    /** The count of node results */
-    totalResultNums?: number;
-  }
-
   interface NodeResultsVO {
     /** Domain data id */
     domainDataId?: string;
+    /** Domain datasource id */
+    datasourceId?: string;
+    /** Domain datasource type */
+    datasourceType?: string;
     /** Node result name */
     productName?: string;
     /** Node result datatable type */
@@ -1244,6 +1354,8 @@ waiting approved
     nodeId?: string;
     /** nodeName */
     nodeName?: string;
+    instId?: string;
+    instName?: string;
     /** controlNodeId */
     controlNodeId?: string;
     /** masterNodeId */
@@ -1285,7 +1397,28 @@ result management list interface */
     resultCount?: number;
     /** kuscia api protocol */
     protocol?: string;
+    instToken?: string;
+    allowDeletion?: boolean;
+    isMainNode?: boolean;
   }
+
+  interface OdpsPartitionParam {
+    type?: string;
+    fields?: Array<OdpsPartitionParamField>;
+  }
+
+  type OdpsPartitionParam$Field = Record<string, any>;
+
+  type OdpsPartitionParamField = Record<string, any>;
+
+  interface OdpsPartitionRequest {
+    type?: string;
+    fields?: Array<OdpsPartitionRequestField>;
+  }
+
+  type OdpsPartitionRequest$Field = Record<string, any>;
+
+  type OdpsPartitionRequestField = Record<string, any>;
 
   type OneApiResult_object_ = Record<string, any>;
 
@@ -1316,6 +1449,8 @@ result management list interface */
     kusciaImage?: string;
     /** secretflowImage */
     secretflowImage?: string;
+    /** dataProxyImage */
+    dataProxyImage?: string;
   }
 
   interface OrgSecretflowSecretpadCommonDtoSecretPadResponse_ComponentVersion_ {
@@ -1340,6 +1475,14 @@ result management list interface */
     any
   >;
 
+  type OrgSecretflowSecretpadServiceModelGraphFullUpdateGraphRequestGraphDataSourceConfig =
+    Record<string, any>;
+
+  type OrgSecretflowSecretpadServiceModelGraphGraphDetailVODataSourceConfig = Record<
+    string,
+    any
+  >;
+
   type OrgSecretflowSecretpadServiceModelModelCreateModelServingRequestPartyConfig =
     Record<string, any>;
 
@@ -1350,18 +1493,17 @@ result management list interface */
 
   type OrgSecretflowSecretpadServiceModelModelModelPartiesVOParty = Record<string, any>;
 
+  type OrgSecretflowSecretpadServiceModelProjectProjectGraphDomainDataSourceVODataSource =
+    Record<string, any>;
+
   type OrgSecretflowSecretpadServiceModelServingServingDetailVOServingDetail = Record<
     string,
     any
   >;
 
-  interface OssDatasourceInfo {
-    endpoint?: string;
-    bucket?: string;
-    prefix?: string;
-    ak?: string;
-    sk?: string;
-    storageType?: string;
+  interface OssDatatableVO {
+    domainDataId?: string;
+    failedCreatedNodes?: Record<string, any>;
   }
 
   interface P2pCreateNodeRequest {
@@ -1377,8 +1519,14 @@ result management list interface */
     dstNodeId?: string;
     /** net address of platform nodeId */
     srcNetAddress?: string;
+    /** the nodeId of initiator */
+    srcNodeId?: string;
     /** net address of collaborative node */
     dstNetAddress?: string;
+    /** the dst node's instId */
+    dstInstId?: string;
+    /** the dst node's instName */
+    dstInstName?: string;
   }
 
   interface PageNodeRequest {
@@ -1402,7 +1550,7 @@ result management list interface */
     /** dstNodeId,dstNetAddress,dstNodeName search */
     search?: string;
     /** srcNodeId data filter */
-    nodeId?: string;
+    ownerId?: string;
   }
 
   interface PageRequest {
@@ -1443,6 +1591,16 @@ result management list interface */
 
   type Participant$VoteInfo = Record<string, any>;
 
+  interface ParticipantNodeInstVO {
+    initiatorNodeId?: string;
+    initiatorNodeName?: string;
+    invitees?: Array<ParticipantNodeInstVONodeInstVO>;
+  }
+
+  type ParticipantNodeInstVO$NodeInstVO = Record<string, any>;
+
+  type ParticipantNodeInstVONodeInstVO = Record<string, any>;
+
   type Parties = Record<string, any>;
 
   type Party = Record<string, any>;
@@ -1450,8 +1608,15 @@ result management list interface */
   type PartyConfig = Record<string, any>;
 
   interface PartyVoteInfoVO {
-    nodeId?: string;
-    nodeName?: string;
+    instId?: string;
+    instName?: string;
+    action?: string;
+    reason?: string;
+  }
+
+  interface PartyVoteStatus {
+    participantID?: string;
+    participantName?: string;
     action?: string;
     reason?: string;
   }
@@ -1467,6 +1632,7 @@ result management list interface */
     datatableId?: string;
     /** Datatable name */
     datatableName?: string;
+    partition?: OdpsPartitionParam;
   }
 
   type ProjectErrorCode =
@@ -1508,12 +1674,10 @@ result management list interface */
   interface ProjectGraphDomainDataSourceVO {
     nodeId?: string;
     nodeName?: string;
-    dataSources?: Array<ProjectGraphDomainDataSourceVODataSource>;
+    dataSources?: Array<OrgSecretflowSecretpadServiceModelProjectProjectGraphDomainDataSourceVODataSource>;
   }
 
   type ProjectGraphDomainDataSourceVO$DataSource = Record<string, any>;
-
-  type ProjectGraphDomainDataSourceVODataSource = Record<string, any>;
 
   interface ProjectGraphOutputVO {
     /** graphId */
@@ -1522,6 +1686,13 @@ result management list interface */
     graphNodeId?: string;
     /** outputs */
     outputs?: Array<string>;
+  }
+
+  interface ProjectInstVO {
+    /** inst id */
+    instId?: string;
+    /** inst name */
+    instName?: string;
   }
 
   interface ProjectJobBaseVO {
@@ -1617,6 +1788,34 @@ result management list interface */
     computeMode?: string;
   }
 
+  interface ProjectParticipantsDetailVO {
+    /** initiator id */
+    initiatorId?: string;
+    /** initiator name */
+    initiatorName?: string;
+    /** project name */
+    projectName?: string;
+    /** party vote status */
+    partyVoteStatuses?: Array<PartyVoteStatus>;
+    /** compute mode */
+    computeMode?: string;
+    /** compute func */
+    computeFunc?: string;
+    /** project description */
+    projectDesc?: string;
+    /** gmt created */
+    gmtCreated?: string;
+    /** participant node and inst */
+    participantNodeInstVOS?: Array<ParticipantNodeInstVO>;
+    /** status */
+    status?: string;
+  }
+
+  interface ProjectParticipantsRequest {
+    /** vote id */
+    voteId?: string;
+  }
+
   interface ProjectResultBaseVO {
     /** Result kind enum */
     kind?: ResultKind;
@@ -1627,6 +1826,8 @@ result management list interface */
   type ProjectStatusEnum = 0 | 'REVIEWING' | 1 | 'APPROVED' | 2 | 'ARCHIVED';
 
   interface ProjectVO {
+    /** vote invite patties's vote information */
+    partyVoteInfos?: Array<PartyVoteInfoVO>;
     /** Project id */
     projectId?: string;
     /** Project name */
@@ -1635,6 +1836,8 @@ result management list interface */
     description?: string;
     /** List of added nodes */
     nodes?: Array<ProjectNodeVO>;
+    /** List of added insts */
+    insts?: Array<ProjectInstVO>;
     /** The count of graph */
     graphCount?: number;
     /** The count of job */
@@ -1651,8 +1854,6 @@ result management list interface */
     initiator?: string;
     /** project initiator nodeName */
     initiatorName?: string;
-    /** vote invite patties's vote information */
-    partyVoteInfos?: Array<PartyVoteInfoVO>;
     /** computeFunc {@link org.secretflow.secretpad.common.constant.ProjectConstants.ComputeFuncEnum} */
     computeFunc?: string;
     /** project vote id */
@@ -1771,6 +1972,16 @@ result management list interface */
 
   type SecretPadResponseStatus = Record<string, any>;
 
+  interface SecretPadResponse_AllDatatableListVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: AllDatatableListVO;
+  }
+
+  interface SecretPadResponse_AllNodeResultsListVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: AllNodeResultsListVO;
+  }
+
   interface SecretPadResponse_Boolean_ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: boolean;
@@ -1796,9 +2007,9 @@ result management list interface */
     data?: CreateProjectVO;
   }
 
-  interface SecretPadResponse_DatasourceDetailVO_ {
+  interface SecretPadResponse_DatasourceDetailAggregateVO_ {
     status?: SecretPadResponseSecretPadResponseStatus;
-    data?: DatasourceDetailVO;
+    data?: DatasourceDetailAggregateVO;
   }
 
   interface SecretPadResponse_DatasourceListVO_ {
@@ -1806,14 +2017,14 @@ result management list interface */
     data?: DatasourceListVO;
   }
 
-  interface SecretPadResponse_DatatableListVO_ {
+  interface SecretPadResponse_DatasourceNodesVO_ {
     status?: SecretPadResponseSecretPadResponseStatus;
-    data?: DatatableListVO;
+    data?: DatasourceNodesVO;
   }
 
-  interface SecretPadResponse_DatatableVO_ {
+  interface SecretPadResponse_DatatableNodeVO_ {
     status?: SecretPadResponseSecretPadResponseStatus;
-    data?: DatatableVO;
+    data?: DatatableNodeVO;
   }
 
   interface SecretPadResponse_GraphDetailVO_ {
@@ -1839,6 +2050,16 @@ result management list interface */
   interface SecretPadResponse_GraphStatus_ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: GraphStatus;
+  }
+
+  interface SecretPadResponse_InstTokenVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: InstTokenVO;
+  }
+
+  interface SecretPadResponse_InstVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: InstVO;
   }
 
   interface SecretPadResponse_List_FeatureDataSourceVO__ {
@@ -1916,11 +2137,6 @@ result management list interface */
     data?: NodeResultDetailVO;
   }
 
-  interface SecretPadResponse_NodeResultsListVO_ {
-    status?: SecretPadResponseSecretPadResponseStatus;
-    data?: NodeResultsListVO;
-  }
-
   interface SecretPadResponse_NodeRouterVO_ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: NodeRouterVO;
@@ -1941,6 +2157,11 @@ result management list interface */
     data?: Record<string, any>;
   }
 
+  interface SecretPadResponse_OssDatatableVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: OssDatatableVO;
+  }
+
   interface SecretPadResponse_PageResponse_ProjectJobSummaryVO__ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: PageResponse_ProjectJobSummaryVO_;
@@ -1954,6 +2175,11 @@ result management list interface */
   interface SecretPadResponse_ProjectOutputVO_ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: ProjectOutputVO;
+  }
+
+  interface SecretPadResponse_ProjectParticipantsDetailVO_ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: ProjectParticipantsDetailVO;
   }
 
   interface SecretPadResponse_ProjectVO_ {
@@ -2028,10 +2254,10 @@ result management list interface */
     projectId?: string;
     /** Graph id, it can not be blank */
     graphId?: string;
-    /** Graph node id list, it can not be empty */
-    nodes?: Array<string>;
     /** breakpoint resuming training flag true：yes，false：no */
     breakpoint?: boolean;
+    /** Graph node id list, it can not be empty */
+    nodes?: Array<string>;
   }
 
   interface StartGraphVO {
@@ -2228,8 +2454,8 @@ create operation */
   interface VoteReplyRequest {
     action?: string;
     reason?: string;
-    voteID?: string;
-    voteParticipantID?: string;
+    voteId?: string;
+    voteParticipantId?: string;
   }
 
   type VoteStatusEnum =

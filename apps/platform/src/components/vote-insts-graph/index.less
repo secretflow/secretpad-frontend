@@ -1,0 +1,94 @@
+.container {
+  width: 100%;
+  height: 100%;
+
+  .graph {
+    width: 100% !important;
+    height: 200px;
+  }
+
+  :global(.x6-edge) {
+    path {
+      cursor: default;
+    }
+  }
+
+  :global(.x6-edge:hover) {
+    path:nth-child(2) {
+      stroke: #c1c7d0;
+    }
+  }
+}
+
+.custom-vote-node {
+  display: flex;
+  width: 280px;
+  height: 64px;
+  box-sizing: border-box;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #00000026;
+  border-radius: 4px;
+  background-color: #fff;
+
+  .nodeName {
+    display: flex;
+  }
+
+  .nodeName,
+  .instName {
+    width: 100%;
+    text-align: left;
+  }
+
+  .instName {
+    display: flex;
+    align-items: center;
+
+    :global {
+      .ant-typography {
+        color: #00000073;
+      }
+    }
+  }
+}
+
+.tag {
+  height: 18px;
+  box-sizing: content-box;
+  padding: 0 3px;
+  border: 1px solid rgb(0 0 0 / 6%);
+  border-radius: 4px;
+  background-image: linear-gradient(180deg, #fafdff 0%, #e6f4ff 100%);
+  font-size: 10px;
+  line-height: 18px;
+}
+
+.tagInvitee {
+  background-image: linear-gradient(180deg, #fff 0%, #eee 100%);
+}
+
+.agree {
+  border: solid 1px #23b65f;
+  margin-right: 0;
+  background-color: #ecfff4;
+  background-image: none;
+  color: #23b65f;
+}
+
+.reviewing {
+  border: solid 1px #0068fa;
+  margin-right: 0;
+  background-color: #f0f5ff;
+  background-image: none;
+  color: #0068fa;
+}
+
+.rejected {
+  border: solid 1px red;
+  margin-right: 0;
+  background-color: #fff0f0;
+  background-image: none;
+  color: red;
+}

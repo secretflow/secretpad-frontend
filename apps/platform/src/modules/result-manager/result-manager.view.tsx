@@ -9,7 +9,6 @@ import { hasAccess, Platform } from '@/components/platform-wrapper';
 import type { ComputeMode } from '@/modules/component-tree/component-protocol';
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import { formatTimestamp } from '@/modules/dag-result/utils';
-import { NodeService } from '@/modules/node';
 import {
   resultDetailsDrawer,
   ResultDetailsDrawer,
@@ -31,12 +30,13 @@ const { Link } = Typography;
 
 export const ResultManagerComponent = () => {
   const viewInstance = useModel(ResultManagerView);
-  const isP2P = hasAccess({ type: [Platform.AUTONOMY] });
+  const isAutonomy = hasAccess({ type: [Platform.AUTONOMY] });
+  const { ownerId } = parse(window.location.search);
 
   const renderButtons = (record: API.NodeResultsVO) => {
     if (record.datatableType === 'report') {
       return '-';
-    } else if (isP2P) {
+    } else if (isAutonomy) {
       return (
         <Space>
           {/* 暂时注释 */}
@@ -54,16 +54,20 @@ export const ResultManagerComponent = () => {
           )} */}
           <Tooltip
             title={
-              record?.datasourceType === DataSourceType.OSS
-                ? `OSS 文件不支持直接下载，请到 OSS 对应 bucket 的预设路径下找到文件下载，地址：${record.relativeUri}`
+              record?.datasourceType === DataSourceType.OSS ||
+              record?.datasourceType === DataSourceType.ODPS
+                ? `${record?.datasourceType} 文件不支持直接下载，请到 ${record?.datasourceType} 对应 bucket 的预设路径下找到文件下载，地址：${record.relativeUri}`
                 : ''
             }
           >
             <Button
               type="link"
               style={{ paddingLeft: 0 }}
-              onClick={() => viewInstance.download(record)}
-              disabled={record?.datasourceType === DataSourceType.OSS}
+              onClick={() => viewInstance.download(record, isAutonomy)}
+              disabled={
+                record?.datasourceType === DataSourceType.OSS ||
+                record?.datasourceType === DataSourceType.ODPS
+              }
             >
               下载
             </Button>
@@ -84,16 +88,20 @@ export const ResultManagerComponent = () => {
       return (
         <Tooltip
           title={
-            record?.datasourceType === DataSourceType.OSS
-              ? `OSS 文件不支持直接下载，请到 OSS 对应 bucket 的预设路径下找到文件下载，地址：${record.relativeUri}`
+            record?.datasourceType === DataSourceType.OSS ||
+            record?.datasourceType === DataSourceType.ODPS
+              ? `${record?.datasourceType} 文件不支持直接下载，请到 ${record?.datasourceType} 对应 bucket 的预设路径下找到文件下载，地址：${record.relativeUri}`
               : ''
           }
         >
           <Button
             type="link"
             style={{ paddingLeft: 0 }}
-            onClick={() => viewInstance.download(record)}
-            disabled={record?.datasourceType === DataSourceType.OSS}
+            onClick={() => viewInstance.download(record, isAutonomy)}
+            disabled={
+              record?.datasourceType === DataSourceType.OSS ||
+              record?.datasourceType === DataSourceType.ODPS
+            }
           >
             下载
           </Button>
@@ -104,7 +112,7 @@ export const ResultManagerComponent = () => {
         <Button
           type="link"
           style={{ paddingLeft: 0 }}
-          onClick={() => viewInstance.download(record)}
+          onClick={() => viewInstance.download(record, isAutonomy)}
         >
           重新获取
         </Button>
@@ -118,6 +126,12 @@ export const ResultManagerComponent = () => {
     }
   };
 
+  const columnsNodeNameFilter = viewInstance.resultManagerService.autonomyNodeList
+    .filter((node) => node.nodeStatus === 'Ready')
+    .map((item: API.NodeVO) => ({
+      text: item.nodeName,
+      value: item.nodeId,
+    }));
   const columns = [
     {
       title: '结果ID',
@@ -136,6 +150,7 @@ export const ResultManagerComponent = () => {
                 `「${text}」详情`,
                 record.domainDataId as string,
                 (record?.computeMode || 'MPC') as ComputeMode,
+                isAutonomy ? record?.nodeId : ownerId,
               )
             }
           >
@@ -175,13 +190,17 @@ export const ResultManagerComponent = () => {
       key: 'sourceProjectName',
       width: '15%',
       render: (sourceProject: string) => <span>{sourceProject}</span>,
-      // ...getColumnSearchProps('sourceProjectName', '请输入项目名称搜索'),
     },
     {
       title: '所属训练流',
       dataIndex: 'trainFlow',
       width: '15%',
-      // ...getColumnSearchProps('trainFlow', '请输入训练流名称搜索')
+    },
+    {
+      title: '所属节点',
+      dataIndex: 'nodeName',
+      width: '15%',
+      filters: columnsNodeNameFilter,
     },
     {
       title: '生成时间',
@@ -226,18 +245,19 @@ export const ResultManagerComponent = () => {
   ];
 
   const renderColumns = () => {
-    if (
-      viewInstance.nodeService.currentNode &&
-      viewInstance.nodeService.currentNode.nodeId === 'tee'
-    ) {
-      return columns.filter(
+    let newColumns = columns;
+    if (ownerId && ownerId === 'tee') {
+      newColumns = columns.filter(
         (item) => item.dataIndex !== 'action' && item.dataIndex !== 'pullFromTeeStatus',
       );
     }
-    if (isP2P) {
-      return columns.filter((item) => item.dataIndex !== 'pullFromTeeStatus');
+    if (isAutonomy) {
+      newColumns = columns.filter((item) => item.dataIndex !== 'pullFromTeeStatus');
     }
-    return columns;
+    if (!isAutonomy) {
+      newColumns = columns.filter((item) => item.dataIndex !== 'nodeName');
+    }
+    return newColumns;
   };
 
   useEffect(() => {
@@ -297,7 +317,7 @@ export const ResultManagerComponent = () => {
               viewInstance.pageSize = pageSize;
             },
           }}
-          rowKey={(record) => record.domainDataId as string}
+          rowKey={(record) => `${record.domainDataId}_${record.nodeId}`}
         />
       </div>
       <ResultDetailsDrawer />
@@ -310,6 +330,12 @@ export const ResultManagerComponent = () => {
 };
 
 export class ResultManagerView extends Model {
+  modalManager = getModel(DefaultModalManager);
+
+  onViewUnMount(): void {
+    this.modalManager.closeAllModals();
+  }
+
   resultTableList: API.NodeResultsVO[] = [];
 
   resultTableListDisplay: API.NodeResultsVO[] = [];
@@ -317,6 +343,8 @@ export class ResultManagerView extends Model {
   search = '';
 
   typesFilter: string[] = [];
+
+  nodeNamesFilter: string[] | null = null;
 
   sortRule: string | null = 'descend';
 
@@ -332,8 +360,6 @@ export class ResultManagerView extends Model {
 
   resultManagerService = getModel(ResultManagerService);
 
-  nodeService = getModel(NodeService);
-
   modalManager = getModel(DefaultModalManager);
 
   resultListTimer: ReturnType<typeof setTimeout> | undefined;
@@ -342,14 +368,13 @@ export class ResultManagerView extends Model {
 
   onViewMount() {
     const { search } = window.location;
-    const { resultName } = parse(search);
+    const { resultName, ownerId } = parse(search);
     this.search = (resultName as string) || '';
-    if (this.nodeService.currentNode) {
+    const isAutonomy = hasAccess({ type: [Platform.AUTONOMY] });
+    if (ownerId) {
+      isAutonomy && this.resultManagerService.getAutonomyNodeList();
       this.getResultTableList();
     }
-    this.nodeService.eventEmitter.on((currentNode) => {
-      this.getResultTableList(currentNode.nodeId);
-    });
   }
 
   async getResultTableList(nodeId?: string, isLoading?: boolean) {
@@ -358,7 +383,9 @@ export class ResultManagerView extends Model {
     } else {
       this.loading = true;
     }
-    const currentNodeId = nodeId ? nodeId : this.nodeService.currentNode?.nodeId;
+    const { search } = window.location;
+    const { ownerId } = parse(search);
+    const currentOwnerId = nodeId ? nodeId : (ownerId as string);
 
     let sort = '';
     switch (this.sortRule) {
@@ -372,28 +399,35 @@ export class ResultManagerView extends Model {
         sort = '';
     }
     const list = await this.resultManagerService.getResultList(
-      currentNodeId || '',
+      currentOwnerId || '',
       this.pageNumber,
       this.pageSize,
       this.search,
       this.typesFilter,
       sort,
+      this.nodeNamesFilter,
     );
     this.loading = false;
-    this.totalNum = list?.totalResultNums || 1;
-    this.resultTableList = list?.nodeResultsVOList || [];
+    this.totalNum = list?.totalNodeResultNums || 1;
+    this.resultTableList =
+      (list?.nodeAllResultsVOList || []).map((item) => ({
+        ...(item?.nodeResultsVO || {}),
+        nodeName: item.nodeName,
+        nodeId: item.nodeId,
+      })) || [];
     this.resultTableListDisplay = this.resultTableList;
   }
 
   searchResult = (e: ChangeEvent<HTMLInputElement>) => {
     history.replace({
       pathname: hasAccess({ type: [Platform.AUTONOMY] }) ? '/edge' : '/node',
-      search: `nodeId=${parse(window.location.search)?.nodeId}&tab=result`,
+      search: `ownerId=${parse(window.location.search)?.ownerId}&tab=result`,
     });
     this.search = e.target.value;
     clearTimeout(this.searchDebounce);
 
     this.searchDebounce = setTimeout(() => {
+      this.pageNumber = 1;
       this.getResultTableList();
     }, 300) as unknown as number;
   };
@@ -402,20 +436,27 @@ export class ResultManagerView extends Model {
     tableInfo: Record<string, FilterValue | null>,
     sort: SorterResult<API.NodeResultsVO>,
   ) => {
+    this.nodeNamesFilter = tableInfo?.nodeName
+      ? (tableInfo?.nodeName as string[])
+      : null;
     this.typesFilter = tableInfo.datatableType as string[];
     this.sortRule = sort?.order as string;
     this.getResultTableList();
   };
 
-  showDrawer = (title: string, id: string, projectMode: ComputeMode) => {
-    this.modalManager.openModal(resultDetailsDrawer.id, { id, projectMode });
+  showDrawer = (
+    title: string,
+    id: string,
+    projectMode: ComputeMode,
+    nodeId: string,
+  ) => {
+    this.modalManager.openModal(resultDetailsDrawer.id, { id, projectMode, nodeId });
   };
 
-  download = async (tableInfo: API.NodeResultsVO) => {
-    this.resultManagerService.download(
-      this.nodeService.currentNode?.nodeId || '',
-      tableInfo,
-    );
+  download = async (tableInfo: API.NodeResultsVO, isAutonomy: boolean) => {
+    const { ownerId } = parse(window.location.search);
+    const currentDownloadNodeId = isAutonomy ? tableInfo.nodeId : ownerId;
+    this.resultManagerService.download(currentDownloadNodeId || '', tableInfo);
   };
 
   copy = async (tableInfo: API.NodeResultsVO) => {

@@ -1,0 +1,51 @@
+.nodeListContent {
+  display: flex;
+
+  :global(.ant-tag) {
+    margin: 0;
+  }
+
+  .nodeContent {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.nodeIdsText {
+  color: #1677ff;
+  cursor: pointer;
+}
+
+.textContent {
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.nodeName {
+  margin-right: 4px;
+  color: #000000d9;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.nodeNameText {
+  .nodeName();
+
+  display: inline-block;
+  overflow: hidden;
+  max-width: 100px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tooltipNodeName {
+  .nodeNameText();
+
+  max-width: 350px !important;
+}
+
+.tooltipNodeContent {
+  min-width: 288px !important;
+  max-width: 400px;
+}

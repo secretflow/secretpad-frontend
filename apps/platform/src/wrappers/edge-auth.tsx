@@ -9,8 +9,8 @@ import { useModel } from '@/util/valtio-helper';
 // 在这里控制/node 和 /my-node 和/message 有没有正确的nodeId 和权限
 const EdgeNodeAuth = () => {
   const loginService = useModel(LoginService);
-  const { nodeId } = parse(window.location.search);
-  if (!nodeId) return <Navigate to="/login" />;
+  const { ownerId } = parse(window.location.search);
+  if (!ownerId) return <Navigate to="/login" />;
   const embeddedNodes = ['alice', 'bob', 'tee'];
   const getUserInfo = async () => {
     await loginService.getUserInfo();
@@ -18,7 +18,7 @@ const EdgeNodeAuth = () => {
     if (
       loginService?.userInfo?.platformType === 'CENTER' &&
       loginService?.userInfo?.ownerType === 'CENTER' &&
-      embeddedNodes.includes(nodeId as string)
+      embeddedNodes.includes(ownerId as string)
     ) {
       setCanOutlet(true);
       return;
@@ -35,9 +35,9 @@ const EdgeNodeAuth = () => {
 
   const [canOutlet, setCanOutlet] = useState(true);
   useEffect(() => {
-    if (!nodeId) return;
-    getNodeInfo(nodeId as string);
-  }, [nodeId]);
+    if (!ownerId) return;
+    getNodeInfo(ownerId as string);
+  }, [ownerId]);
 
   const getNodeInfo = async (id: string) => {
     await get({

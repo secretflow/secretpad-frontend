@@ -19,6 +19,7 @@
   "dependencies": {
     "@ant-design/icons": "^5.0.1",
     "@antv/g2": "^4.2.9",
+    "@antv/layout": "^0.3.23",
     "@antv/s2": "^1.52.0",
     "@antv/s2-react": "^1.44.2",
     "@antv/x6": "^2.11.1",

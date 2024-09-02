@@ -5,6 +5,7 @@ import { history } from 'umi';
 import { ReactComponent as Logo } from '@/assets/logo1.svg';
 import { Platform } from '@/components/platform-wrapper';
 import { DefaultComponentInterpreterService } from '@/modules/component-interpreter/component-interpreter-service';
+import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import platformConfig from '@/platform.config';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
@@ -32,6 +33,11 @@ export class LoginModel extends Model {
   token = '';
   loginService = getModel(LoginService);
   interpreterService = getModel(DefaultComponentInterpreterService);
+  modalManager = getModel(DefaultModalManager);
+
+  onViewMount(): void {
+    this.modalManager.closeAllModals();
+  }
 
   loginConfirm = async (loginFields: UserInfo) => {
     const { status, data } = await this.loginService.login({
@@ -48,7 +54,7 @@ export class LoginModel extends Model {
       if (this.loginService.userInfo.platformType === Platform.AUTONOMY) {
         if (this.loginService.userInfo.ownerId) {
           localStorage.setItem('neverLogined', 'true');
-          history.push(`/edge?nodeId=${this.loginService.userInfo.ownerId}`);
+          history.push(`/edge?ownerId=${this.loginService.userInfo.ownerId}`);
           message.success('登录成功');
           // 防止token失效后,直接刷新页面，重新登陆接口未重新调用
           this.interpreterService.getComponentI18n();
@@ -60,7 +66,7 @@ export class LoginModel extends Model {
       if (this.loginService.userInfo.platformType === 'EDGE') {
         if (this.loginService.userInfo.ownerId) {
           localStorage.setItem('neverLogined', 'true');
-          history.push(`/node?nodeId=${this.loginService.userInfo.ownerId}`);
+          history.push(`/node?ownerId=${this.loginService.userInfo.ownerId}`);
         }
       } else {
         localStorage.setItem('neverLogined', 'true');

@@ -10,14 +10,17 @@ export async function createDataTable(
   body?: API.CreateDatatableRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.SecretPadResponse_String_>('/api/v1alpha1/datatable/create', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+  return request<API.SecretPadResponse_OssDatatableVO_>(
+    '/api/v1alpha1/datatable/create',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: body,
+      ...(options || {}),
     },
-    data: body,
-    ...(options || {}),
-  });
+  );
 }
 
 /** Delete datable api
@@ -46,14 +49,17 @@ export async function getDatatable(
   body?: API.GetDatatableRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.SecretPadResponse_DatatableVO_>('/api/v1alpha1/datatable/get', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+  return request<API.SecretPadResponse_DatatableNodeVO_>(
+    '/api/v1alpha1/datatable/get',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: body,
+      ...(options || {}),
     },
-    data: body,
-    ...(options || {}),
-  });
+  );
 }
 
 /** List datatable api
@@ -64,7 +70,7 @@ export async function listDatatables(
   body?: API.ListDatatableRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.SecretPadResponse_DatatableListVO_>(
+  return request<API.SecretPadResponse_AllDatatableListVO_>(
     '/api/v1alpha1/datatable/list',
     {
       method: 'POST',

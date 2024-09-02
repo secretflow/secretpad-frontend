@@ -46,8 +46,11 @@ export const AdvancedConfig = () => {
     if (visible) {
       getAllNodeDataSources();
       getConfig();
+      if (loginService?.userInfo?.platformType === Platform.AUTONOMY) {
+        loginService.getAutonomyNodeList(loginService?.userInfo?.ownerId as string);
+      }
     }
-  }, [visible]);
+  }, [visible, loginService?.userInfo?.ownerId]);
 
   useEffect(() => {
     if (visible) {
@@ -73,7 +76,6 @@ export const AdvancedConfig = () => {
      */
     const editAllowed = service.config?.dataSourceConfig[key]?.editEnable;
     const currentNodeId = service.config?.dataSourceConfig[key]?.nodeId;
-    const ownerId = loginService?.userInfo?.ownerId;
 
     if (loginService?.userInfo?.platformType === Platform.CENTER) {
       if (loginService?.userInfo?.ownerType === 'EDGE') {
@@ -84,7 +86,10 @@ export const AdvancedConfig = () => {
       }
     } else if (loginService?.userInfo?.platformType === Platform.AUTONOMY) {
       // p2p 模式下只能编辑当前节点
-      return editAllowed && ownerId === currentNodeId;
+      return (
+        editAllowed &&
+        loginService.autonomyNodeList.find((item) => item.nodeId === currentNodeId)
+      );
     }
     return false;
   };

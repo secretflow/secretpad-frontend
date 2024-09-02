@@ -1,7 +1,9 @@
+import { message } from 'antd';
 import sha256 from 'crypto-js/sha256';
 
 import type { PadMode, Platform } from '@/components/platform-wrapper';
 import API from '@/services/secretpad';
+import { listNode } from '@/services/secretpad/InstController';
 import { updatePwd } from '@/services/secretpad/UserController';
 import { Model } from '@/util/valtio-helper';
 
@@ -12,6 +14,9 @@ import { Model } from '@/util/valtio-helper';
 
 export class LoginService extends Model {
   userInfo: User | null = null;
+
+  /** AUTONOMY 模式 - 机构下的所有节点 */
+  autonomyNodeList: API.NodeVO[] = [];
 
   async login(loginField: { name: string; password: string }) {
     return await API.AuthController.login({
@@ -47,6 +52,16 @@ export class LoginService extends Model {
       confirmPasswordHash: sha256(verifiedNewPwd).toString(),
     });
     return res?.status;
+  };
+
+  /** AUTONOMY 模式下获取机构下所有节点列表 */
+  getAutonomyNodeList = async () => {
+    const { status, data } = await listNode();
+    if (status && status.code === 0) {
+      this.autonomyNodeList = data || [];
+    } else {
+      message.error(status?.msg);
+    }
   };
 }
 

@@ -1,0 +1,50 @@
+.title {
+  display: flex;
+  align-items: center;
+}
+
+.computeModeTag {
+  height: 20px;
+  margin-right: 4px;
+  background: white;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.tabs {
+  :global {
+    .ant-tabs-tab {
+      padding: 0 0 12px;
+    }
+
+    .ant-tabs-nav::before {
+      border: none;
+    }
+  }
+}
+
+.pipelineItem {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  border-bottom: 1px solid #000a1a12;
+}
+
+.jobItem {
+  padding: 10px 0;
+  border-bottom: 1px solid #000a1a12;
+
+  .jobTime {
+    margin-left: 8px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .jobId {
+    margin-left: 14px;
+    color: #00000073;
+    font-size: 14px;
+    line-height: 20px;
+  }
+}

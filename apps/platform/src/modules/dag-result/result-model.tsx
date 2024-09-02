@@ -24,15 +24,24 @@ export const ResultModelComponent = (props: ResultComponentProps<'model'>) => {
   const { rows } = meta;
   const resultManagerService = getModel(ResultManagerService);
   const { pathname } = useLocation();
-  const [downloadBtnDisabled, setDownloadBtnDisabled] = useState(false);
+  const [downloadBtnDisabled, setDownloadBtnDisabled] = useState({
+    disable: false,
+    type: DataSourceType.OSS,
+  });
   const [downloadPath, setDownloadPath] = useState('');
 
   useEffect(() => {
     rows.forEach((r) => {
       const { datasourceType, path } = r;
 
-      if (datasourceType === DataSourceType.OSS) {
-        setDownloadBtnDisabled(true);
+      if (
+        datasourceType === DataSourceType.OSS ||
+        datasourceType === DataSourceType.ODPS
+      ) {
+        setDownloadBtnDisabled({
+          disable: true,
+          type: datasourceType,
+        });
         setDownloadPath(path);
       }
     });
@@ -71,7 +80,7 @@ export const ResultModelComponent = (props: ResultComponentProps<'model'>) => {
                     size="small"
                     style={{ paddingLeft: 20 }}
                     onClick={() => {
-                      const search = `nodeId=${nodeId}&tab=result&resultName=${path}`;
+                      const search = `ownerId=${nodeId}&tab=result&resultName=${path}`;
                       openNewTab(pathname, '/node', search);
                     }}
                   >
@@ -96,8 +105,8 @@ export const ResultModelComponent = (props: ResultComponentProps<'model'>) => {
             {hasAccess({ type: [Platform.AUTONOMY] }) && (
               <Tooltip
                 title={
-                  downloadBtnDisabled
-                    ? `OSS 文件不支持直接下载，请到 OSS 对应 bucket 的预设路径下找到文件下载，地址：${downloadPath}`
+                  downloadBtnDisabled.disable
+                    ? `${downloadBtnDisabled.type} 文件不支持直接下载，请到 ${downloadBtnDisabled.type} 对应 bucket 的预设路径下找到文件下载，地址：${downloadPath}`
                     : ''
                 }
               >
@@ -107,7 +116,7 @@ export const ResultModelComponent = (props: ResultComponentProps<'model'>) => {
                   onClick={() =>
                     resultManagerService.download(nodeId || '', { domainDataId: path })
                   }
-                  disabled={downloadBtnDisabled}
+                  disabled={downloadBtnDisabled.disable}
                 >
                   下载
                 </Button>

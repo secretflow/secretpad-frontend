@@ -7,6 +7,7 @@ import { Descriptions, Form, Input, Select, Space, Upload } from 'antd';
 import React, { useRef, useEffect } from 'react';
 import { CSVLink } from 'react-csv';
 
+import { hasAccess, Platform } from '@/components/platform-wrapper';
 import { NodeService } from '@/modules/node';
 import { createData } from '@/services/secretpad/DataController';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
@@ -18,6 +19,10 @@ import { analysisCsv, fetchProgress, parseDataTableColumns } from './util';
 
 interface IProps {
   setDisabled: (val: boolean) => void;
+  nodeNameOptions: {
+    label: string;
+    value: string;
+  }[];
 }
 
 const { Dragger } = Upload;
@@ -43,9 +48,26 @@ const downloadData = [
   { 特征名称: 'x10', 特征类型: 'float', 特征描述: '' },
 ];
 
-export const UploadTable: React.FC<IProps> = ({ setDisabled }) => {
+export const UploadTable: React.FC<IProps> = ({
+  setDisabled,
+  nodeNameOptions = [],
+}) => {
   const [form] = Form.useForm();
   const values = Form.useWatch([], form);
+
+  const isAutonomy = hasAccess({ type: [Platform.AUTONOMY] });
+
+  const viewInstance = useModel(UploadTableView);
+  const nodeService = useModel(NodeService);
+
+  /**
+   * Autonomy 模式下 NodeId 是当前机构的主节点ID, center 模式是当前登录用户
+   */
+  const NodeId = isAutonomy
+    ? nodeNameOptions[0]?.value || ''
+    : nodeService.currentNode?.nodeId || '';
+
+  viewInstance.ownerId = NodeId;
 
   useEffect(() => {
     if (values?.tbl_name && values?.schema?.length !== 0) {
@@ -55,8 +77,11 @@ export const UploadTable: React.FC<IProps> = ({ setDisabled }) => {
     }
   }, [values]);
 
-  const viewInstance = useModel(UploadTableView);
-  const nodeService = useModel(NodeService);
+  // useEffect(() => {
+  //   if (form) {
+  //     form.setFieldValue('tbl_nullStrs', '""');
+  //   }
+  // }, [form]);
 
   viewInstance.formInstance = form;
   const csvRef = useRef<{
@@ -84,10 +109,10 @@ export const UploadTable: React.FC<IProps> = ({ setDisabled }) => {
               withCredentials
               action="/api/v1alpha1/data/upload"
               data={{
-                'Node-Id': nodeService.currentNode?.nodeId || '',
+                'Node-Id': viewInstance.ownerId,
               }}
               headers={{
-                'Node-Id': nodeService.currentNode?.nodeId || '',
+                'Node-Id': viewInstance.ownerId,
                 'User-Token': localStorage.getItem('User-Token') || '',
               }}
               showUploadList={false}
@@ -138,10 +163,10 @@ export const UploadTable: React.FC<IProps> = ({ setDisabled }) => {
                     withCredentials
                     action="/api/v1alpha1/data/upload"
                     data={{
-                      'Node-Id': nodeService.currentNode?.nodeId || '',
+                      'Node-Id': viewInstance.ownerId,
                     }}
                     headers={{
-                      'Node-Id': nodeService.currentNode?.nodeId || '',
+                      'Node-Id': viewInstance.ownerId,
                       'User-Token': localStorage.getItem('User-Token') || '',
                     }}
                     showUploadList={false}
@@ -191,6 +216,30 @@ export const UploadTable: React.FC<IProps> = ({ setDisabled }) => {
                   showCount
                   maxLength={200}
                   rows={4}
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="tbl_nullStrs"
+                tooltip={'不填充则纯空为空字符，默认""为空缺值'}
+                label={<>空缺值</>}
+                initialValue={'""'}
+                rules={[
+                  {
+                    validator: (_, val) => {
+                      try {
+                        JSON.parse(`[${val}]`);
+                        return Promise.resolve();
+                      } catch (error) {
+                        return Promise.reject(`空缺值填写错误，请检查`);
+                      }
+                    },
+                  },
+                ]}
+              >
+                <Input.TextArea
+                  placeholder={'""（可输入多个，用,隔开，例：",,","-999"）'}
+                  rows={2}
                 />
               </Form.Item>
 
@@ -361,6 +410,8 @@ interface CSVInfo {
 }
 
 export class UploadTableView extends Model {
+  ownerId = '';
+
   step = 0;
 
   fileInfo?: FileInfo;
@@ -490,7 +541,7 @@ export class UploadTableView extends Model {
   retryUpload = () => {
     // this.reset();
     const formData = new FormData();
-    formData.append('Node-Id', this.nodeService.currentNode?.nodeId || '');
+    formData.append('Node-Id', this.ownerId);
     formData.append('file', this.uploadingFile as Blob);
     fetchProgress(
       '/api/v1alpha1/data/upload',
@@ -621,9 +672,8 @@ export class UploadTableView extends Model {
       this.submitting = true;
       const validateRes = await this.validateForm();
       const values = validateRes;
-
       const res = await createData({
-        nodeId: this.nodeService.currentNode?.nodeId || '',
+        nodeId: this.ownerId,
         name: this.fileInfo?.name,
         tableName: values.tbl_name,
         description: values.tbl_desc,
@@ -631,6 +681,7 @@ export class UploadTableView extends Model {
         realName: this.fileInfo?.realName,
         datasourceType: 'LOCAL',
         datasourceName: 'default-data-source',
+        nullStrs: values.tbl_nullStrs ? JSON.parse(`[${values.tbl_nullStrs}]`) : [],
       });
 
       this.submitting = false;

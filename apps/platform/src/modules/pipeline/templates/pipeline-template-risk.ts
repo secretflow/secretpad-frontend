@@ -21,6 +21,7 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
       featureSelects,
       labelSelects,
       receiver,
+      receiverPSI,
       pred,
     } = quickConfigs || {};
     return {
@@ -338,14 +339,14 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
             ...(receiverKey && senderKey
               ? {
                   attrPaths: [
-                    'input/receiver_input/key',
-                    'input/sender_input/key',
+                    'input/input_table_1/key',
+                    'input/input_table_2/key',
                     'protocol',
                     'sort_result',
                     'allow_duplicate_keys',
                     'allow_duplicate_keys/no/skip_duplicates_check',
-                    'fill_value_int',
                     'ecdh_curve',
+                    'allow_duplicate_keys/no/receiver_parties',
                   ],
                   attrs: [
                     {
@@ -372,21 +373,22 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
                       is_na: true,
                     },
                     {
-                      is_na: true,
+                      s: 'CURVE_FOURQ',
+                      is_na: false,
                     },
                     {
-                      s: 'CURVE_FOURQ',
+                      ...receiverPSI,
                       is_na: false,
                     },
                   ],
                   domain: 'data_prep',
                   name: 'psi',
-                  version: '0.0.5',
+                  version: '0.0.7',
                 }
               : {
                   domain: 'data_prep',
                   name: 'psi',
-                  version: '0.0.5',
+                  version: '0.0.7',
                 }),
           },
           inputs: [`${graphId}-node-1-output-0`, `${graphId}-node-2-output-0`],

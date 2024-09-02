@@ -91,7 +91,7 @@ export async function listResults(
   body?: API.ListNodeResultRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.SecretPadResponse_NodeResultsListVO_>(
+  return request<API.SecretPadResponse_AllNodeResultsListVO_>(
     '/api/v1alpha1/node/result/list',
     {
       method: 'POST',

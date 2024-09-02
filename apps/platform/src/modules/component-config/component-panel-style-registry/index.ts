@@ -5,6 +5,7 @@ import { dataFilterSampleConfig } from './mpc/data-filter-sample';
 import { dataPrepPsiConfig } from './mpc/data-prep-psi';
 import { postprocessingScoreCardTransformerConfig } from './mpc/postprocessing-score-card-transformer';
 import { preprocessingBinaryOpConfig } from './mpc/preprocessing-binary-op';
+import { readTableConfig } from './mpc/read-table';
 import type { IComponentPanelStyleConfigs } from './types';
 
 export * from './types';
@@ -42,4 +43,5 @@ componentPanelStyleConfigs.register(
   ComputeModeEnum.MPC,
   postprocessingScoreCardTransformerConfig,
 );
+componentPanelStyleConfigs.register(ComputeModeEnum.MPC, readTableConfig);
 componentPanelStyleConfigs.register(ComputeModeEnum.MPC, preprocessingBinaryOpConfig);

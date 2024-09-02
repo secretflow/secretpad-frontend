@@ -34,7 +34,10 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
 
-  const [downloadBtnDisabled, setDownloadBtnDisabled] = useState(false);
+  const [downloadBtnDisabled, setDownloadBtnDisabled] = useState({
+    disable: false,
+    type: DataSourceType.OSS,
+  });
   const [downloadPath, setDownloadPath] = useState('');
   const searchInput = useRef<InputRef>(null);
   const { pathname } = useLocation();
@@ -135,8 +138,14 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
     rows.forEach((r) => {
       const { datasourceType, path } = r;
 
-      if (datasourceType === DataSourceType.OSS) {
-        setDownloadBtnDisabled(true);
+      if (
+        datasourceType === DataSourceType.OSS ||
+        datasourceType === DataSourceType.ODPS
+      ) {
+        setDownloadBtnDisabled({
+          disable: true,
+          type: datasourceType,
+        });
         setDownloadPath(path);
       }
     });
@@ -236,7 +245,7 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
                       size="small"
                       style={{ paddingLeft: 20, fontSize: 12 }}
                       onClick={() => {
-                        const search = `nodeId=${nodeId}&tab=result&resultName=${tableId}`;
+                        const search = `ownerId=${nodeId}&tab=result&resultName=${tableId}`;
                         openNewTab(pathname, '/node', search);
                       }}
                     >
@@ -263,8 +272,8 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
                   props.codeName !== 'read_data/datatable' && (
                     <Tooltip
                       title={
-                        downloadBtnDisabled
-                          ? `OSS 文件不支持直接下载，请到 OSS 对应 bucket 的预设路径下找到文件下载，地址：${downloadPath}`
+                        downloadBtnDisabled.disable
+                          ? `${downloadBtnDisabled.type} 文件不支持直接下载，请到 ${downloadBtnDisabled.type} 对应 bucket 的预设路径下找到文件下载，地址：${downloadPath}`
                           : ''
                       }
                     >
@@ -273,10 +282,10 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
                         style={{ paddingLeft: 8, fontSize: 12 }}
                         onClick={() =>
                           resultManagerService.download(nodeId || '', {
-                            domainDataId: path,
+                            domainDataId: tableId,
                           })
                         }
-                        disabled={downloadBtnDisabled}
+                        disabled={downloadBtnDisabled.disable}
                       >
                         下载
                       </Button>

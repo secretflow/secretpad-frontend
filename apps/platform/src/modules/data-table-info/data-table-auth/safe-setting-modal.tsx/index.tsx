@@ -1,12 +1,12 @@
 import { CopyOutlined } from '@ant-design/icons';
 import { Modal, Table, Typography } from 'antd';
 import classNames from 'classnames';
-import { useState } from 'react';
-
-import ReactHightLighter from '@/components/react-hight-lighter';
+import React, { useState, Suspense } from 'react';
 
 import styles from './index.less';
 import { KeyTypes, QuerySql, SafeConfigTableData, safeConfigData } from './safe-data';
+
+const ReactHightLighter = React.lazy(() => import('@/components/react-hight-lighter'));
 
 export const SafeSettingModal = ({
   open,
@@ -149,11 +149,13 @@ export const SafeSettingModal = ({
               </div>
             )}
             {QuerySql[safeConfigData[checkReady].key] && (
-              <ReactHightLighter
-                type="sql"
-                codeString={QuerySql[safeConfigData[checkReady].key]}
-                className={styles.codeContent}
-              />
+              <Suspense fallback={null}>
+                <ReactHightLighter
+                  type="sql"
+                  codeString={QuerySql[safeConfigData[checkReady].key]}
+                  className={styles.codeContent}
+                />
+              </Suspense>
             )}
           </div>
         </div>

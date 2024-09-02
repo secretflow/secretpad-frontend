@@ -97,7 +97,7 @@ export const ProjectPipeLinePopover = (props: IProps) => {
   );
 };
 
-const mapStatusToBadge = (status: API.GraphJobStatus) => {
+export const mapStatusToBadge = (status: API.GraphJobStatus) => {
   switch (status.toLowerCase()) {
     case 'running':
       return 'processing';

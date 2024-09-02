@@ -1,6 +1,4 @@
 import { Emitter } from '@secretflow/utils';
-import { parse } from 'query-string';
-import { history } from 'umi';
 
 import { listJob } from '@/services/secretpad/ProjectController';
 import { Model } from '@/util/valtio-helper';

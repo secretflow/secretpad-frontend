@@ -53,7 +53,7 @@ export const DataTableAddContent: React.FC<{
         </div>
       }
     >
-      <UploadTable setDisabled={setDisabled} />
+      <UploadTable setDisabled={setDisabled} nodeNameOptions={[]} />
     </Drawer>
   );
 };

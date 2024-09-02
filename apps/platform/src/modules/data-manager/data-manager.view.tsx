@@ -19,10 +19,12 @@ import type { FilterValue } from 'antd/es/table/interface';
 import { parse } from 'query-string';
 import type { ChangeEvent } from 'react';
 import React, { useEffect, useRef } from 'react';
+import { useLocation } from 'umi';
 
 import { confirmDelete } from '@/components/comfirm-delete';
 import { EdgeAuthWrapper } from '@/components/edge-wrapper-auth';
 import { Platform, hasAccess } from '@/components/platform-wrapper';
+import { getColumnSearchProps } from '@/components/table-column-search';
 import { DataAddDrawer } from '@/modules/data-table-add/add-data/add-data.view';
 import { DatatableInfoService } from '@/modules/data-table-info/component/data-table-auth/data-table-auth.service';
 import { DataTableAuth } from '@/modules/data-table-info/data-table-auth-drawer';
@@ -31,7 +33,6 @@ import {
   GuideTourKeys,
   GuideTourService,
 } from '@/modules/guide-tour/guide-tour-service';
-import { NodeService } from '@/modules/node';
 import {
   deleteDatatable,
   pushDatatableToTeeNode,
@@ -55,6 +56,11 @@ export const DataManagerComponent: React.FC = () => {
   const guideTourService = useModel(GuideTourService);
   const loginService = useModel(LoginService);
   const [messageApi, contextHolder] = message.useMessage();
+
+  const { search } = useLocation();
+  const { ownerId } = parse(search);
+  const isAutonomyMode = hasAccess({ type: [Platform.AUTONOMY] });
+
   const ref1 = useRef(null);
   const steps: TourProps['steps'] = [
     {
@@ -89,6 +95,7 @@ export const DataManagerComponent: React.FC = () => {
         { text: 'OSS', value: DataSourceType.OSS },
         { text: 'HTTP', value: DataSourceType.HTTP },
         { text: 'LOCAL', value: DataSourceType.LOCAL },
+        { text: 'ODPS', value: DataSourceType.ODPS },
       ],
     },
     {
@@ -133,6 +140,13 @@ export const DataManagerComponent: React.FC = () => {
       },
     },
     {
+      title: '所属节点',
+      dataIndex: 'nodeName',
+      key: 'nodeName',
+      width: '15%',
+      ...getColumnSearchProps('nodeName', '请输入节点名称搜索'),
+    },
+    {
       title: (
         <Space>
           <div className={styles.uploadText}>状态</div>
@@ -156,7 +170,7 @@ export const DataManagerComponent: React.FC = () => {
               type="link"
               icon={<ReloadOutlined />}
               onClick={() => {
-                viewInstance.refreshTableStatus(record);
+                viewInstance.refreshTableStatus(record, isAutonomyMode);
               }}
             >
               刷新
@@ -264,6 +278,8 @@ export const DataManagerComponent: React.FC = () => {
   ];
 
   const handleDelete = (record: API.DatatableVO) => {
+    // autonomy 模式下，nodeId 是当前数据表所属的某个节点，center 模式下，nodeId 是登陆的节点
+    const currentNodeId = isAutonomyMode ? record.nodeId : (ownerId as string);
     confirmDelete({
       name: record.datatableName || '',
       description: '',
@@ -272,7 +288,8 @@ export const DataManagerComponent: React.FC = () => {
           record.datatableName || '',
           record.datatableId || '',
           messageApi,
-          record.type,
+          record.type as string,
+          currentNodeId,
         );
       },
     });
@@ -292,6 +309,23 @@ export const DataManagerComponent: React.FC = () => {
       clearTimeout(viewInstance.tableListTimeOut);
     }
   }, [viewInstance.tablesList]);
+
+  const renderColumns = () => {
+    // tee节点 / MPC部署模式 / p2p部署模式 不展示加密上传
+    // nodeName 只在 p2p 模式下展示
+    let newColumns = columns;
+    if (
+      viewInstance.currentNode.nodeId === 'tee' ||
+      loginService.userInfo?.deployMode === 'MPC' ||
+      isAutonomyMode
+    ) {
+      newColumns = columns.filter((item) => item.key !== 'pushToTeeStatus');
+    }
+    if (!isAutonomyMode) {
+      newColumns = columns.filter((item) => item.key !== 'nodeName');
+    }
+    return newColumns;
+  };
 
   return (
     <div className={styles.main}>
@@ -325,17 +359,11 @@ export const DataManagerComponent: React.FC = () => {
       <div className={styles.content}>
         <Table
           dataSource={viewInstance.displayTableList}
-          // tee节点 / MPC部署模式 / p2p部署模式 不展示加密上传
-          columns={
-            viewInstance.currentNode.nodeId === 'tee' ||
-            loginService.userInfo?.deployMode === 'MPC' ||
-            hasAccess({ type: [Platform.AUTONOMY] })
-              ? columns.filter((item) => item.key !== 'pushToTeeStatus')
-              : columns
-          }
+          columns={renderColumns()}
           loading={viewInstance.tableLoading}
           onChange={(pagination, filters, sorter) => {
             viewInstance.typeFilters = filters?.datasourceType as FilterValue;
+            viewInstance.nodeNamesFilter = filters?.nodeName as FilterValue;
             viewInstance.getTableList();
           }}
           pagination={{
@@ -346,11 +374,10 @@ export const DataManagerComponent: React.FC = () => {
             onChange: (page, pageSize) => {
               viewInstance.pageNumber = page;
               viewInstance.pageSize = pageSize;
-              // viewInstance.getTableList();
             },
             size: 'default',
           }}
-          rowKey={(record) => record.datatableId as string}
+          rowKey={(record) => `${record.datatableId}_${record.nodeId}`}
           size="small"
         />
       </div>
@@ -386,7 +413,6 @@ export const DataManagerComponent: React.FC = () => {
           visible={viewInstance.showDatatableInfoDrawer}
           data={{
             tableInfo: viewInstance.tableInfo,
-            node: viewInstance.nodeService.currentNode as API.NodeVO,
           }}
         />
       )}
@@ -418,6 +444,8 @@ export class DataManagerView extends Model {
 
   statusFilter = '';
 
+  nodeNamesFilter: FilterValue | null = null;
+
   typeFilters: FilterValue | null = null;
 
   search = '';
@@ -442,21 +470,11 @@ export class DataManagerView extends Model {
 
   guideTourService = getModel(GuideTourService);
   dataManagerService = getModel(DataManagerService);
-  nodeService = getModel(NodeService);
   datatableInfoService = getModel(DatatableInfoService);
 
   onViewMount() {
-    if (this.nodeService.currentNode) {
-      this.getTableList(this.nodeService.currentNode.nodeId as string);
-      this.currentNode = this.nodeService.currentNode;
-    }
-    this.nodeService.eventEmitter.on((currentNode) => {
-      this.getTableList(currentNode.nodeId);
-      this.currentNode = currentNode;
-    });
-    this.datatableInfoService.eventEmitter.on(() => {
-      this.getTableList();
-    });
+    const { ownerId } = parse(window.location.search);
+    this.getTableList(ownerId as string);
   }
 
   closeGuideTour() {
@@ -469,20 +487,25 @@ export class DataManagerView extends Model {
     } else {
       this.tableLoading = true;
     }
-    const nodeId = nodeIdParam || this.nodeService.currentNode?.nodeId;
+    const { ownerId } = parse(window.location.search);
+    const currentOwnerId = nodeIdParam || ownerId;
     const listData = await this.dataManagerService.listDataTables(
-      nodeId || '',
+      currentOwnerId as string,
       this.pageNumber,
       this.pageSize,
       this.statusFilter,
       this.search,
-      this.typeFilters,
+      this.typeFilters as string[],
+      this.nodeNamesFilter as string[],
     );
 
     this.tableLoading = false;
     this.totalNum = listData?.totalDatatableNums || 1;
-    this.tablesList = listData?.datatableVOList || [];
-
+    this.tablesList = (listData?.datatableNodeVOList || []).map((item) => ({
+      ...item.datatableVO,
+      nodeId: item.nodeId,
+      nodeName: item.nodeName,
+    }));
     this.displayTableList = this.tablesList;
   }
 
@@ -505,10 +528,11 @@ export class DataManagerView extends Model {
     dataId: string,
     messageApi: MessageInstance,
     type: string,
+    currentNodeId?: string,
   ) => {
-    if (!this.nodeService.currentNode?.nodeId) return;
+    if (!currentNodeId) return;
     const { status } = await deleteDatatable({
-      nodeId: this.nodeService.currentNode?.nodeId,
+      nodeId: currentNodeId,
       datatableId: dataId,
       type,
     });
@@ -524,11 +548,11 @@ export class DataManagerView extends Model {
     const { datatableId } = record;
 
     const { search } = window.location;
-    const { nodeId } = parse(search);
+    const { ownerId } = parse(search);
 
     try {
       const { status } = await pushDatatableToTeeNode({
-        nodeId: nodeId as string,
+        nodeId: ownerId as string,
         datatableId,
       });
 
@@ -557,24 +581,30 @@ export class DataManagerView extends Model {
     this.search = e.target.value;
     clearTimeout(this.searchDebounce);
     this.searchDebounce = setTimeout(() => {
+      this.pageNumber = 1;
       this.getTableList();
     }, 300) as unknown as number;
   }
 
-  refreshTableStatus = async (record: API.DatatableVO) => {
+  refreshTableStatus = async (record: API.DatatableVO, isAutonomyMode: boolean) => {
+    const { ownerId } = parse(window.location.search);
+    const refreshTableNodeId = isAutonomyMode ? record?.nodeId : ownerId;
     try {
       const { status, data } = await getDatatable({
         datatableId: record.datatableId,
-        nodeId: this.currentNode.nodeId,
+        nodeId: refreshTableNodeId,
         type: record.type,
       });
       if (status?.code === 0) {
         message.success('数据状态刷新成功');
         // TODO: 这里服务端列表状态和这个状态暂时做不到同步，需要手动修改列表状态
         // this.getTableList();
-        const newStatus = data?.status;
+        const newStatus = data?.datatableVO?.status;
         const newList = this.displayTableList.map((item) => {
-          if (item.datatableId === record.datatableId) {
+          const changeStatus = isAutonomyMode
+            ? item.datatableId === record.datatableId && item.nodeId === record.nodeId
+            : item.datatableId === record.datatableId;
+          if (changeStatus) {
             return {
               ...item,
               status: newStatus,

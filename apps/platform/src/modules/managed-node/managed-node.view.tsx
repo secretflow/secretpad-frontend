@@ -107,7 +107,7 @@ export const ManagedNodeComponent: React.FC = () => {
                 onMouseLeave={() => setShowDetailsBtn(-1)}
                 className={styles.nodeInfo}
                 onClick={() => {
-                  const search = `nodeId=${item.nodeId}&tab=data-management`;
+                  const search = `ownerId=${item.nodeId}&tab=data-management`;
                   openNewTab(pathname, '/node', search);
                 }}
               >
@@ -129,7 +129,7 @@ export const ManagedNodeComponent: React.FC = () => {
                         onClick={() => {
                           history.push({
                             pathname: '/my-node',
-                            search: `nodeId=${item.nodeId}`,
+                            search: `ownerId=${item.nodeId}`,
                           });
                         }}
                       >
@@ -262,22 +262,27 @@ export class ManagedNodeView extends Model {
   }
 
   async gotoNodePage(pathname: string, nodeId: string, tab = 'data-management') {
-    const search = `nodeId=${nodeId}&tab=${tab}`;
+    const search = `ownerId=${nodeId}&tab=${tab}`;
     openNewTab(pathname, '/node', search);
   }
 
-  async loadResultList(nodeId: string) {
+  async loadResultList(ownerId: string) {
     this.resultList = [];
     this.resultListLoading = true;
     const list = await this.resultManagerService.getResultList(
-      nodeId,
+      ownerId,
       1,
       10,
       '',
       [],
       '',
+      null,
     );
     this.resultListLoading = false;
-    this.resultList = list?.nodeResultsVOList || [];
+    this.resultList = (list?.nodeAllResultsVOList || []).map((item) => ({
+      ...(item?.nodeResultsVO || {}),
+      nodeName: item.nodeName,
+      nodeId: item.nodeId,
+    }));
   }
 }

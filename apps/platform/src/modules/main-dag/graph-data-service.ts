@@ -32,4 +32,30 @@ export class GraphDataService extends DefaultDataService {
     await this.fetch();
     return this.getNodes().filter(({ codeName }) => codeName === 'read_data/datatable');
   }
+
+  /** 获取当前节点的所有上游节点id */
+  async getUpstreamInputNodes(nodeId: string, acc: string[]) {
+    const currentNode = this.getNode(nodeId);
+    if (!currentNode) return [];
+    const { inputs } = currentNode as GraphNode & { inputs?: string[] };
+    if (!inputs || inputs.length < 1) return [];
+
+    inputs.forEach((input) => {
+      if (!input) return;
+      const [, upstreamNodeId] = input.match(/(.*)-output-([0-9]+)$/) || [];
+      if (upstreamNodeId) {
+        acc.push(upstreamNodeId);
+        this.getUpstreamInputNodes(upstreamNodeId, acc);
+      }
+    });
+  }
+
+  /** 根据上游所有节点id，获取上游样本表 */
+  async getInputsSampleNodes(upstramNodeIds: string[]) {
+    await this.fetch();
+    return this.getNodes().filter(
+      ({ codeName, id }) =>
+        codeName === 'read_data/datatable' && upstramNodeIds.includes(id),
+    );
+  }
 }

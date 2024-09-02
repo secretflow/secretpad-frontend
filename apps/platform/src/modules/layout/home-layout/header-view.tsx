@@ -9,7 +9,7 @@ import {
 import { Avatar, Badge, Button, Dropdown, Empty, Popover, Space, Spin } from 'antd';
 import classNames from 'classnames';
 import { parse } from 'query-string';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { history, useLocation } from 'umi';
 
 import centerOfflineImgLink from '@/assets/center-offline.png';
@@ -26,6 +26,7 @@ import { LoginService } from '@/modules/login/login.service';
 import platformConfig from '@/platform.config';
 import { logout } from '@/services/secretpad/AuthController';
 import { get } from '@/services/secretpad/NodeController';
+import { get as getInst } from '@/services/secretpad/InstController';
 import { getImgLink } from '@/util/tracert-helper';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
@@ -72,7 +73,7 @@ export const HeaderComponent = () => {
   const versionService = useModel(VersionService);
 
   const { search, pathname } = useLocation();
-  const { nodeId } = parse(search);
+  const { ownerId } = parse(search);
 
   const [avatarLink, setAvatarLink] = useState('');
   const [avatarOfflineLink, setAvatarOfflineLink] = useState('');
@@ -124,6 +125,21 @@ export const HeaderComponent = () => {
       ),
     },
     {
+      key: 'inst',
+      label: (
+        <div
+          onClick={() => {
+            history.push({
+              pathname: '/my-node',
+              search: `ownerId=${ownerId}`,
+            });
+          }}
+        >
+          我的机构
+        </div>
+      ),
+    },
+    {
       key: 'changePassword',
       label: <div onClick={viewInstance.showChangePassword}>修改密码</div>,
     },
@@ -134,16 +150,30 @@ export const HeaderComponent = () => {
     },
   ];
 
+  const isAutonomyMode = hasAccess({ type: [Platform.AUTONOMY] });
+
+  const platFormModeItems =
+    isAutonomyMode && pathname !== '/my-node'
+      ? items
+      : items.filter((item) => item.key !== 'inst');
+
   useEffect(() => {
-    const getNodeName = async (nodeId: string) => {
-      if (!nodeId) return;
-      const info = await get({
-        nodeId,
-      });
-      viewInstance.nodeName = info.data?.nodeName || '';
+    const getNodeName = async (ownerId: string) => {
+      if (!ownerId) return;
+      if (isAutonomyMode) {
+        const info = await getInst({
+          instId: ownerId,
+        });
+        viewInstance.instName = info.data?.instName || '';
+      } else {
+        const info = await get({
+          nodeId: ownerId,
+        });
+        viewInstance.nodeName = info.data?.nodeName || '';
+      }
     };
     if (viewInstance.showMyNode(pathname)) {
-      getNodeName(nodeId as string);
+      getNodeName(ownerId as string);
     }
   }, []);
 
@@ -163,45 +193,17 @@ export const HeaderComponent = () => {
     }
   }, [loginService?.userInfo]);
 
-  // if (viewInstance.showMyNode()) {
-  //   items.push({
-  //     key: 'myNode',
-  //     icon: (
-  //       <HddOutlined
-  //         onClick={() =>
-  //           history.push({
-  //             pathname: '/my-node',
-  //             search: `nodeId=${nodeId}`,
-  //           })
-  //         }
-  //       />
-  //     ),
-  //     label: (
-  //       <div
-  //         onClick={() =>
-  //           history.push({
-  //             pathname: '/my-node',
-  //             search: `nodeId=${nodeId}`,
-  //           })
-  //         }
-  //       >
-  //         我的节点
-  //       </div>
-  //     ),
-  //   });
-  // }
-
   return (
     <div className={styles['header-items']}>
       <div className={styles.left}>
         {
           <div
             className={classNames({
-              [styles.logo]: hasAccess({ type: [Platform.AUTONOMY] }),
+              [styles.logo]: isAutonomyMode,
             })}
             onClick={() => {
-              if (hasAccess({ type: [Platform.AUTONOMY] })) {
-                history.push(`/edge?nodeId=${nodeId}&tab=workbench`);
+              if (isAutonomyMode) {
+                history.push(`/edge?ownerId=${ownerId}&tab=workbench`);
               }
             }}
           >
@@ -217,13 +219,15 @@ export const HeaderComponent = () => {
               onClick={() =>
                 history.push({
                   pathname: '/my-node',
-                  search: `nodeId=${nodeId}`,
+                  search: `ownerId=${ownerId}`,
                 })
               }
             >
               <DatabaseOutlined />
-              <span className={styles.nodeName}>{viewInstance.nodeName}</span>
-              节点
+              <span className={styles.nodeName}>
+                {isAutonomyMode ? viewInstance.instName : viewInstance.nodeName}
+              </span>
+              {isAutonomyMode ? '机构' : '节点'}
             </div>
           </>
         )}
@@ -289,7 +293,7 @@ export const HeaderComponent = () => {
               onClick={() =>
                 history.push({
                   pathname: '/message',
-                  search: `nodeId=${nodeId}&active=process`,
+                  search: `ownerId=${ownerId}&active=process`,
                 })
               }
             >
@@ -310,7 +314,7 @@ export const HeaderComponent = () => {
         <span className={styles.loginline} />
         <Dropdown
           menu={{
-            items,
+            items: platFormModeItems,
           }}
         >
           <div style={{ cursor: 'pointer' }} onClick={(e) => e.preventDefault()}>
@@ -341,6 +345,8 @@ export class HeaderModel extends Model {
   guideTourService = getModel(GuideTourService);
 
   nodeName = '';
+
+  instName = '';
 
   showChangePasswordModel = false;
 

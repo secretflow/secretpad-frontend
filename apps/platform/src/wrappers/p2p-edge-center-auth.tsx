@@ -16,44 +16,51 @@ import { useModel } from '@/util/valtio-helper';
  */
 const P2pEdgeCenterAuth = () => {
   const loginService = useModel(LoginService);
-  const { nodeId } = parse(window.location.search);
-  if (!nodeId) return <Navigate to="/login" />;
+  const { ownerId } = parse(window.location.search);
+  if (!ownerId) return <Navigate to="/login" />;
   const embeddedNodes = ['alice', 'bob', 'tee'];
-  const getUserInfo = async () => {
-    await loginService.getUserInfo();
-    // platformType 是 CENTER 登录账号是 center 用户，并且是内置节点，可以直接进入 CENTER 模式下的 edge 平台
-    if (
-      loginService?.userInfo?.platformType === 'CENTER' &&
-      loginService?.userInfo?.ownerType === 'CENTER' &&
-      embeddedNodes.includes(nodeId as string)
-    ) {
-      setCanOutlet(true);
-      return;
-    }
 
-    // platformType 是  AUTONOMY
-    if (loginService?.userInfo?.platformType === Platform.AUTONOMY) {
-      setCanOutlet(true);
-      return;
-    }
-
-    //  platformType 是  EDGE
-    if (loginService?.userInfo?.platformType === 'EDGE') {
-      setCanOutlet(true);
-      return;
-    }
-
-    setCanOutlet(false);
-  };
+  const [canOutlet, setCanOutlet] = useState(true);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
+    const getUserInfo = async () => {
+      await loginService.getUserInfo();
+      // 获取用户信息接口请求完成
+      setIsReady(true);
+
+      // platformType 是 CENTER 登录账号是 center 用户，并且是内置节点，可以直接进入 CENTER 模式下的 edge 平台
+      if (
+        loginService?.userInfo?.platformType === 'CENTER' &&
+        loginService?.userInfo?.ownerType === 'CENTER' &&
+        embeddedNodes.includes(ownerId as string)
+      ) {
+        setCanOutlet(true);
+        return;
+      }
+
+      // platformType 是  AUTONOMY
+      if (
+        loginService?.userInfo?.platformType === Platform.AUTONOMY &&
+        loginService?.userInfo.ownerId === ownerId
+      ) {
+        setCanOutlet(true);
+        return;
+      }
+
+      //  platformType 是  EDGE
+      if (loginService?.userInfo?.platformType === 'EDGE') {
+        setCanOutlet(true);
+        return;
+      }
+
+      setCanOutlet(false);
+    };
     getUserInfo();
   }, []);
 
-  const [canOutlet, setCanOutlet] = useState(true);
-
   if (canOutlet) {
-    return <Outlet />;
+    return isReady && <Outlet />;
   } else {
     return <Navigate to="/login" />;
   }

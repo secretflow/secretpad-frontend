@@ -111,7 +111,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
     nodeId,
     upstreamNodes,
     graphNode: savedNode,
-    inputNodes,
+    upstreamSampleNodes,
   } = node;
   const { pathname, search } = useLocation();
   const { mode } = parse(search);
@@ -137,8 +137,8 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
             graphNode,
           )
         : graphNode?.inputs?.length
-        ? graphNode?.inputs.concat(getInputTables(inputNodes))
-        : getInputTables(inputNodes),
+        ? graphNode?.inputs.concat(getInputTables(upstreamSampleNodes))
+        : getInputTables(upstreamSampleNodes),
   };
 
   useEffect(() => {

@@ -12,7 +12,7 @@ export const OdpsPartition = () => {
                   return (
                     <Row key={field.key}>
                       <Space.Compact key={field.key} style={{ width: '100%' }}>
-                        <Col span={12}>
+                        <Col span={24}>
                           <Form.Item {...field} name={[field.name, 'name']}>
                             <Input
                               addonBefore={index === 0 ? `一级分区` : `二级分区`}
@@ -20,11 +20,11 @@ export const OdpsPartition = () => {
                             />
                           </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        {/* <Col span={12}>
                           <Form.Item {...field} name={[field.name, 'partitionValue']}>
                             <Input placeholder="请输入分区值，多分区用“,”分隔" />
                           </Form.Item>
-                        </Col>
+                        </Col> */}
                       </Space.Compact>
                     </Row>
                   );

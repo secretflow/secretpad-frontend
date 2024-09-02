@@ -31,12 +31,9 @@ export const ChangePasswordModal = ({ visible, close }: IChangePasswordModal) =>
       if (status?.code == 0) {
         message.success('账户密码修改成功');
         close();
-        await logout(
-          {},
-          {
-            name: loginService?.userInfo?.name,
-          },
-        );
+        await logout({
+          name: loginService?.userInfo?.name,
+        });
         history.push('/login');
       } else {
         message.error(status?.msg);

@@ -21,7 +21,15 @@ export const ComponentConfigDrawer: React.FC = () => {
 
   const { data, visible } = modal || {};
 
-  const { id, codeName, graphNode, upstreamNodes, inputNodes, label } = data || {};
+  const {
+    id,
+    codeName,
+    graphNode,
+    upstreamNodes,
+    inputNodes,
+    label,
+    upstreamSampleNodes,
+  } = data || {};
 
   const [, idNum] = id?.match(/.*-([0-9]+)$/) || [];
   const [isRecordDrawerOpen, setRecordDrawerStatus] = useState<boolean>(false);
@@ -73,7 +81,14 @@ export const ComponentConfigDrawer: React.FC = () => {
 
       {visible && (
         <ConfigFormComponent
-          node={{ nodeId: id, name: codeName, upstreamNodes, graphNode, inputNodes }}
+          node={{
+            nodeId: id,
+            name: codeName,
+            upstreamNodes,
+            graphNode,
+            inputNodes,
+            upstreamSampleNodes,
+          }}
           onClose={onClose}
         />
       )}

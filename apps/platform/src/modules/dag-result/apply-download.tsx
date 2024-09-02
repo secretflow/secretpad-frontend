@@ -50,7 +50,7 @@ export const ApplyDownloadModal = ({
 
   const handleDownload = async (node: API.Participant) => {
     const { status } = await createAudit({
-      nodeID: node.nodeID,
+      initiatorId: node.nodeID,
       voteType: 'TEE_DOWNLOAD',
       voteConfig: {
         jobID: applyList.jobID,
@@ -201,7 +201,7 @@ export const ApplyDownload = (props: ApplyDownloadProps) => {
 
   const handleDownload = async (node: API.Participant) => {
     const { status } = await createAudit({
-      nodeID: node.nodeID,
+      initiatorId: node.nodeID,
       voteType: 'TEE_DOWNLOAD',
       voteConfig: {
         jobID: applyList.jobID,

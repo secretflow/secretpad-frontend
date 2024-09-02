@@ -5,7 +5,6 @@ import React, { useEffect } from 'react';
 
 import { formatTimestamp } from '@/modules/dag-result/utils';
 import { DataManagerView } from '@/modules/data-manager/data-manager.view';
-import { NodeService } from '@/modules/node';
 import { ComputeModeType, computeModeText } from '@/modules/project-list';
 import { getDatatable } from '@/services/secretpad/DatatableController';
 import { deleteProjectDatatable } from '@/services/secretpad/ProjectController';
@@ -14,6 +13,7 @@ import { getModel, Model, useModel } from '@/util/valtio-helper';
 import styles from './index.less';
 import type { ProjectAuthConfigType } from './project-auth-config';
 import { ProjectAuthConfigDrawer } from './project-auth-config';
+import { hasAccess, Platform } from '@/components/platform-wrapper';
 
 interface IProps {
   tableInfo: API.DatatableVO;
@@ -22,7 +22,7 @@ interface IProps {
 
 export const DataTableAuth: React.FC<IProps> = (props: IProps) => {
   const viewInstance = useModel(DataTableAuthModel);
-  const { tableInfo, size } = props;
+  const { tableInfo } = props;
 
   useEffect(() => {
     viewInstance.getTableInfo(tableInfo);
@@ -111,7 +111,6 @@ export const DataTableAuth: React.FC<IProps> = (props: IProps) => {
 };
 
 export class DataTableAuthModel extends Model {
-  nodeService = getModel(NodeService);
   dataManagerViewService = getModel(DataManagerView);
 
   projectAuthRecord: API.AuthProjectVO | undefined = undefined;
@@ -133,20 +132,31 @@ export class DataTableAuthModel extends Model {
   tableInfo: API.DatatableVO = {};
 
   async getTableInfo(tableInfo: API.DatatableVO) {
-    const { nodeId } = parse(window.location.search);
+    const isAutonomyMode = hasAccess({ type: [Platform.AUTONOMY] });
+    const { ownerId } = parse(window.location.search);
+    // autonomy 模式下是机构下的某个 nodeId, 其他模式下是当前登录用户的 ownerId 也即是nodeId
+    const currentNodeId = isAutonomyMode ? tableInfo.nodeId : ownerId;
     const response = await getDatatable({
       datatableId: tableInfo.datatableId,
-      nodeId: nodeId as string,
+      nodeId: currentNodeId as string,
       type: tableInfo.type,
     });
-    this.tableInfo = response.data || {};
+    this.tableInfo = {
+      ...(response.data?.datatableVO || {}),
+      nodeId: response.data?.nodeId,
+      nodeName: response.data?.nodeName,
+    };
     this.projectAuthList = [...(this.tableInfo.authProjects || [])].reverse() || [];
   }
 
   async cancelAuth(item: API.AuthProjectVO, tableInfo: API.DatatableVO) {
+    const isAutonomyMode = hasAccess({ type: [Platform.AUTONOMY] });
+    const { ownerId } = parse(window.location.search);
+    // autonomy 模式下是机构下的某个 nodeId, 其他模式下是当前登录用户的 ownerId 也即是nodeId
+    const currentNodeId = isAutonomyMode ? tableInfo.nodeId : ownerId;
     const res = await deleteProjectDatatable({
       projectId: item.projectId,
-      nodeId: this.nodeService.currentNode?.nodeId,
+      nodeId: currentNodeId,
       datatableId: tableInfo.datatableId,
       type: tableInfo.type,
     });

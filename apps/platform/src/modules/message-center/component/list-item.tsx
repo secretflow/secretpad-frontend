@@ -1,6 +1,7 @@
 import { Divider, Space, Tag, Tooltip } from 'antd';
 import React from 'react';
 
+import { Platform, hasAccess } from '@/components/platform-wrapper';
 import { formatTimestamp } from '@/modules/dag-result/utils';
 
 import type { NodeStatusList } from '../message.service';
@@ -36,8 +37,24 @@ export const ListItemTitleRender = (props: {
         {itemObj.tagText}
       </Tag>
       <Space className={styles.listItemTitleName} onClick={() => showInfoDrawer(item)}>
-        <div>{item.messageName}</div>
-        <div>{itemObj.suffix}</div>
+        {item.type === MessageItemType.PROJECT_NODE_ADD ? (
+          <>
+            {item.initiatingTypeMessage?.initiatorNodeName && (
+              <div>
+                来自
+                {`${item.initiatingTypeMessage.initiatorNodeName}`}
+                机构的
+              </div>
+            )}
+            {item.messageName}
+            <div>{itemObj.suffix}</div>
+          </>
+        ) : (
+          <>
+            <div>{item.messageName}</div>
+            <div>{itemObj.suffix}</div>
+          </>
+        )}
       </Space>
       {activeTab === MessageActiveTabType.PROCESS &&
       filterState === MessageState.PENDING ? null : (
@@ -90,24 +107,28 @@ export const DownloadDesc = (props: {
   item: API.MessageVO;
   activeTab?: MessageActiveTabType;
 }) => {
+  const isP2p = hasAccess({ type: [Platform.AUTONOMY] });
   const { item, activeTab = MessageActiveTabType.PROCESS } = props;
   return (
     <Space>
       <span className={styles.listItemDescText}>
         {formatTimestamp(item?.createTime || '')}
       </span>
-      <Divider
-        type="vertical"
-        style={{ borderInlineStart: '1px solid rgba(5, 5, 5, 0.2)' }}
-      />
       {activeTab === MessageActiveTabType.APPLY && (
         <>
-          <span className={styles.listItemDescText}>合作节点 : </span>
+          <Divider
+            type="vertical"
+            style={{ borderInlineStart: '1px solid rgba(5, 5, 5, 0.2)' }}
+          />
+
+          <span className={styles.listItemDescText}>
+            {isP2p ? `合作机构` : `合作节点`} :{' '}
+          </span>
           {(item?.initiatingTypeMessage?.partyVoteStatuses || []).map(
             (node: NodeStatusList, index: number) => (
               <span key={node.nodeID} className={styles.listItemDescText}>{`${
                 index !== 0 ? '、' : ''
-              } ${node.nodeName}  (${
+              } ${isP2p ? node.participantName : node.nodeName}  (${
                 StatusTextObj[node.action as keyof typeof StatusTextObj]?.text
               })`}</span>
             ),

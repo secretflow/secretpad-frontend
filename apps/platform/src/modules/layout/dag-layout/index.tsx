@@ -76,7 +76,7 @@ export const DagLayout = () => {
     const userInfo = await loginService.getUserInfo();
     if (userInfo.platformType === Platform.AUTONOMY) {
       const { origin } = (history.location.state as { origin: string }) || {};
-      history.push(`/edge?nodeId=${userInfo.ownerId}&tab=${origin || 'my-project'}`);
+      history.push(`/edge?ownerId=${userInfo.ownerId}&tab=${origin || 'my-project'}`);
     } else {
       history.push('/home?tab=project-management');
       viewInstance.setInitActiveMenu('');

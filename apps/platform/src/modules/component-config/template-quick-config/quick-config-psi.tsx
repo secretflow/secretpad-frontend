@@ -295,35 +295,59 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
         }
       </Form.List>
       {type === 'MPC' && (
-        <Form.Item
-          name="featureSelects"
-          label={<div className={styles.configItemLabel}>选择特征</div>}
-          required
-          messageVariables={{ msg: '请选择特征列' }}
-          rules={[
-            {
-              required: true,
-              message: '${msg}',
-              validator: (_, val) => {
-                if (!val || val.length === 0)
-                  return Promise.reject(new Error('${msg}'));
+        <Form.Item noStyle>
+          <Form.Item
+            name="featureSelects"
+            label={<div className={styles.configItemLabel}>选择特征</div>}
+            required
+            messageVariables={{ msg: '请选择特征列' }}
+            rules={[
+              {
+                required: true,
+                message: '${msg}',
+                validator: (_, val) => {
+                  if (!val || val.length === 0)
+                    return Promise.reject(new Error('${msg}'));
 
-                return Promise.resolve();
+                  return Promise.resolve();
+                },
               },
-            },
-          ]}
-          getValueProps={(value) => {
-            return { value: value?.ss };
-          }}
-          getValueFromEvent={(value) => {
-            return { ss: value };
-          }}
-        >
-          <MultiTableFeatureSelection
-            tableKeys={selectedTableInfo}
-            size={'small'}
-            rules={{ min: 1 }}
-          />
+            ]}
+            getValueProps={(value) => {
+              return { value: value?.ss };
+            }}
+            getValueFromEvent={(value) => {
+              return { ss: value };
+            }}
+          >
+            <MultiTableFeatureSelection
+              tableKeys={selectedTableInfo}
+              size={'small'}
+              rules={{ min: 1 }}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="receiverPSI"
+            label={<div className={styles.configItemLabel}>PSI结果接收方</div>}
+            required
+            messageVariables={{ label: '接收方' }}
+            valuePropName="value"
+            getValueProps={(value) => {
+              return { value: value?.ss };
+            }}
+            tooltip={'PSI结果的接收方'}
+            getValueFromEvent={(value) => {
+              return { ss: value };
+            }}
+            rules={[
+              {
+                required: true,
+              },
+            ]}
+          >
+            <Select mode="multiple" options={nodeOptions} />
+          </Form.Item>
         </Form.Item>
       )}
     </>
