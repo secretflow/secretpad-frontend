@@ -34,8 +34,6 @@ mobile: false
 
 类似于 MVVM 的概念，一个 UI 组件分为了 view + viewModel
 
-<code src="../../../platform/src/modules/example/todo-list.view.tsx"></code>
-
 `src/modules/example/todo-list.view.tsx`
 
 ```tsx | pure
