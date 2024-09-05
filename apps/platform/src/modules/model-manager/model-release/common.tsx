@@ -3,7 +3,7 @@ import {
   MinusSquareOutlined,
   SyncOutlined,
 } from '@ant-design/icons';
-import { Checkbox, Form, Select, Table, Tag } from 'antd';
+import { Checkbox, Form, Select, Table, Tag, Tooltip } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import classNames from 'classnames';
 import { useState } from 'react';
@@ -11,7 +11,6 @@ import { useEffect } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 
 import styles from './index.less';
-import { Tooltip } from 'antd/lib';
 
 export const ToggleButton = (props: {
   disabled: boolean;
