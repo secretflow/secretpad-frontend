@@ -1,6 +1,6 @@
 import { Form, Input, Select, Tag, Typography } from 'antd';
 import { parse } from 'query-string';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 import { getProject } from '@/services/secretpad/ProjectController';
 
@@ -57,23 +57,6 @@ export const DefaultTableSelect: React.FC<RenderProp<string>> = (config) => {
 
     getTables();
   }, []);
-  const selectedTable = Form.useWatch(
-    node.prefixes && node.prefixes.length > 0
-      ? node.prefixes.join('/') + '/' + node.name
-      : node.name,
-    form,
-  );
-
-  const isPartitionTableSelected = useCallback(
-    (selectedTableId: string) => {
-      const selected = tables.find((t) => t.datatableId === selectedTableId);
-      if (selected) {
-        return selected.isPartitionTable;
-      }
-      return false;
-    },
-    [tables],
-  );
 
   return (
     <Form.Item noStyle>
@@ -122,6 +105,7 @@ export const DefaultTableSelect: React.FC<RenderProp<string>> = (config) => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
+                    height: 30,
                   }}
                 >
                   <Typography.Text ellipsis>{table.datatableName}</Typography.Text>
@@ -140,21 +124,42 @@ export const DefaultTableSelect: React.FC<RenderProp<string>> = (config) => {
           ))}
         </Select>
       </Form.Item>
-
-      {projectMode === 'MPC' && isPartitionTableSelected(selectedTable) && (
-        <Form.Item
-          tooltip={
-            <div style={{ whiteSpace: 'pre-wrap' }}>
-              {`1. 目前解析支持 “>=|<=|<>|!=|=|>|<| LIKE | like ”，不建议使用 like 以及 ' !=
+      <Form.Item
+        noStyle
+        dependencies={[
+          node.prefixes && node.prefixes.length > 0
+            ? node.prefixes.join('/') + '/' + node.name
+            : node.name,
+        ]}
+      >
+        {({ getFieldValue }) => {
+          const selectId = getFieldValue(
+            node.prefixes && node.prefixes.length > 0
+              ? node.prefixes.join('/') + '/' + node.name
+              : node.name,
+          );
+          const selected = tables.find(
+            (t) => t.datatableId === selectId,
+          )?.isPartitionTable;
+          if (selected && projectMode === 'MPC') {
+            return (
+              <Form.Item
+                tooltip={
+                  <div style={{ whiteSpace: 'pre-wrap' }}>
+                    {`1. 目前解析支持 “>=|<=|<>|!=|=|>|<| LIKE | like ”，不建议使用 like 以及 ' !=
                 '\n2. 多个条件使用,隔开，多个条件使用and聚合`}
-            </div>
+                  </div>
+                }
+                label={<div className={styles.configItemLabel}>分区</div>}
+                name={'datatable_partition'}
+              >
+                <Input></Input>
+              </Form.Item>
+            );
           }
-          label={<div className={styles.configItemLabel}>分区</div>}
-          name={'datatable_partition'}
-        >
-          <Input></Input>
-        </Form.Item>
-      )}
+          return false;
+        }}
+      </Form.Item>
     </Form.Item>
   );
 };
