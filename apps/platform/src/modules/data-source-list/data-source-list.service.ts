@@ -71,6 +71,7 @@ export enum DataSourceType {
   'OSS' = 'OSS',
   'HTTP' = 'HTTP',
   'ODPS' = 'ODPS', // 未支持
+  'MYSQL' = 'MYSQL',
 }
 
 export enum DataSourceStatus {

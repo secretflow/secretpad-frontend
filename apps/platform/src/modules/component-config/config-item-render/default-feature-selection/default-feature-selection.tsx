@@ -12,6 +12,7 @@ import type { AtomicConfigNode } from '../../component-config-protocol';
 import styles from '../../index.less';
 import type { RenderProp } from '../config-render-protocol';
 
+import { SingleTableFeatureSelection } from './feature-selection-only-one';
 import { MultiTableFeatureSelection } from './table-feature-selection';
 
 interface IDataTable {
@@ -151,17 +152,22 @@ export const DefaultMultiTableFeatureSelection: React.FC<RenderProp<string>> = (
       initialValue={defaultVal}
       colon={false}
     >
-      <MultiTableFeatureSelection
-        tableKeys={tables}
-        outputTableKeys={outputTables}
-        size={'small'}
-        fromTableKey={fromTable}
-        disabled={disabled}
-        rules={{
-          min: node.col_min_cnt_inclusive || 0,
-          max: node.col_max_cnt_inclusive,
-        }}
-      />
+      {node.col_max_cnt_inclusive === 1 ? (
+        // 最多只能选择一列则变为单选下拉框
+        <SingleTableFeatureSelection tableKeys={tables} fromTableKey={fromTable} />
+      ) : (
+        <MultiTableFeatureSelection
+          tableKeys={tables} // 上游的输出表
+          outputTableKeys={outputTables} // 上游所有的输出表
+          size={'small'}
+          fromTableKey={fromTable} // 上游输入的样本表
+          disabled={disabled}
+          rules={{
+            min: node.col_min_cnt_inclusive || 0,
+            max: node.col_max_cnt_inclusive,
+          }}
+        />
+      )}
     </Form.Item>
   );
 };

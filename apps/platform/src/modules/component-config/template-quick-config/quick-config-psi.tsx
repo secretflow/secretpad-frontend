@@ -1,6 +1,6 @@
 import { PlusCircleFilled, DeleteOutlined } from '@ant-design/icons';
 import type { FormInstance } from 'antd';
-import { Form, Select, Tag, Typography } from 'antd';
+import { Form, Input, Select, Tag, Typography } from 'antd';
 import { parse } from 'query-string';
 import type { Dispatch, SetStateAction } from 'react';
 import { useState, useEffect } from 'react';
@@ -18,7 +18,12 @@ import styles from './index.less';
 const { Option } = Select;
 
 type QuickConfigPSIComponentProps = {
-  tables: { datatableId: string; nodeName: string; datatableName: string }[];
+  tables: {
+    datatableId: string;
+    nodeName: string;
+    datatableName: string;
+    isPartitionTable?: boolean;
+  }[];
   tableList: (API.ProjectDatatableBaseVO & {
     nodeId: string | undefined;
     nodeName: string | undefined;
@@ -131,7 +136,7 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
         }}
       >
         <Select
-          optionLabelProp="label"
+          optionLabelProp="title"
           showSearch
           filterOption={(input: string, option?: { label: string; value: string }) =>
             (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -142,14 +147,66 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
               key={table.datatableId}
               value={table.datatableId}
               label={table.datatableName}
+              title={
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    height: 30,
+                  }}
+                >
+                  <Typography.Text ellipsis>{table.datatableName}</Typography.Text>
+                  <div>{table.isPartitionTable && <Tag color="green">分区表</Tag>}</div>
+                </div>
+              }
             >
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography.Text ellipsis>{table.datatableName}</Typography.Text>
-                <Tag>{table.nodeName}</Tag>
+                <div>
+                  {table.isPartitionTable && <Tag color="green">分区表</Tag>}
+                  <Tag>{table.nodeName}</Tag>
+                </div>
               </div>
             </Option>
           ))}
         </Select>
+      </Form.Item>
+      <Form.Item noStyle dependencies={['dataTableReceiver']}>
+        {({ getFieldValue }) => {
+          const selectId = getFieldValue('dataTableReceiver');
+          const selected = tables.find(
+            (t) => t.datatableId === selectId?.s,
+          )?.isPartitionTable;
+          if (selected && type === 'MPC') {
+            return (
+              <Form.Item
+                tooltip={
+                  <>
+                    <div>{`1. 填写dt=maxpt，则获取最新分区；dt为分区字段`}</div>
+                    <div>
+                      {'2. 如自定义规则获取分区表，可填写如：dt=${yyyymmdd+/- 3}'}
+                    </div>
+                    <div>
+                      {'3. 如选择多表自动union，则填写如dt=20240607 or dt=20240608'}
+                    </div>
+                    <div>
+                      {
+                        '4. 支持and or 作为多个分区列条件聚合，支持 =  !=  < > >= <= 作为分区列比较条件,其他暂不支持'
+                      }
+                    </div>
+                    <div>{'5. 条件列必须是添加数据表时指定的一级或二级分区字段'}</div>
+                  </>
+                }
+                label={<div className={styles.configItemLabel}>分区</div>}
+                name={'dataTableReceiverPartition'}
+              >
+                <Input></Input>
+              </Form.Item>
+            );
+          }
+          return false;
+        }}
       </Form.Item>
 
       <Form.List name={['receiverKey', 'ss']} initialValue={[undefined]}>
@@ -224,7 +281,7 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
         }}
       >
         <Select
-          optionLabelProp="label"
+          optionLabelProp="title"
           showSearch
           filterOption={(input: string, option?: { label: string; value: string }) =>
             (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -235,14 +292,67 @@ export const QuickConfigPSIComponent = (props: QuickConfigPSIComponentProps) => 
               key={table.datatableId}
               value={table.datatableId}
               label={table.datatableName}
+              title={
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    height: 30,
+                  }}
+                >
+                  <Typography.Text ellipsis>{table.datatableName}</Typography.Text>
+                  <div>{table.isPartitionTable && <Tag color="green">分区表</Tag>}</div>
+                </div>
+              }
             >
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography.Text ellipsis>{table.datatableName}</Typography.Text>
-                <Tag>{table.nodeName}</Tag>
+                <div>
+                  {table.isPartitionTable && <Tag color="green">分区表</Tag>}
+                  <Tag>{table.nodeName}</Tag>
+                </div>
               </div>
             </Option>
           ))}
         </Select>
+      </Form.Item>
+
+      <Form.Item noStyle dependencies={['dataTableSender']}>
+        {({ getFieldValue }) => {
+          const selectId = getFieldValue('dataTableSender');
+          const selected = tables.find(
+            (t) => t.datatableId === selectId?.s,
+          )?.isPartitionTable;
+          if (selected && type === 'MPC') {
+            return (
+              <Form.Item
+                tooltip={
+                  <>
+                    <div>{`1. 填写dt=maxpt，则获取最新分区；dt为分区字段`}</div>
+                    <div>
+                      {'2. 如自定义规则获取分区表，可填写如：dt=${yyyymmdd+/- 3}'}
+                    </div>
+                    <div>
+                      {'3. 如选择多表自动union，则填写如dt=20240607 or dt=20240608'}
+                    </div>
+                    <div>
+                      {
+                        '4. 支持and or 作为多个分区列条件聚合，支持 =  !=  < > >= <= 作为分区列比较条件,其他暂不支持'
+                      }
+                    </div>
+                    <div>{'5. 条件列必须是添加数据表时指定的一级或二级分区字段'}</div>
+                  </>
+                }
+                label={<div className={styles.configItemLabel}>分区</div>}
+                name={'dataTableSenderPartition'}
+              >
+                <Input></Input>
+              </Form.Item>
+            );
+          }
+          return false;
+        }}
       </Form.Item>
 
       <Form.List name={['senderKey', 'ss']} initialValue={[undefined]}>
@@ -376,6 +486,7 @@ export const QuickConfigPSI = (props: { type?: 'MPC' | 'TEE' }) => {
         datatableId: string;
         nodeName: string;
         datatableName: string;
+        isPartitionTable: boolean; // 是否是ODPS分区表
       }[] = [];
       const dataTableList: (API.ProjectDatatableBaseVO & {
         nodeId: string | undefined;
@@ -397,6 +508,8 @@ export const QuickConfigPSI = (props: { type?: 'MPC' | 'TEE' }) => {
               datatableId: table.datatableId,
               nodeName: nodeName as string,
               datatableName: table.datatableName,
+              isPartitionTable:
+                table.partition?.type === 'odps' && table.partition?.fields,
             });
         });
       });

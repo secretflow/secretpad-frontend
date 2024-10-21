@@ -1,6 +1,6 @@
 /* eslint-disable */
-// API 更新时间：2024-08-09 11:26:19
-// API 唯一标识：66b58c5b3f8f03846ba9342f
+// API 更新时间：2024-09-02 18:26:14
+// API 唯一标识：66d592c66eb33d73d5acbdf8
 // 该文件由 OneAPI 自动生成，请勿手动修改！
 
 import * as ApprovalController from './ApprovalController';
@@ -26,6 +26,7 @@ import * as P2PProjectController from './P2PProjectController';
 import * as P2pNodeController from './P2pNodeController';
 import * as ProjectController from './ProjectController';
 import * as RemoteUserController from './RemoteUserController';
+import * as ScheduledController from './ScheduledController';
 import * as UserController from './UserController';
 import * as VoteSyncController from './VoteSyncController';
 export default {
@@ -52,6 +53,7 @@ export default {
   P2pNodeController,
   ProjectController,
   RemoteUserController,
+  ScheduledController,
   UserController,
   VoteSyncController,
 };

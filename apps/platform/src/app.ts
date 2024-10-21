@@ -1,7 +1,9 @@
 import { history } from 'umi';
 import request from 'umi-request';
+import { v4 as uuidv4 } from 'uuid';
 
 request.interceptors.request.use((url, options) => {
+  const traceId = uuidv4(); // 生成唯一的 traceId
   const token = localStorage.getItem('User-Token') || '';
   return {
     url: `${url}`,
@@ -13,6 +15,7 @@ request.interceptors.request.use((url, options) => {
       headers: {
         'Content-Type': 'application/json',
         'User-Token': token,
+        'Trace-Id': traceId,
       },
     },
   };

@@ -28,10 +28,13 @@ import { DatatableTreeComponent } from '@/modules/data-table-tree/datatable-tree
 import { LoginService } from '@/modules/login/login.service';
 import { GraphComponents } from '@/modules/main-dag/graph';
 import { ModelSubmissionEntry } from '@/modules/main-dag/model-submission-entry';
+import { PeriodicTaskEntry } from '@/modules/main-dag/periodic-task-entry';
 import { RecordComponent } from '@/modules/main-dag/record';
 import { ToolbarComponent } from '@/modules/main-dag/toolbar';
 import { ToolbuttonComponent } from '@/modules/main-dag/toolbutton';
 import { ModelListComponent } from '@/modules/model-manager';
+import { PeriodicTaskCreate } from '@/modules/periodic-task/periodic-task-drawer/create-periodic-task.view';
+import { PeriodicTaskComponent } from '@/modules/periodic-task/periodic-task-list/task.view';
 import { PipelineCreationComponent } from '@/modules/pipeline/pipeline-creation-view';
 import { PipelineViewComponent } from '@/modules/pipeline/pipeline-view';
 import { RecordListDrawerItem } from '@/modules/pipeline-record-list/record-list-drawer-view';
@@ -64,6 +67,7 @@ export enum DagLayoutMenu {
   PROJECTDATA = 'project-data',
   MODELTRAIN = 'model-train',
   MODELMANAGER = 'model-manager',
+  PERIODICTASK = 'periodic-task',
 }
 
 export const DagLayout = () => {
@@ -73,6 +77,7 @@ export const DagLayout = () => {
 
   const { type = 'DAG', mode, projectId } = parse(window.location.search);
   const goBack = async () => {
+    viewInstance.setInitActiveMenu(DagLayoutMenu.MODELTRAIN);
     const userInfo = await loginService.getUserInfo();
     if (userInfo.platformType === Platform.AUTONOMY) {
       const { origin } = (history.location.state as { origin: string }) || {};
@@ -113,6 +118,17 @@ export const DagLayout = () => {
         id: DagLayoutMenu.MODELMANAGER,
         callBack: () => {
           viewInstance.setModelManagerShow();
+          viewInstance.setActiveKey('pipeline');
+        },
+        isInit: false,
+        projectMode: ['MPC'],
+      },
+      {
+        key: '周期任务',
+        label: '周期任务',
+        id: DagLayoutMenu.PERIODICTASK,
+        callBack: () => {
+          viewInstance.setPeriodicTaskShow();
           viewInstance.setActiveKey('pipeline');
         },
         isInit: false,
@@ -201,6 +217,7 @@ export const DagLayout = () => {
       </div>
       {/* <div className={styles.content}> */}
       {viewInstance.modelManagerShow && <ModelListComponent />}
+      {viewInstance.periodicTaskShow && <PeriodicTaskComponent />}
       {/* </div> */}
       {viewInstance.dagShow && (
         <div className={styles.content}>
@@ -239,6 +256,8 @@ export const DagLayout = () => {
                 <Space>
                   <AdvancedConfigComponent />
                   <RecordComponent />
+                  <PeriodicTaskEntry />
+                  <PeriodicTaskCreate />
                   {!isTeeProject() && <ModelSubmissionEntry />}
                 </Space>
               </div>
@@ -322,6 +341,9 @@ export class DagLayoutView extends Model {
   initActiveMenu: string | null = '';
 
   modelManagerShow = false;
+
+  periodicTaskShow = false;
+
   dagShow = true;
 
   setActiveKey = (key: string) => {
@@ -339,12 +361,21 @@ export class DagLayoutView extends Model {
   setModelManagerShow = () => {
     this.modelManagerShow = true;
     this.dagShow = false;
+    this.periodicTaskShow = false;
     this.modalManager.closeAllModals();
   };
 
   setDagShow = () => {
     this.modelManagerShow = false;
+    this.periodicTaskShow = false;
     this.dagShow = true;
+  };
+
+  setPeriodicTaskShow = () => {
+    this.modelManagerShow = false;
+    this.dagShow = false;
+    this.periodicTaskShow = true;
+    this.modalManager.closeAllModals();
   };
 
   toggleLeftPanel() {

@@ -192,9 +192,10 @@ export class DagLogService extends Model {
         graphNodeId: id,
       });
     } else if (from === 'record') {
+      const jobId = id.split('-')[0];
       logResponse = await getJobLog({
         projectId,
-        jobId: graphId,
+        jobId: jobId,
         taskId: id,
       });
     }

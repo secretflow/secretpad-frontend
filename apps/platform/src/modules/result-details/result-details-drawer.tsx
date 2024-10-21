@@ -17,7 +17,7 @@ import React, { useEffect } from 'react';
 
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import { getTabsName, getVisComponents } from '@/modules/dag-result/result-report';
-import { formatTimestamp } from '@/modules/dag-result/utils';
+import { formatTimestamp, getDownloadBtnTitle } from '@/modules/dag-result/utils';
 import type { ResultOriginData } from '@/modules/dag-result/vis/typing';
 import type { TableType } from '@/modules/result-manager/result-manager.protocol';
 import {
@@ -104,8 +104,12 @@ export const ResultDetailsDrawer: React.FC = () => {
               <Tooltip
                 title={
                   nodeResultsVO?.datasourceType === DataSourceType.OSS ||
-                  nodeResultsVO?.datasourceType === DataSourceType.ODPS
-                    ? `${nodeResultsVO?.datasourceType} 文件不支持直接下载，请到 ${nodeResultsVO?.datasourceType} 对应 bucket 的预设路径下找到文件下载，地址：${nodeResultsVO?.relativeUri}`
+                  nodeResultsVO?.datasourceType === DataSourceType.ODPS ||
+                  nodeResultsVO?.datasourceType === DataSourceType.MYSQL
+                    ? getDownloadBtnTitle(
+                        nodeResultsVO?.datasourceType,
+                        nodeResultsVO?.relativeUri,
+                      )
                     : ''
                 }
               >
@@ -113,7 +117,8 @@ export const ResultDetailsDrawer: React.FC = () => {
                   type="primary"
                   disabled={
                     nodeResultsVO?.datasourceType === DataSourceType.OSS ||
-                    nodeResultsVO?.datasourceType === DataSourceType.ODPS
+                    nodeResultsVO?.datasourceType === DataSourceType.ODPS ||
+                    nodeResultsVO?.datasourceType === DataSourceType.MYSQL
                   }
                   onClick={() => viewInstance.download(data?.nodeId)}
                 >
@@ -125,8 +130,12 @@ export const ResultDetailsDrawer: React.FC = () => {
               <Tooltip
                 title={
                   nodeResultsVO?.datasourceType === DataSourceType.OSS ||
-                  nodeResultsVO?.datasourceType === DataSourceType.ODPS
-                    ? `${nodeResultsVO?.datasourceType} 文件不支持直接下载，请到 ${nodeResultsVO?.datasourceType} 对应 bucket 的预设路径下找到文件下载，地址：${nodeResultsVO?.relativeUri}`
+                  nodeResultsVO?.datasourceType === DataSourceType.ODPS ||
+                  nodeResultsVO?.datasourceType === DataSourceType.MYSQL
+                    ? getDownloadBtnTitle(
+                        nodeResultsVO?.datasourceType,
+                        nodeResultsVO?.relativeUri,
+                      )
                     : ''
                 }
               >

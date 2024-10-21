@@ -78,12 +78,19 @@
     align-items: center;
     border-radius: 4px;
     margin-right: 8px;
-    background-color: #0068fa;
-    color: white;
+    color: rgb(0 0 0 / 65%);
+
+    svg > g > path:last-child {
+      fill: rgb(0 0 0 / 65%);
+    }
 
     &:hover {
-      background-color: #0068fa !important;
-      color: white !important;
+      background-color: #f6f8fa !important;
+      color: #0068fa !important;
+
+      svg > g > path:last-child {
+        fill: #0068fa !important;
+      }
     }
   }
 

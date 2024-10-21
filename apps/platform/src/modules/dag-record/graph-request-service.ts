@@ -1,12 +1,15 @@
 import type { GraphModel, NodeStatus } from '@secretflow/dag';
 import { parse } from 'query-string';
+import { history } from 'umi';
 
 import { ComponentConfigRegistry } from '@/modules/component-config/component-config-registry';
 import { DefaultComponentTreeService } from '@/modules/component-tree/component-tree-service';
 import { GraphRequestService } from '@/modules/main-dag/graph-request-service';
 import { nodeStatus } from '@/modules/main-dag/util';
+import { PeriodicDetailType } from '@/modules/periodic-task/type';
 import { DefaultRecordService } from '@/modules/pipeline-record-list/record-service';
 import { getJob } from '@/services/secretpad/ProjectController';
+import { info, taskInfo } from '@/services/secretpad/ScheduledController';
 import { getModel } from '@/util/valtio-helper';
 
 export class GraphRecordRequestService extends GraphRequestService {
@@ -25,10 +28,7 @@ export class GraphRecordRequestService extends GraphRequestService {
   // stopRun: (dagId: string, componentId: string) => Promise<void>;
   // getMaxNodeIndex: (dagId: string) => Promise<number>;
   async queryStatus(dagId: string) {
-    const { data } = await getJob({
-      projectId: getProjectId(),
-      jobId: dagId,
-    });
+    const { data } = await getInfoQuery(dagId);
     const { graph, finished } = data || {};
     if (!graph)
       return {
@@ -48,10 +48,7 @@ export class GraphRecordRequestService extends GraphRequestService {
   }
 
   async queryDag(dagId: string) {
-    const { data } = await getJob({
-      projectId: getProjectId(),
-      jobId: dagId,
-    });
+    const { data } = await getInfoQuery(dagId);
     const { graph } = data || {};
     if (!graph) return { nodes: [], edges: [] };
     const graphData: { nodes: any[]; edges: any[] } = {} as any;
@@ -84,12 +81,7 @@ export class GraphRecordRequestService extends GraphRequestService {
     const { search } = window.location;
     const { projectId, dagId } = parse(search);
     if (!projectId || !dagId) return;
-
-    const { data } = await getJob({
-      projectId: projectId as string,
-      jobId: dagId as string,
-    });
-
+    const { data } = await getInfoQuery(dagId as string);
     const { graph = {} } = data || {};
     const { nodes } = graph;
     const node = nodes?.find((n) => n.graphNodeId === nodeId);
@@ -101,11 +93,7 @@ export class GraphRecordRequestService extends GraphRequestService {
     const { search } = window.location;
     const { projectId, dagId } = parse(search) as { projectId: string; dagId: string };
     if (!graphNodeId || !projectId || !dagId) return [];
-    const { data } = await getJob({
-      projectId: getProjectId(),
-      jobId: dagId,
-      graphNodeId,
-    });
+    const { data } = await getInfoQuery(dagId, graphNodeId);
     const nodes = data?.graph?.nodes || [];
     return nodes.find((item) => item.graphNodeId === graphNodeId)?.parties || [];
   }
@@ -115,4 +103,64 @@ const getProjectId = () => {
   const { search } = window.location;
   const { projectId } = parse(search);
   return projectId as string;
+};
+
+const getInfoQuery = async (dagId: string, graphNodeId?: string) => {
+  let queryDagInfo;
+  // periodicType 存在证明是从周期任务那边跳转过来
+  const { periodicType, scheduleId } = getPeriodicHistoryState();
+  if (periodicType && periodicType === PeriodicDetailType.TASK) {
+    // 周期任务
+    queryDagInfo = await info({
+      scheduleId: dagId,
+    });
+  } else if (periodicType === PeriodicDetailType.CHILDTASK) {
+    // 周期子任务
+    queryDagInfo = await taskInfo({
+      scheduleId,
+      scheduleTaskId: dagId,
+    });
+  } else {
+    // record 详情
+    queryDagInfo = await getJob({
+      projectId: getProjectId(),
+      jobId: dagId,
+      graphNodeId,
+    });
+  }
+  return queryDagInfo;
+};
+
+/**
+ * periodicType 周期任务类型
+ * scheduleId 周期任务主任务ID
+ * scheduleTaskId 周期任务子任务ID
+ * historyDagId 点击周期任务详情跳转前url上的dagID
+ * periodicJobId 周期任务详情实际的jobID
+ * periodicGraphId  周期任务详情实际的画布ID
+ */
+export const getPeriodicHistoryState = () => {
+  const {
+    periodicType,
+    scheduleId,
+    scheduleTaskId,
+    historyDagId,
+    periodicJobId,
+    periodicGraphId,
+  } = (history.location.state || {}) as {
+    periodicType: PeriodicDetailType | undefined;
+    scheduleId: string | undefined;
+    scheduleTaskId: string | undefined;
+    historyDagId: string | undefined;
+    periodicJobId: string | undefined;
+    periodicGraphId: string | undefined;
+  };
+  return {
+    periodicType,
+    scheduleId,
+    scheduleTaskId,
+    historyDagId,
+    periodicJobId,
+    periodicGraphId,
+  };
 };

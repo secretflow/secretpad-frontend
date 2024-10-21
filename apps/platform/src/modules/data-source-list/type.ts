@@ -3,4 +3,5 @@ export enum DataSourceType {
   'HTTP' = 'HTTP',
   'ODPS' = 'ODPS', // 未支持
   'LOCAL' = 'LOCAL',
+  'MYSQL' = 'MYSQL',
 }

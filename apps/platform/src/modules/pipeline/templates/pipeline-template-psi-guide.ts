@@ -125,7 +125,7 @@ export class TemplateGuidePSI extends Model implements PipelineTemplateContribut
             ],
             domain: 'data_prep',
             name: 'psi',
-            version: '0.0.7',
+            version: '0.0.8',
           },
           inputs: [`${graphId}-node-1-output-0`, `${graphId}-node-2-output-0`],
           codeName: `data_prep/psi`,
@@ -140,8 +140,8 @@ export class TemplateGuidePSI extends Model implements PipelineTemplateContribut
           nodeDef: {
             domain: `stats`,
             name: `table_statistics`,
-            version: `0.0.2`,
-            attrPaths: ['input/input_data/features'],
+            version: `1.0.0`,
+            attrPaths: ['input/input_ds/features'],
             attrs: [
               {
                 ss: ['y', 'age', 'education', 'default'],

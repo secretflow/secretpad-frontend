@@ -15,7 +15,9 @@ export class TemplatePSI extends Model implements PipelineTemplateContribution {
   content = (graphId: string, quickConfigs?: any) => {
     const {
       dataTableReceiver,
+      dataTableReceiverPartition,
       dataTableSender,
+      dataTableSenderPartition,
       receiverKey,
       senderKey,
       featureSelects,
@@ -50,12 +52,7 @@ export class TemplatePSI extends Model implements PipelineTemplateContribution {
         {
           outputs: [`${graphId}-node-1-output-0`],
           nodeDef: {
-            ...(dataTableReceiver
-              ? {
-                  attrPaths: ['datatable_selected'],
-                  attrs: [{ ...dataTableReceiver, is_na: false }],
-                }
-              : {}),
+            ...getDataTableDef(dataTableReceiver, dataTableReceiverPartition),
             domain: `read_data`,
             name: `datatable`,
             version: `0.0.1`,
@@ -71,12 +68,7 @@ export class TemplatePSI extends Model implements PipelineTemplateContribution {
         {
           outputs: [`${graphId}-node-2-output-0`],
           nodeDef: {
-            ...(dataTableSender
-              ? {
-                  attrPaths: ['datatable_selected'],
-                  attrs: [{ ...dataTableSender, is_na: false }],
-                }
-              : {}),
+            ...getDataTableDef(dataTableSender, dataTableSenderPartition),
             domain: `read_data`,
             name: `datatable`,
             version: `0.0.1`,
@@ -139,12 +131,12 @@ export class TemplatePSI extends Model implements PipelineTemplateContribution {
                   ],
                   domain: 'data_prep',
                   name: 'psi',
-                  version: '0.0.7',
+                  version: '0.0.8',
                 }
               : {
                   domain: 'data_prep',
                   name: 'psi',
-                  version: '0.0.7',
+                  version: '0.0.8',
                 }),
           },
           inputs: [`${graphId}-node-1-output-0`, `${graphId}-node-2-output-0`],
@@ -160,13 +152,13 @@ export class TemplatePSI extends Model implements PipelineTemplateContribution {
           nodeDef: {
             ...(featureSelects
               ? {
-                  attrPaths: ['input/input_data/features'],
+                  attrPaths: ['input/input_ds/features'],
                   attrs: [{ ...featureSelects, is_na: false }],
                 }
               : {}),
             domain: `stats`,
             name: `table_statistics`,
-            version: `0.0.2`,
+            version: `1.0.0`,
           },
           inputs: [`${graphId}-node-3-output-0`],
           codeName: `stats/table_statistics`,
@@ -180,3 +172,23 @@ export class TemplatePSI extends Model implements PipelineTemplateContribution {
     };
   };
 }
+
+const getDataTableDef = (receiver: { s: string }, partition: string) => {
+  if (receiver) {
+    if (partition) {
+      // 分区表
+      return {
+        attrPaths: ['datatable_selected', 'datatable_partition'],
+        attrs: [
+          { ...receiver, is_na: false },
+          { s: partition, is_na: false },
+        ],
+      };
+    }
+    return {
+      attrPaths: ['datatable_selected'],
+      attrs: [{ ...receiver, is_na: false }],
+    };
+  }
+  return {};
+};

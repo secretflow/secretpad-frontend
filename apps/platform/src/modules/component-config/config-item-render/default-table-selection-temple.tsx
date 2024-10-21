@@ -145,10 +145,21 @@ export const DefaultTableSelect: React.FC<RenderProp<string>> = (config) => {
             return (
               <Form.Item
                 tooltip={
-                  <div style={{ whiteSpace: 'pre-wrap' }}>
-                    {`1. 目前解析支持 “>=|<=|<>|!=|=|>|<| LIKE | like ”，不建议使用 like 以及 ' !=
-                '\n2. 多个条件使用,隔开，多个条件使用and聚合`}
-                  </div>
+                  <>
+                    <div>{`1. 填写dt=maxpt，则获取最新分区；dt为分区字段`}</div>
+                    <div>
+                      {'2. 如自定义规则获取分区表，可填写如：dt=${yyyymmdd+/- 3}'}
+                    </div>
+                    <div>
+                      {'3. 如选择多表自动union，则填写如dt=20240607 or dt=20240608'}
+                    </div>
+                    <div>
+                      {
+                        '4. 支持and or 作为多个分区列条件聚合，支持 =  !=  < > >= <= 作为分区列比较条件,其他暂不支持'
+                      }
+                    </div>
+                    <div>{'5. 条件列必须是添加数据表时指定的一级或二级分区字段'}</div>
+                  </>
                 }
                 label={<div className={styles.configItemLabel}>分区</div>}
                 name={'datatable_partition'}

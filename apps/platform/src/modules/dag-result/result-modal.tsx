@@ -30,7 +30,6 @@ export const ResultDrawer = () => {
   const { visible, data, close } = modalManager.modals[resultDrawer.id];
 
   const { data: resultData, codeName, outputId } = data || {};
-
   const handleClose = () => {
     modalManager.closeModal(resultDrawer.id);
   };

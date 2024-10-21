@@ -29,8 +29,8 @@ export const ComponentConfigDrawer: React.FC = () => {
     inputNodes,
     label,
     upstreamSampleNodes,
+    nodeDef,
   } = data || {};
-
   const [, idNum] = id?.match(/.*-([0-9]+)$/) || [];
   const [isRecordDrawerOpen, setRecordDrawerStatus] = useState<boolean>(false);
 
@@ -72,6 +72,10 @@ export const ComponentConfigDrawer: React.FC = () => {
         <div>
           <span className={styles.label}>组件类型：</span>
           <span>纵向</span>
+        </div>
+        <div>
+          <span className={styles.label}>组件版本：</span>
+          <span>{nodeDef?.version}</span>
         </div>
         <div>
           <span className={styles.label}>组件 ID：</span>

@@ -67,6 +67,7 @@ export const codeNameRenderKey = {
   'preprocessing/psi': 'UNION_KEY_SELECT',
   'preprocessing/sqlite': 'SQL',
   'data_filter/sample': 'SAMPLE',
+  'ml.predict/read_model': 'MODEL_SELECT', // TODO:修改名称
 };
 
 export interface ComponentConfig {

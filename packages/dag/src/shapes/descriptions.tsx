@@ -106,6 +106,7 @@ interface IProps {
 const resultInfo: Record<string, { text: string; icon: any }> = {
   table: { text: '输出表', icon: <FileTextOutlined /> },
   model: { text: '模型', icon: <ExperimentOutlined /> },
+  serving: { text: '模型', icon: <ExperimentOutlined /> },
   rule: { text: '规则', icon: <ContainerOutlined /> },
   report: { text: '报告', icon: <FileSearchOutlined /> },
 };

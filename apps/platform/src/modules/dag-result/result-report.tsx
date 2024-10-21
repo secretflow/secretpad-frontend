@@ -20,6 +20,7 @@ export const getTabsName = (name: string | undefined, index: number) => {
     eq_frequent_bin_report: '等频',
     eq_range_bin_report: '等宽',
     head_report: '头表',
+    eq_range_bin_tbl: '等宽',
   };
   return reportMapZh[name] || name;
 };

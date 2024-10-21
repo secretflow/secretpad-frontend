@@ -7,6 +7,9 @@ import { Model } from '@/util/valtio-helper';
 
 import { StatusMap } from './dag-log.service';
 
+const RECORD_TYPES = ['/record', '/model-submission'];
+const PIPELINE_TYPES = ['/dag'];
+
 export class SlsService extends Model {
   // 获取当前算子的参与方列表
   nodePartiesList: {
@@ -30,6 +33,8 @@ export class SlsService extends Model {
   timer = 0;
 
   slsLogContent = '';
+
+  currentPathName = '';
 
   logTipContent: {
     status: string; //StatusType;
@@ -63,23 +68,30 @@ export class SlsService extends Model {
     const { mode } = parse(search);
     if (mode === PadMode.TEE) return;
     if (!this.slsLogIsConfig) return;
-    if (!currentNodePartiesId) return;
     const { label, id } = data;
+    if (!currentNodePartiesId) {
+      this.slsLogContent = '';
+      this.logTipContent = {
+        status: 'default',
+        name: label,
+      };
+      return;
+    }
     let logResponse = {
       data: { logs: [] },
     } as API.SecretPadResponse_GraphNodeTaskLogsVO_;
-
-    if (from === 'pipeline') {
+    if (from === 'pipeline' || PIPELINE_TYPES.includes(this.currentPathName)) {
       logResponse = await API.CloudLogController.getCloudLog({
         projectId,
         graphId,
         graphNodeId: id,
         nodeId: currentNodePartiesId,
       });
-    } else if (from === 'record') {
+    } else if (from === 'record' || RECORD_TYPES.includes(this.currentPathName)) {
+      const jobId = id.split('-')[0];
       logResponse = await API.CloudLogController.getCloudLog({
         projectId,
-        jobId: graphId,
+        jobId: jobId,
         taskId: id,
         nodeId: currentNodePartiesId,
       });

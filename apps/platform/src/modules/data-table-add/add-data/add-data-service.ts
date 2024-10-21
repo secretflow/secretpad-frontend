@@ -3,7 +3,6 @@ import { parse } from 'query-string';
 
 import { list, nodes, detail } from '@/services/secretpad/DataSourceController';
 import { createDataTable } from '@/services/secretpad/DatatableController';
-import { createFeatureDatasource } from '@/services/secretpad/FeatureDatasourceController';
 import { listNode } from '@/services/secretpad/InstController';
 import { Model } from '@/util/valtio-helper';
 
@@ -12,6 +11,7 @@ export enum DataSourceType {
   HTTP = 'HTTP',
   ODPS = 'ODPS',
   LOCAL = 'LOCAL',
+  MYSQL = 'MYSQL',
 }
 
 type OptionType = {
@@ -79,7 +79,12 @@ export class AddDataSheetService extends Model {
   queryDataSourceList = async (ownerId: string) => {
     const { data, status } = await list({
       ownerId: ownerId,
-      types: [DataSourceType.OSS, DataSourceType.HTTP, DataSourceType.ODPS],
+      types: [
+        DataSourceType.OSS,
+        DataSourceType.HTTP,
+        DataSourceType.ODPS,
+        DataSourceType.MYSQL,
+      ],
       page: 1,
       size: 1000,
       status: '',
@@ -154,9 +159,32 @@ export class AddDataSheetService extends Model {
         return this.addOssData(params);
       case DataSourceType.ODPS:
         return this.addOdpsData(params);
+      case DataSourceType.MYSQL:
+        return this.addMysqlData(params);
       default:
         return { status: {} };
     }
+  };
+
+  addMysqlData = async (value: AddDataSheetParams) => {
+    const params = {
+      ownerId: value.ownerId,
+      nodeIds: value.nodeIds,
+      datatableName: value.tableName,
+      datasourceId: value.dataSource,
+      type: value.type,
+      desc: value.tableDesc,
+      relativeUri: value.address,
+      columns: value.features.map((item: Structure) => ({
+        colName: item.featureName,
+        colType: item.featureType,
+        colComment: item.featureDescription || '',
+      })),
+      datasourceType: value.datasourceType,
+      datasourceName: value.datasourceName,
+      nullStrs: value.nullStrs,
+    };
+    return await createDataTable(params);
   };
 
   addOdpsData = async (value: AddDataSheetParams) => {
@@ -204,19 +232,22 @@ export class AddDataSheetService extends Model {
 
   addHttpData = async (value: AddDataSheetParams) => {
     const params = {
-      featureTableName: value.tableName,
+      datasourceType: value.datasourceType,
+      datasourceId: 'http-data-source',
+      datasourceName: 'http-data-source',
+      datatableName: value.tableName,
       ownerId: value.ownerId,
       nodeIds: value.nodeIds,
       type: value.type,
       desc: value.tableDesc,
-      url: value.address,
+      relativeUri: value.address,
       columns: value.features.map((item: Structure) => ({
         colName: item.featureName,
         colType: item.featureType,
         colComment: item.featureDescription,
       })),
     };
-    return await createFeatureDatasource(params);
+    return await createDataTable(params);
   };
 
   addOssData = async (value: AddDataSheetParams) => {

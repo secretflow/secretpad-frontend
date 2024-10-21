@@ -8,7 +8,7 @@ import { history } from 'umi';
 import { hasAccess, Platform } from '@/components/platform-wrapper';
 import type { ComputeMode } from '@/modules/component-tree/component-protocol';
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
-import { formatTimestamp } from '@/modules/dag-result/utils';
+import { formatTimestamp, getDownloadBtnTitle } from '@/modules/dag-result/utils';
 import {
   resultDetailsDrawer,
   ResultDetailsDrawer,
@@ -55,8 +55,9 @@ export const ResultManagerComponent = () => {
           <Tooltip
             title={
               record?.datasourceType === DataSourceType.OSS ||
-              record?.datasourceType === DataSourceType.ODPS
-                ? `${record?.datasourceType} 文件不支持直接下载，请到 ${record?.datasourceType} 对应 bucket 的预设路径下找到文件下载，地址：${record.relativeUri}`
+              record?.datasourceType === DataSourceType.ODPS ||
+              record?.datasourceType === DataSourceType.MYSQL
+                ? getDownloadBtnTitle(record?.datasourceType, record.relativeUri)
                 : ''
             }
           >
@@ -66,7 +67,8 @@ export const ResultManagerComponent = () => {
               onClick={() => viewInstance.download(record, isAutonomy)}
               disabled={
                 record?.datasourceType === DataSourceType.OSS ||
-                record?.datasourceType === DataSourceType.ODPS
+                record?.datasourceType === DataSourceType.ODPS ||
+                record?.datasourceType === DataSourceType.MYSQL
               }
             >
               下载
@@ -89,8 +91,9 @@ export const ResultManagerComponent = () => {
         <Tooltip
           title={
             record?.datasourceType === DataSourceType.OSS ||
-            record?.datasourceType === DataSourceType.ODPS
-              ? `${record?.datasourceType} 文件不支持直接下载，请到 ${record?.datasourceType} 对应 bucket 的预设路径下找到文件下载，地址：${record.relativeUri}`
+            record?.datasourceType === DataSourceType.ODPS ||
+            record?.datasourceType === DataSourceType.MYSQL
+              ? getDownloadBtnTitle(record?.datasourceType, record.relativeUri)
               : ''
           }
         >
@@ -100,7 +103,8 @@ export const ResultManagerComponent = () => {
             onClick={() => viewInstance.download(record, isAutonomy)}
             disabled={
               record?.datasourceType === DataSourceType.OSS ||
-              record?.datasourceType === DataSourceType.ODPS
+              record?.datasourceType === DataSourceType.ODPS ||
+              record?.datasourceType === DataSourceType.MYSQL
             }
           >
             下载
