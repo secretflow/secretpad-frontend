@@ -125,6 +125,8 @@ export const DataAddDrawer = ({
     onClose();
     form.resetFields();
     dataTableStructureService.featuresError = [];
+    UploadInstance.step = 0;
+    UploadInstance.fileInfo = undefined;
   };
 
   const validateForm = async (options = {}) => {
@@ -148,7 +150,8 @@ export const DataAddDrawer = ({
 
     const nullStrs =
       currentDataSource?.type === DataSourceType.OSS ||
-      currentDataSource?.type === DataSourceType.ODPS
+      currentDataSource?.type === DataSourceType.ODPS ||
+      currentDataSource?.type === DataSourceType.MYSQL
         ? {
             nullStrs: validateRes.tableNullStrs
               ? JSON.parse(`[${validateRes.tableNullStrs}]`)
@@ -184,7 +187,7 @@ export const DataAddDrawer = ({
           if (errorNodeList.length !== 0) {
             notificationApi.info({
               message: '部分节点创建失败',
-              duration: null,
+              duration: 3,
               description: (
                 <Space direction="vertical">
                   {errorNodeList.map((node) => {
@@ -199,13 +202,14 @@ export const DataAddDrawer = ({
                 </Space>
               ),
             });
+            handleClose();
             return;
           }
         }
-        onClose();
+        handleClose();
       } else {
         message.error(status?.msg || '添加失败');
-        onClose();
+        handleClose();
       }
     } catch (error) {
       addDataSheetService.addDataSheetLoading = false;
@@ -246,7 +250,7 @@ export const DataAddDrawer = ({
                   onClick={debounce(async () => {
                     try {
                       await UploadInstance.submit();
-                      onClose();
+                      handleClose();
                     } catch (e) {
                       return;
                     }
@@ -311,6 +315,15 @@ export const DataAddDrawer = ({
               />
             </Form.Item>
           )}
+          {dataSourceFormValueType === DataSourceType.MYSQL && (
+            <Form.Item
+              name="address"
+              label="数据表地址"
+              rules={[{ required: true, message: '数据表地址' }]}
+            >
+              <Input placeholder="请输入数据表地址" />
+            </Form.Item>
+          )}
 
           {dataSourceFormValueType &&
             dataSourceFormValueType !== DataSourceType.LOCAL && (
@@ -350,7 +363,8 @@ export const DataAddDrawer = ({
                 </Form.Item>
 
                 {dataSourceFormValueType === DataSourceType.OSS ||
-                dataSourceFormValueType === DataSourceType.ODPS ? (
+                dataSourceFormValueType === DataSourceType.ODPS ||
+                dataSourceFormValueType === DataSourceType.MYSQL ? (
                   <Form.Item
                     name="tableNullStrs"
                     tooltip={'不填充则纯空为空字符，默认""为空缺值'}

@@ -96,6 +96,7 @@ export const DataManagerComponent: React.FC = () => {
         { text: 'HTTP', value: DataSourceType.HTTP },
         { text: 'LOCAL', value: DataSourceType.LOCAL },
         { text: 'ODPS', value: DataSourceType.ODPS },
+        { text: 'MYSQL', value: DataSourceType.MYSQL },
       ],
     },
     {
@@ -289,6 +290,7 @@ export const DataManagerComponent: React.FC = () => {
           record.datatableId || '',
           messageApi,
           record.type as string,
+          record.datasourceType,
           currentNodeId,
         );
       },
@@ -417,15 +419,13 @@ export const DataManagerComponent: React.FC = () => {
         />
       )}
 
-      {viewInstance.showDataAddDrawer && (
-        <DataAddDrawer
-          onClose={() => {
-            viewInstance.getTableList();
-            viewInstance.showDataAddDrawer = false;
-          }}
-          visible={viewInstance.showDataAddDrawer}
-        />
-      )}
+      <DataAddDrawer
+        onClose={() => {
+          viewInstance.getTableList();
+          viewInstance.showDataAddDrawer = false;
+        }}
+        visible={viewInstance.showDataAddDrawer}
+      />
       {contextHolder}
     </div>
   );
@@ -528,6 +528,7 @@ export class DataManagerView extends Model {
     dataId: string,
     messageApi: MessageInstance,
     type: string,
+    datasourceType: string,
     currentNodeId?: string,
   ) => {
     if (!currentNodeId) return;
@@ -535,12 +536,14 @@ export class DataManagerView extends Model {
       nodeId: currentNodeId,
       datatableId: dataId,
       type,
+      datasourceType: datasourceType,
     });
     if (status && status.code !== 0) {
       messageApi.error(status.msg);
       return;
     }
     messageApi.success(`「${datatableName}」删除成功！`);
+    this.pageNumber = 1;
     this.getTableList();
   };
 
@@ -574,6 +577,7 @@ export class DataManagerView extends Model {
     } else {
       this.statusFilter = 'UnAvailable';
     }
+    this.pageNumber = 1;
     this.getTableList('', true);
   }
 
@@ -594,6 +598,7 @@ export class DataManagerView extends Model {
         datatableId: record.datatableId,
         nodeId: refreshTableNodeId,
         type: record.type,
+        datasourceType: record.datasourceType,
       });
       if (status?.code === 0) {
         message.success('数据状态刷新成功');

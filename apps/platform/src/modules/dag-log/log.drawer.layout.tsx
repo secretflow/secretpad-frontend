@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import classnames from 'classnames';
 import { parse } from 'query-string';
 import React, { useEffect } from 'react';
+import { useLocation } from 'umi';
 
 import { hasAccess, Platform } from '@/components/platform-wrapper';
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
@@ -15,7 +16,6 @@ import { LoginService } from '../login/login.service';
 import { DagLogService } from './dag-log.service';
 import styles from './index.less';
 import { SlsService } from './sls-service';
-import { useLocation } from 'umi';
 
 const CONFIG_MIN_WIDTH = 30;
 const CONFIG_MAX_WIDTH = 600;
@@ -46,7 +46,8 @@ export const DagLogDrawer = ({ children }: IDagLogDrawer) => {
   };
 
   const isAutonomyMode = hasAccess({ type: [Platform.AUTONOMY] });
-  const { search } = useLocation();
+  const { search, pathname } = useLocation();
+  slsService.currentPathName = pathname;
   const { ownerId } = parse(search);
 
   useEffect(() => {

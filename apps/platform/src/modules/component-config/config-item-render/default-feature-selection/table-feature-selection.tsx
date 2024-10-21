@@ -57,9 +57,9 @@ export const MultiTableFeatureSelection = (props: IProps) => {
       {showFields && <FieldMiniTable selectedFields={fields} />}
       <MultiFieldSelectModal
         visible={showSelectorModal}
-        tableInfos={tableKeys}
-        fromTableInfo={fromTableKey}
-        outputTableInfos={outputTableKeys}
+        tableInfos={tableKeys} // 上游的输出表
+        fromTableInfo={fromTableKey} // 上游输入的样本表
+        outputTableInfos={outputTableKeys} // 上游所有的输出表
         multiple={Array.isArray(tableKeys) && tableKeys.length > 1}
         submit={onChange}
         fields={fields.map((f: string) => ({ colName: f }))}

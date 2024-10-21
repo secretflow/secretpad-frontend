@@ -1,6 +1,9 @@
 import { Emitter } from '@secretflow/utils';
+import { history } from 'umi';
 
+import { PeriodicDetailType } from '@/modules/periodic-task/type';
 import { listJob } from '@/services/secretpad/ProjectController';
+import { listJob as periodicTasklistJob } from '@/services/secretpad/ScheduledController';
 import { Model } from '@/util/valtio-helper';
 
 import type {
@@ -28,12 +31,23 @@ export class DefaultRecordService extends Model {
     pageSize?: number,
     pageNum?: number,
   ) => {
-    const { data } = await listJob({
-      projectId: projectId,
+    const { periodicType, scheduleTaskId } = (history.location.state || {}) as {
+      periodicType: string;
+      scheduleTaskId: string;
+    };
+    // 周期子任务的详情需要调用不同的接口
+    const queryListJob =
+      periodicType === PeriodicDetailType.CHILDTASK ? periodicTasklistJob : listJob;
+    const params: API.ScheduleListProjectJobRequest = {
+      projectId,
       graphId: pipelineId,
       pageNum,
       pageSize,
-    });
+    };
+    if (periodicType === PeriodicDetailType.CHILDTASK) {
+      params.scheduleTaskId = scheduleTaskId;
+    }
+    const { data } = await queryListJob(params);
 
     this.recordList = data as ExecutionRecord;
     this.onRecordListUpdatedEmitter.fire();

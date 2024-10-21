@@ -35,7 +35,6 @@ export const DataTableInfoDrawer: React.FC<IProps<PropsData>> = (props) => {
   const isAutonomy = hasAccess({ type: [Platform.AUTONOMY] });
 
   const tableInfo = viewInstance.tableInfo || {};
-  console.log(viewInstance.tableInfo);
 
   useEffect(() => {
     viewInstance.tableInfo = data.tableInfo || {};
@@ -132,6 +131,7 @@ export class DataTableInfoDrawerView extends Model {
       datatableId: tableInfo.datatableId,
       nodeId: refreshTableNodeId,
       type: tableInfo.type,
+      datasourceType: tableInfo.datasourceType,
     });
 
     setTimeout(() => {

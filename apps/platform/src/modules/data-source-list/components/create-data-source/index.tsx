@@ -4,6 +4,7 @@ import {
   PlusOutlined,
 } from '@ant-design/icons';
 import {
+  Alert,
   Button,
   Descriptions,
   Drawer,
@@ -44,12 +45,12 @@ export const CreateDataSourceModal: React.FC<{
   const [form] = Form.useForm();
   const values = Form.useWatch([], form);
   const nodeIdsValue = Form.useWatch('nodeIds', form);
-
   const [disabled, setDisabled] = useState(true);
   // const [nodeStatus, setNodeStatus] = useState('pending');
 
   const closeHandler = () => {
     onClose();
+    form.resetFields();
   };
 
   const handleOk = async () => {
@@ -74,7 +75,7 @@ export const CreateDataSourceModal: React.FC<{
           if (errorNodeList.length !== 0) {
             notificationApi.info({
               message: '部分节点创建失败',
-              duration: null,
+              duration: 3,
               description: (
                 <Space direction="vertical">
                   {errorNodeList.map((node) => {
@@ -89,13 +90,14 @@ export const CreateDataSourceModal: React.FC<{
                 </Space>
               ),
             });
+            closeHandler();
             return;
           }
         }
-        onClose();
+        closeHandler();
       } else {
         message.error(status?.msg || '注册失败');
-        onClose();
+        closeHandler();
       }
     });
   };
@@ -261,6 +263,9 @@ export const CreateDataSourceModal: React.FC<{
               <Radio value={DataSourceType.ODPS}>
                 <Space>ODPS</Space>
               </Radio>
+              <Radio value={DataSourceType.MYSQL}>
+                <Space>MYSQL</Space>
+              </Radio>
             </Radio.Group>
           </Form.Item>
           <Form.Item dependencies={['type']} noStyle>
@@ -353,6 +358,69 @@ export const CreateDataSourceModal: React.FC<{
                 >
                   <Input placeholder="名称可由中文/英文/数字/下划线/中划线组成，长度限制32" />
                 </Form.Item>
+              ) : getFieldValue('type') === DataSourceType.MYSQL ? (
+                <>
+                  <Alert
+                    message="MYSQL 数据暂不支持使用模型训练、特征处理类型组件"
+                    type="info"
+                    style={{ marginBottom: 16 }}
+                  />
+                  <Form.Item
+                    label="显示名称"
+                    name={['name']}
+                    rules={[
+                      { required: true, message: '请输入名称' },
+                      { max: 32, message: '长度限制32' },
+                      {
+                        pattern: /^[\u4E00-\u9FA5A-Za-z0-9-_]+$/,
+                        message: '只能包含中文/英文/数字/下划线/中划线',
+                      },
+                    ]}
+                  >
+                    <Input placeholder="名称可由中文/英文/数字/下划线/中划线组成，长度限制32" />
+                  </Form.Item>
+                  <Form.Item
+                    label="endpoint名称"
+                    name={['dataSourceInfo', 'endpoint']}
+                    rules={[
+                      { required: true, message: '请输入endpoint名称' },
+                      { max: 64, message: '长度限制64' },
+                    ]}
+                  >
+                    <Input placeholder="请输入" />
+                  </Form.Item>
+                  <Form.Item
+                    label="user"
+                    name={['dataSourceInfo', 'user']}
+                    rules={[{ required: true, message: '请输入user' }]}
+                  >
+                    <Input placeholder="请输入" />
+                  </Form.Item>
+                  <Form.Item
+                    label="password"
+                    name={['dataSourceInfo', 'password']}
+                    rules={[{ required: true, message: '请输入password' }]}
+                  >
+                    <Input.Password
+                      autoComplete="new-text-field"
+                      placeholder="请输入"
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    label="database"
+                    name={['dataSourceInfo', 'database']}
+                    rules={[
+                      { required: true, message: '请输入database' },
+                      { max: 63, min: 3, message: '长度限制3~63字节' },
+                      {
+                        pattern: /^[a-z0-9]([a-z0-9-]*)$/,
+                        message: '小写字母或者数字开头，可由小写字母/数字/中划线组成',
+                      },
+                    ]}
+                  >
+                    <Input placeholder="请输入" />
+                  </Form.Item>
+                </>
               ) : (
                 <>
                   <Form.Item

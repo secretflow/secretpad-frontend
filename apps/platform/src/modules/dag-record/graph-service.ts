@@ -15,6 +15,7 @@ import { getJobTaskOutput } from '@/services/secretpad/ProjectController';
 import { getModel, Model } from '@/util/valtio-helper';
 
 import mainDag from './dag';
+import { getPeriodicHistoryState } from './graph-request-service';
 
 export class RecordGraphService extends Model implements GraphEventHandlerProtocol {
   componentService = getModel(DefaultComponentTreeService);
@@ -34,10 +35,14 @@ export class RecordGraphService extends Model implements GraphEventHandlerProtoc
     const { projectId } = parse(search);
     const [, nodeId] = outputId.match(/(.*)-output-([0-9]+)$/) || [];
     if (!nodeId) return;
+
+    const { periodicType, periodicJobId } = getPeriodicHistoryState();
+    const currentJobId = periodicType ? periodicJobId : graphId;
+
     const { data, status } = await getJobTaskOutput({
       projectId: projectId as string,
-      jobId: graphId,
-      taskId: `${graphId}-${nodeId}`,
+      jobId: currentJobId,
+      taskId: `${currentJobId}-${nodeId}`,
       outputId,
     });
 

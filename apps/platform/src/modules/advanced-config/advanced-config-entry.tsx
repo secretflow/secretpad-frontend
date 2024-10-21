@@ -1,13 +1,14 @@
 import { SettingOutlined } from '@ant-design/icons';
+import { Tooltip } from 'antd';
+
+import { DefaultModalManager } from '@/modules/dag-modal-manager';
+import { useModel } from '@/util/valtio-helper';
+
 import {
   AdvancedConfig,
   AdvancedConfigDrawer,
 } from './advanced-config-drawer/advanced-config-view';
-import { useModel } from '@/util/valtio-helper';
-import { DefaultModalManager } from '@/modules/dag-modal-manager';
-
 import styles from './index.less';
-import { Tooltip } from 'antd';
 
 export const AdvancedConfigComponent: React.FC = () => {
   const modalManager = useModel(DefaultModalManager);

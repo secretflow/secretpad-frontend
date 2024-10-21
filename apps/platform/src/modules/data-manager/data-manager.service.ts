@@ -41,4 +41,5 @@ export enum DataSourceType {
   HTTP = 'HTTP',
   ODPS = 'ODPS',
   LOCAL = 'LOCAL',
+  MYSQL = 'MYSQL',
 }

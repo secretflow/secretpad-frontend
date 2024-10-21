@@ -169,7 +169,10 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
   }, [node, nodeId, savedNode, mode, nodeName]);
 
   useEffect(() => {
-    if (pathname !== '/dag') setIsEditable(false);
+    if (pathname !== '/dag') {
+      setIsEditable(false);
+      return;
+    }
     if (projectEditService.canEdit.configFormDisabled) {
       setIsEditable(false);
     } else {

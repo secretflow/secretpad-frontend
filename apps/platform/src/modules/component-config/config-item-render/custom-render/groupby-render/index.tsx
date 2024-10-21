@@ -140,7 +140,7 @@ export const GroupByRender = (prop: { node: AtomicConfigNode }) => {
   );
 
   const form = Form.useFormInstance();
-  const groupCols = Form.useWatch('input/input_data/by', form);
+  const groupCols = Form.useWatch('input/input_ds/by', form);
 
   return (
     <Form.Item name={name} noStyle preserve={false}>
@@ -169,7 +169,7 @@ export const GroupByRender = (prop: { node: AtomicConfigNode }) => {
                       {...restField}
                       className={styles.col}
                       name={[name, 'column_name']}
-                      dependencies={['input/input_data/by']}
+                      dependencies={['input/input_ds/by']}
                       rules={[
                         { required: true, message: '请选择值列' },
                         {

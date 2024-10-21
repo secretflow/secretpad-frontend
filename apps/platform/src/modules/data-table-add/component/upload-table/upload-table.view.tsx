@@ -4,12 +4,13 @@ import type { FormInstance } from 'antd';
 import { Typography } from 'antd';
 import { Alert, Checkbox, message } from 'antd';
 import { Descriptions, Form, Input, Select, Space, Upload } from 'antd';
+import { parse } from 'query-string';
 import React, { useRef, useEffect } from 'react';
 import { CSVLink } from 'react-csv';
 
 import { hasAccess, Platform } from '@/components/platform-wrapper';
 import { NodeService } from '@/modules/node';
-import { createData } from '@/services/secretpad/DataController';
+import { createDataTable } from '@/services/secretpad/DatatableController';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import styles from './index.less';
@@ -54,6 +55,7 @@ export const UploadTable: React.FC<IProps> = ({
 }) => {
   const [form] = Form.useForm();
   const values = Form.useWatch([], form);
+  const { ownerId: centerOwnerId } = parse(window.location.search);
 
   const isAutonomy = hasAccess({ type: [Platform.AUTONOMY] });
 
@@ -65,7 +67,7 @@ export const UploadTable: React.FC<IProps> = ({
    */
   const NodeId = isAutonomy
     ? nodeNameOptions[0]?.value || ''
-    : nodeService.currentNode?.nodeId || '';
+    : nodeService.currentNode?.nodeId || (centerOwnerId as string);
 
   viewInstance.ownerId = NodeId;
 
@@ -672,15 +674,27 @@ export class UploadTableView extends Model {
       this.submitting = true;
       const validateRes = await this.validateForm();
       const values = validateRes;
-      const res = await createData({
-        nodeId: this.ownerId,
-        name: this.fileInfo?.name,
-        tableName: values.tbl_name,
-        description: values.tbl_desc,
-        datatableSchema: values.schema,
-        realName: this.fileInfo?.realName,
+      const { ownerId: currentOwnerId } = parse(window.location.search);
+      const res = await createDataTable({
+        ownerId: currentOwnerId as string,
+        nodeIds: [this.ownerId],
+        datatableName: values.tbl_name,
+        desc: values.tbl_desc,
+        columns: values.schema.map(
+          (item: {
+            featureName: string;
+            featureType: string;
+            featureDescription: string;
+          }) => ({
+            colName: item.featureName,
+            colType: item.featureType,
+            colComment: item.featureDescription || '',
+          }),
+        ),
+        relativeUri: this.fileInfo?.realName,
         datasourceType: 'LOCAL',
         datasourceName: 'default-data-source',
+        datasourceId: 'default-data-source',
         nullStrs: values.tbl_nullStrs ? JSON.parse(`[${values.tbl_nullStrs}]`) : [],
       });
 

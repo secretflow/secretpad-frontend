@@ -13,14 +13,15 @@ import { ResultManagerService } from '../result-manager/result-manager.service';
 import { Download } from './apply-download';
 import styles from './index.less';
 import type { ResultComponentProps } from './types';
-import { formatTimestamp } from './utils';
+import { formatTimestamp, getDownloadBtnTitle } from './utils';
 
 const { Paragraph } = Typography;
 
 export const ResultModelComponent = (props: ResultComponentProps<'model'>) => {
   const { data, id } = props;
   const { mode, projectId } = parse(window.location.search);
-  const { gmtCreate, meta, jobId, taskId, type } = data;
+  const { gmtCreate, meta, jobId, taskId, type, codeName } = data;
+  const isReadModal = codeName === 'ml.predict/read_model'; // 读模型产出的模型不允许下载
   const { rows } = meta;
   const resultManagerService = getModel(ResultManagerService);
   const { pathname } = useLocation();
@@ -36,7 +37,8 @@ export const ResultModelComponent = (props: ResultComponentProps<'model'>) => {
 
       if (
         datasourceType === DataSourceType.OSS ||
-        datasourceType === DataSourceType.ODPS
+        datasourceType === DataSourceType.ODPS ||
+        datasourceType === DataSourceType.MYSQL
       ) {
         setDownloadBtnDisabled({
           disable: true,
@@ -89,38 +91,44 @@ export const ResultModelComponent = (props: ResultComponentProps<'model'>) => {
                 )}
               </div>
             </Paragraph>
-            {!hasAccess({ type: [Platform.AUTONOMY] }) && mode === 'TEE' && (
-              <Download
-                params={{
-                  nodeID: nodeId,
-                  taskID: taskId,
-                  jobID: jobId,
-                  projectID: projectId as string,
-                  resourceType: type,
-                  resourceID: tableId,
-                }}
-              />
-            )}
-            {/* p2p 模式下不用申请，直接下载 */}
-            {hasAccess({ type: [Platform.AUTONOMY] }) && (
-              <Tooltip
-                title={
-                  downloadBtnDisabled.disable
-                    ? `${downloadBtnDisabled.type} 文件不支持直接下载，请到 ${downloadBtnDisabled.type} 对应 bucket 的预设路径下找到文件下载，地址：${downloadPath}`
-                    : ''
-                }
-              >
-                <Button
-                  type="link"
-                  style={{ paddingLeft: 8, fontSize: 12 }}
-                  onClick={() =>
-                    resultManagerService.download(nodeId || '', { domainDataId: path })
-                  }
-                  disabled={downloadBtnDisabled.disable}
-                >
-                  下载
-                </Button>
-              </Tooltip>
+            {!isReadModal && (
+              <>
+                {!hasAccess({ type: [Platform.AUTONOMY] }) && mode === 'TEE' && (
+                  <Download
+                    params={{
+                      nodeID: nodeId,
+                      taskID: taskId,
+                      jobID: jobId,
+                      projectID: projectId as string,
+                      resourceType: type,
+                      resourceID: tableId,
+                    }}
+                  />
+                )}
+                {/* p2p 模式下不用申请，直接下载 */}
+                {hasAccess({ type: [Platform.AUTONOMY] }) && (
+                  <Tooltip
+                    title={
+                      downloadBtnDisabled.disable
+                        ? getDownloadBtnTitle(downloadBtnDisabled.type, downloadPath)
+                        : ''
+                    }
+                  >
+                    <Button
+                      type="link"
+                      style={{ paddingLeft: 8, fontSize: 12 }}
+                      onClick={() =>
+                        resultManagerService.download(nodeId || '', {
+                          domainDataId: path,
+                        })
+                      }
+                      disabled={downloadBtnDisabled.disable}
+                    >
+                      下载
+                    </Button>
+                  </Tooltip>
+                )}
+              </>
             )}
           </div>
         );

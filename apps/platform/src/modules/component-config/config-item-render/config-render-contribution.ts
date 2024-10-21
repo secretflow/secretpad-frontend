@@ -9,6 +9,7 @@ import { LinearModelParametersModificationRender } from './custom-render/linear-
 import ObservationsQuantilesRender from './custom-render/observations-quantiles-render';
 import { DefaultColSelection } from './default-col-selection-template';
 import { DefaultMultiTableFeatureSelection } from './default-feature-selection/default-feature-selection';
+import { DefaultModelSelect } from './default-model-selection-template';
 import { DefaultNodeSelect } from './default-node-selection-template';
 import {
   DefaultInputNumber,
@@ -97,6 +98,12 @@ export class DefaultConfigRender implements ConfigRenderProtocol {
           return renderKey === 'DATA_TABLE_SELECT' ? 3 : false;
         },
         component: DefaultTableSelect,
+      },
+      {
+        canHandle: (node: AtomicConfigNode, renderKey?: string) => {
+          return renderKey === 'MODEL_SELECT' ? 3 : false;
+        },
+        component: DefaultModelSelect,
       },
       {
         canHandle: (node: AtomicConfigNode) => {

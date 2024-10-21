@@ -20,22 +20,24 @@ import { DefaultRecordService } from '@/modules/pipeline-record-list/record-serv
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
 import mainDag from './dag';
+import { getPeriodicHistoryState } from './graph-request-service';
 import styles from './index.less';
 
 export const RecordResultComponent = () => {
   const { search } = useLocation();
   const recordId = parse(search)?.dagId as string;
 
+  const { periodicJobId, periodicType } = getPeriodicHistoryState();
+
   const viewInstance = useModel(RecordResultView);
   const [record, setRecord] = useState<ExecutionRecordData | undefined>();
-
   useEffect(() => {
     const getRecord = async (id: string) => {
       const res = await viewInstance.getRecord(id);
       if (res) setRecord(res);
     };
-
-    getRecord(recordId);
+    // periodicType 存在代表是周期任务跳转的详情，需要使用 periodicJobId
+    getRecord(periodicType ? (periodicJobId as string) : recordId);
     viewInstance.setResultTypeSelected();
   }, [recordId, viewInstance.recordList]);
 

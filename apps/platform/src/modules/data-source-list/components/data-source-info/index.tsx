@@ -73,6 +73,26 @@ const DataSourceODPSTypeInfo = (props: { data: API.DatasourceDetailAggregateVO }
   );
 };
 
+const DataSourceMYSQLTypeInfo = (props: { data: API.DatasourceDetailAggregateVO }) => {
+  const { data } = props;
+
+  return (
+    <div>
+      <Descriptions column={1}>
+        <Descriptions.Item label="数据源类型">{data.type}</Descriptions.Item>
+        <Descriptions.Item label="endpoint名称">
+          {data.info?.endpoint || '--'}
+        </Descriptions.Item>
+        <Descriptions.Item label="user">{data?.info?.user || '--'}</Descriptions.Item>
+        <Descriptions.Item label="password">******</Descriptions.Item>
+        <Descriptions.Item label="database">
+          {data?.info?.database || '--'}
+        </Descriptions.Item>
+      </Descriptions>
+    </div>
+  );
+};
+
 const DataSourceInfoRender = (props: { item: API.DatasourceDetailAggregateVO }) => {
   const { item } = props;
   if (!item.type) return <>{'--'}</>;
@@ -81,6 +101,7 @@ const DataSourceInfoRender = (props: { item: API.DatasourceDetailAggregateVO }) 
       [DataSourceType.OSS]: <DataSourceOSSTypeInfo data={item} />,
       [DataSourceType.HTTP]: <DataSourceHTTPTypeInfo data={item} />,
       [DataSourceType.ODPS]: <DataSourceODPSTypeInfo data={item} />,
+      [DataSourceType.MYSQL]: <DataSourceMYSQLTypeInfo data={item} />,
     }),
     [item],
   );

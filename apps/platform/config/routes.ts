@@ -22,6 +22,11 @@ export const routes = [
         wrappers: ['@/wrappers/p2p-center-auth', '@/wrappers/component-wrapper'],
       },
       {
+        path: '/periodic-task-detail',
+        component: 'periodic-task-detail',
+        wrappers: ['@/wrappers/p2p-center-auth', '@/wrappers/component-wrapper'],
+      },
+      {
         path: '/node',
         component: 'new-node',
         wrappers: ['@/wrappers/edge-auth', '@/wrappers/component-wrapper'],

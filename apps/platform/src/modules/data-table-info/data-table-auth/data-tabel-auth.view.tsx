@@ -3,6 +3,7 @@ import { Button, message, Popconfirm, Space, Tag, Table } from 'antd';
 import { parse } from 'query-string';
 import React, { useEffect } from 'react';
 
+import { hasAccess, Platform } from '@/components/platform-wrapper';
 import { formatTimestamp } from '@/modules/dag-result/utils';
 import { DataManagerView } from '@/modules/data-manager/data-manager.view';
 import { ComputeModeType, computeModeText } from '@/modules/project-list';
@@ -13,7 +14,6 @@ import { getModel, Model, useModel } from '@/util/valtio-helper';
 import styles from './index.less';
 import type { ProjectAuthConfigType } from './project-auth-config';
 import { ProjectAuthConfigDrawer } from './project-auth-config';
-import { hasAccess, Platform } from '@/components/platform-wrapper';
 
 interface IProps {
   tableInfo: API.DatatableVO;
@@ -140,6 +140,7 @@ export class DataTableAuthModel extends Model {
       datatableId: tableInfo.datatableId,
       nodeId: currentNodeId as string,
       type: tableInfo.type,
+      datasourceType: tableInfo.datasourceType,
     });
     this.tableInfo = {
       ...(response.data?.datatableVO || {}),

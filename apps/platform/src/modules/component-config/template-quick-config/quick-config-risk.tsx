@@ -13,7 +13,12 @@ import { QuickConfigPSIComponent } from './quick-config-psi';
 export const QuickConfigRisk = () => {
   const form = Form.useFormInstance();
   const [tables, setTables] = useState<
-    { datatableId: string; nodeName: string; datatableName: string }[]
+    {
+      datatableId: string;
+      nodeName: string;
+      datatableName: string;
+      isPartitionTable?: boolean;
+    }[]
   >([]);
   const [nodeOptions, setNodeOptions] = useState<
     {
@@ -71,6 +76,7 @@ export const QuickConfigRisk = () => {
         datatableId: string;
         nodeName: string;
         datatableName: string;
+        isPartitionTable: boolean; // 是否是ODPS分区表
       }[] = [];
       const dataTableList: (API.ProjectDatatableBaseVO & {
         nodeId: string | undefined;
@@ -91,6 +97,8 @@ export const QuickConfigRisk = () => {
               datatableId: table.datatableId,
               nodeName: nodeName as string,
               datatableName: table.datatableName,
+              isPartitionTable:
+                table.partition?.type === 'odps' && table.partition?.fields,
             });
         });
       });

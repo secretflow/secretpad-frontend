@@ -154,6 +154,9 @@ export const CooperativeNodeDetailDrawer = ({
           </Descriptions>
         </div>
         <Descriptions column={1} className={styles.descriptionClass}>
+          <Descriptions.Item label="本方节点">
+            <EllipsisText>{cooperativeNodeDetail.dstNode?.nodeName}</EllipsisText>
+          </Descriptions.Item>
           <Descriptions.Item label="本方通讯地址">
             <EllipsisText>{cooperativeNodeDetail.dstNetAddress}</EllipsisText>
           </Descriptions.Item>

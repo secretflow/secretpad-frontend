@@ -28,7 +28,7 @@ import { ResultManagerService } from '../result-manager/result-manager.service';
 
 import styles from './index.less';
 import type { DataType, ResultComponentProps } from './types';
-import { formatTimestamp } from './utils';
+import { formatTimestamp, getDownloadBtnTitle } from './utils';
 
 export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
   const [searchText, setSearchText] = useState('');
@@ -140,7 +140,8 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
 
       if (
         datasourceType === DataSourceType.OSS ||
-        datasourceType === DataSourceType.ODPS
+        datasourceType === DataSourceType.ODPS ||
+        datasourceType === DataSourceType.MYSQL
       ) {
         setDownloadBtnDisabled({
           disable: true,
@@ -273,7 +274,7 @@ export const ResultTableComponent = (props: ResultComponentProps<'table'>) => {
                     <Tooltip
                       title={
                         downloadBtnDisabled.disable
-                          ? `${downloadBtnDisabled.type} 文件不支持直接下载，请到 ${downloadBtnDisabled.type} 对应 bucket 的预设路径下找到文件下载，地址：${downloadPath}`
+                          ? getDownloadBtnTitle(downloadBtnDisabled.type, downloadPath)
                           : ''
                       }
                     >

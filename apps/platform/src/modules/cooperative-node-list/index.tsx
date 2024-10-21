@@ -106,6 +106,22 @@ export const CooperativeNodeListComponent = () => {
       ),
     },
     {
+      title: '本方节点',
+      dataIndex: 'dstNode',
+      key: 'dstNode',
+      ellipsis: true,
+      width: '10%',
+      render: (dstNode: string, record) => (
+        <Typography.Text
+          ellipsis={{
+            tooltip: record.dstNode?.nodeName,
+          }}
+        >
+          {record.dstNode?.nodeName || '- -'}
+        </Typography.Text>
+      ),
+    },
+    {
       title: (
         <>
           本方通讯地址

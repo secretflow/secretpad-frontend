@@ -15,7 +15,9 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
   content = (graphId: string, quickConfigs?: any) => {
     const {
       dataTableReceiver,
+      dataTableReceiverPartition,
       dataTableSender,
+      dataTableSenderPartition,
       receiverKey,
       senderKey,
       featureSelects,
@@ -62,20 +64,6 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           target: `${graphId}-node-6`,
         },
         {
-          edgeId: `${graphId}-node-5-output-0__${graphId}-node-7-input-0`,
-          sourceAnchor: `${graphId}-node-5-output-0`,
-          targetAnchor: `${graphId}-node-7-input-0`,
-          source: `${graphId}-node-5`,
-          target: `${graphId}-node-7`,
-        },
-        {
-          edgeId: `${graphId}-node-6-output-0__${graphId}-node-7-input-1`,
-          sourceAnchor: `${graphId}-node-6-output-0`,
-          targetAnchor: `${graphId}-node-7-input-1`,
-          source: `${graphId}-node-6`,
-          target: `${graphId}-node-7`,
-        },
-        {
           edgeId: `${graphId}-node-5-output-1__${graphId}-node-8-input-0`,
           sourceAnchor: `${graphId}-node-5-output-1`,
           targetAnchor: `${graphId}-node-8-input-0`,
@@ -83,38 +71,38 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           target: `${graphId}-node-8`,
         },
         {
-          edgeId: `${graphId}-node-6-output-0__${graphId}-node-8-input-1`,
-          sourceAnchor: `${graphId}-node-6-output-0`,
+          edgeId: `${graphId}-node-6-output-1__${graphId}-node-8-input-1`,
+          sourceAnchor: `${graphId}-node-6-output-1`,
           targetAnchor: `${graphId}-node-8-input-1`,
           source: `${graphId}-node-6`,
           target: `${graphId}-node-8`,
         },
         {
-          edgeId: `${graphId}-node-7-output-0__${graphId}-node-9-input-0`,
-          sourceAnchor: `${graphId}-node-7-output-0`,
+          edgeId: `${graphId}-node-6-output-0__${graphId}-node-9-input-0`,
+          sourceAnchor: `${graphId}-node-6-output-0`,
           targetAnchor: `${graphId}-node-9-input-0`,
-          source: `${graphId}-node-7`,
+          source: `${graphId}-node-6`,
           target: `${graphId}-node-9`,
         },
         {
-          edgeId: `${graphId}-node-7-output-0__${graphId}-node-10-input-0`,
-          sourceAnchor: `${graphId}-node-7-output-0`,
+          edgeId: `${graphId}-node-6-output-0__${graphId}-node-10-input-0`,
+          sourceAnchor: `${graphId}-node-6-output-0`,
           targetAnchor: `${graphId}-node-10-input-0`,
-          source: `${graphId}-node-7`,
+          source: `${graphId}-node-6`,
           target: `${graphId}-node-10`,
         },
         {
-          edgeId: `${graphId}-node-7-output-0__${graphId}-node-11-input-0`,
-          sourceAnchor: `${graphId}-node-7-output-0`,
+          edgeId: `${graphId}-node-6-output-0__${graphId}-node-11-input-0`,
+          sourceAnchor: `${graphId}-node-6-output-0`,
           targetAnchor: `${graphId}-node-11-input-0`,
-          source: `${graphId}-node-7`,
+          source: `${graphId}-node-6`,
           target: `${graphId}-node-11`,
         },
         {
-          edgeId: `${graphId}-node-7-output-0__${graphId}-node-12-input-1`,
-          sourceAnchor: `${graphId}-node-7-output-0`,
+          edgeId: `${graphId}-node-6-output-0__${graphId}-node-12-input-1`,
+          sourceAnchor: `${graphId}-node-6-output-0`,
           targetAnchor: `${graphId}-node-12-input-1`,
-          source: `${graphId}-node-7`,
+          source: `${graphId}-node-6`,
           target: `${graphId}-node-12`,
         },
         {
@@ -157,12 +145,7 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
         {
           outputs: [`${graphId}-node-1-output-0`],
           nodeDef: {
-            ...(dataTableReceiver
-              ? {
-                  attrPaths: ['datatable_selected'],
-                  attrs: [{ ...dataTableReceiver, is_na: false }],
-                }
-              : {}),
+            ...getDataTableDef(dataTableReceiver, dataTableReceiverPartition),
             domain: `read_data`,
             name: `datatable`,
             version: `0.0.1`,
@@ -180,15 +163,15 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           nodeDef: {
             ...(featureSelects
               ? {
-                  attrPaths: ['input/input_data/feature_selects'],
+                  attrPaths: ['input/input_ds/feature_selects'],
                   attrs: [{ ...featureSelects, is_na: false }],
                 }
               : {}),
             domain: `stats`,
             name: `ss_vif`,
-            version: `0.0.1`,
+            version: `1.0.0`,
           },
-          inputs: [`${graphId}-node-7-output-0`],
+          inputs: [`${graphId}-node-6-output-0`],
           codeName: `stats/ss_vif`,
           x: -240,
           y: 190,
@@ -201,13 +184,10 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           nodeDef: {
             domain: `ml.train`,
             name: `ss_sgd_train`,
-            version: `0.0.1`,
+            version: `1.0.0`,
             ...(labelSelects && featureSelects
               ? {
-                  attrPaths: [
-                    'input/train_dataset/label',
-                    'input/train_dataset/feature_selects',
-                  ],
+                  attrPaths: ['input/input_ds/label', 'input/input_ds/feature_selects'],
                   attrs: [
                     { ...labelSelects, is_na: false },
                     { ...featureSelects, is_na: false },
@@ -215,7 +195,7 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
                 }
               : {}),
           },
-          inputs: [`${graphId}-node-7-output-0`],
+          inputs: [`${graphId}-node-6-output-0`],
           codeName: `ml.train/ss_sgd_train`,
           x: -40,
           y: 220,
@@ -228,9 +208,9 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           nodeDef: {
             domain: `ml.eval`,
             name: `ss_pvalue`,
-            version: `0.0.1`,
+            version: `1.0.0`,
           },
-          inputs: [`${graphId}-node-11-output-0`, `${graphId}-node-7-output-0`],
+          inputs: [`${graphId}-node-11-output-0`, `${graphId}-node-6-output-0`],
           codeName: `ml.eval/ss_pvalue`,
           x: -250,
           y: 310,
@@ -254,7 +234,7 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
 
             domain: `ml.predict`,
             name: `ss_sgd_predict`,
-            version: `0.0.2`,
+            version: '1.0.0',
           },
           inputs: [`${graphId}-node-11-output-0`, `${graphId}-node-8-output-0`],
           codeName: `ml.predict/ss_sgd_predict`,
@@ -269,10 +249,10 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           nodeDef: {
             domain: `ml.eval`,
             name: `biclassification_eval`,
-            version: `0.0.1`,
+            version: `1.0.0`,
             ...(labelSelects && pred
               ? {
-                  attrPaths: ['input/in_ds/label', 'input/in_ds/prediction'],
+                  attrPaths: ['input/input_ds/label', 'input/input_ds/prediction'],
                   attrs: [
                     { ...labelSelects, is_na: false },
                     { ...{ ss: [pred.s] }, is_na: false },
@@ -293,10 +273,10 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           nodeDef: {
             domain: `ml.eval`,
             name: `prediction_bias_eval`,
-            version: `0.0.1`,
+            version: `1.0.0`,
             ...(labelSelects && pred
               ? {
-                  attrPaths: ['input/in_ds/label', 'input/in_ds/prediction'],
+                  attrPaths: ['input/input_ds/label', 'input/input_ds/prediction'],
                   attrs: [
                     { ...labelSelects, is_na: false },
                     { ...{ ss: [pred.s] }, is_na: false },
@@ -315,12 +295,7 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
         {
           outputs: [`${graphId}-node-2-output-0`],
           nodeDef: {
-            ...(dataTableSender
-              ? {
-                  attrPaths: ['datatable_selected'],
-                  attrs: [{ ...dataTableSender, is_na: false }],
-                }
-              : {}),
+            ...getDataTableDef(dataTableSender, dataTableSenderPartition),
             domain: `read_data`,
             name: `datatable`,
             version: `0.0.1`,
@@ -383,12 +358,12 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
                   ],
                   domain: 'data_prep',
                   name: 'psi',
-                  version: '0.0.7',
+                  version: '0.0.8',
                 }
               : {
                   domain: 'data_prep',
                   name: 'psi',
-                  version: '0.0.7',
+                  version: '0.0.8',
                 }),
           },
           inputs: [`${graphId}-node-1-output-0`, `${graphId}-node-2-output-0`],
@@ -404,13 +379,13 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           nodeDef: {
             ...(featureSelects
               ? {
-                  attrPaths: ['input/input_data/features'],
+                  attrPaths: ['input/input_ds/features'],
                   attrs: [{ ...featureSelects, is_na: false }],
                 }
               : {}),
             domain: `stats`,
             name: `table_statistics`,
-            version: `0.0.2`,
+            version: `1.0.0`,
           },
           inputs: [`${graphId}-node-3-output-0`],
           codeName: `stats/table_statistics`,
@@ -425,7 +400,7 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           nodeDef: {
             domain: `data_prep`,
             name: `train_test_split`,
-            version: `0.0.1`,
+            version: `1.0.0`,
           },
           inputs: [`${graphId}-node-3-output-0`],
           codeName: `data_prep/train_test_split`,
@@ -436,26 +411,27 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           status: `STAGING`,
         },
         {
-          outputs: [`${graphId}-node-6-output-0`, `${graphId}-node-6-output-1`],
+          outputs: [
+            `${graphId}-node-6-output-0`,
+            `${graphId}-node-6-output-1`,
+            `${graphId}-node-6-output-2`,
+          ],
           nodeDef: {
             ...(featureSelects
               ? {
-                  attrPaths: [
-                    'input/input_data/feature_selects',
-                    'input/input_data/label',
-                  ],
+                  attrPaths: ['input/input_ds/feature_selects', 'input/input_ds/label'],
                   attrs: [
                     { ...featureSelects, is_na: false },
                     { ...labelSelects, is_na: false },
                   ],
                 }
               : {}),
-            domain: `feature`,
+            domain: `preprocessing`,
             name: `vert_woe_binning`,
-            version: `0.0.2`,
+            version: `1.0.0`,
           },
           inputs: [`${graphId}-node-5-output-0`],
-          codeName: `feature/vert_woe_binning`,
+          codeName: `preprocessing/vert_woe_binning`,
           x: -140,
           y: 20,
           label: `WOE分箱`,
@@ -463,32 +439,17 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           status: `STAGING`,
         },
         {
-          outputs: [`${graphId}-node-7-output-0`],
-          nodeDef: {
-            domain: `preprocessing`,
-            name: `vert_bin_substitution`,
-            version: `0.0.1`,
-          },
-          inputs: [`${graphId}-node-5-output-0`, `${graphId}-node-6-output-0`],
-          codeName: `preprocessing/vert_bin_substitution`,
-          x: -320,
-          y: 110,
-          label: `分箱转换`,
-          graphNodeId: `${graphId}-node-7`,
-          status: `STAGING`,
-        },
-        {
           outputs: [`${graphId}-node-8-output-0`],
           nodeDef: {
             domain: `preprocessing`,
-            name: `vert_bin_substitution`,
-            version: `0.0.1`,
+            name: `substitution`,
+            version: `1.0.0`,
           },
-          inputs: [`${graphId}-node-5-output-1`, `${graphId}-node-6-output-0`],
-          codeName: `preprocessing/vert_bin_substitution`,
+          inputs: [`${graphId}-node-5-output-1`, `${graphId}-node-6-output-1`],
+          codeName: `preprocessing/substitution`,
           x: -10,
           y: 100,
-          label: `分箱转换`,
+          label: `特征工程应用`,
           graphNodeId: `${graphId}-node-8`,
           status: `STAGING`,
         },
@@ -497,15 +458,15 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           nodeDef: {
             ...(featureSelects
               ? {
-                  attrPaths: ['input/input_data/feature_selects'],
+                  attrPaths: ['input/input_ds/feature_selects'],
                   attrs: [{ ...featureSelects, is_na: false }],
                 }
               : {}),
             domain: `stats`,
             name: `ss_pearsonr`,
-            version: `0.0.1`,
+            version: `1.0.0`,
           },
-          inputs: [`${graphId}-node-7-output-0`],
+          inputs: [`${graphId}-node-6-output-0`],
           codeName: `stats/ss_pearsonr`,
           x: -450,
           y: 190,
@@ -517,3 +478,23 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
     };
   };
 }
+
+const getDataTableDef = (receiver: { s: string }, partition: string) => {
+  if (receiver) {
+    if (partition) {
+      // 分区表
+      return {
+        attrPaths: ['datatable_selected', 'datatable_partition'],
+        attrs: [
+          { ...receiver, is_na: false },
+          { s: partition, is_na: false },
+        ],
+      };
+    }
+    return {
+      attrPaths: ['datatable_selected'],
+      attrs: [{ ...receiver, is_na: false }],
+    };
+  }
+  return {};
+};

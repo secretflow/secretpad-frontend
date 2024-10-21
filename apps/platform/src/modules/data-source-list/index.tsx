@@ -69,6 +69,7 @@ export const DataSourceListComponent = () => {
         { text: 'OSS', value: DataSourceType.OSS },
         { text: 'HTTP', value: DataSourceType.HTTP },
         { text: 'ODPS', value: DataSourceType.ODPS },
+        { text: 'MYSQL', value: DataSourceType.MYSQL },
       ],
     },
     {
@@ -188,7 +189,12 @@ export const DataSourceListComponent = () => {
           onChange={(pagination, filters) => {
             viewInstance.typeFilters =
               filters?.type === null
-                ? ([DataSourceType.OSS, DataSourceType.HTTP] as FilterValue)
+                ? ([
+                    DataSourceType.OSS,
+                    DataSourceType.HTTP,
+                    DataSourceType.MYSQL,
+                    DataSourceType.ODPS,
+                  ] as FilterValue)
                 : filters?.type;
             viewInstance.getDataSourceList();
           }}
@@ -207,16 +213,13 @@ export const DataSourceListComponent = () => {
           size="small"
         />
       </div>
-
-      {viewInstance.showAddDataSourceDrawer && (
-        <CreateDataSourceModal
-          onClose={() => {
-            viewInstance.getDataSourceList();
-            viewInstance.showAddDataSourceDrawer = false;
-          }}
-          visible={viewInstance.showAddDataSourceDrawer}
-        />
-      )}
+      <CreateDataSourceModal
+        onClose={() => {
+          viewInstance.getDataSourceList();
+          viewInstance.showAddDataSourceDrawer = false;
+        }}
+        visible={viewInstance.showAddDataSourceDrawer}
+      />
       {viewInstance.showDataSourceInfoDrawer && (
         <DataSourceInfoDrawer
           onClose={() => {
@@ -246,6 +249,7 @@ export class DataSourceView extends Model {
     DataSourceType.OSS,
     DataSourceType.HTTP,
     DataSourceType.ODPS,
+    DataSourceType.MYSQL,
   ];
 
   search = '';

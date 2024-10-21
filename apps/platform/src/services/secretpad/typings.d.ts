@@ -252,6 +252,8 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     projectId?: string;
   }
 
+  type Cron = Record<string, any>;
+
   type DataErrorCode =
     | 202011801
     | 'FILE_NAME_EMPTY'
@@ -1404,21 +1406,17 @@ result management list interface */
 
   interface OdpsPartitionParam {
     type?: string;
-    fields?: Array<OdpsPartitionParamField>;
+    fields?: Array<OrgSecretflowSecretpadManagerIntegrationModelOdpsPartitionParamField>;
   }
 
   type OdpsPartitionParam$Field = Record<string, any>;
 
-  type OdpsPartitionParamField = Record<string, any>;
-
   interface OdpsPartitionRequest {
     type?: string;
-    fields?: Array<OdpsPartitionRequestField>;
+    fields?: Array<OrgSecretflowSecretpadServiceModelDatatableOdpsPartitionRequestField>;
   }
 
   type OdpsPartitionRequest$Field = Record<string, any>;
-
-  type OdpsPartitionRequestField = Record<string, any>;
 
   type OneApiResult_object_ = Record<string, any>;
 
@@ -1470,7 +1468,22 @@ result management list interface */
     data?: OrgSecretflowSecretpadCommonDtoSecretPadResponse_SyncDataDTO;
   }
 
+  type OrgSecretflowSecretpadManagerIntegrationModelOdpsPartitionParamField = Record<
+    string,
+    any
+  >;
+
+  type OrgSecretflowSecretpadPersistenceModelParticipantNodeInstVONodeInstVO = Record<
+    string,
+    any
+  >;
+
   type OrgSecretflowSecretpadServiceModelApprovalParticipantVoteInfo = Record<
+    string,
+    any
+  >;
+
+  type OrgSecretflowSecretpadServiceModelDatatableOdpsPartitionRequestField = Record<
     string,
     any
   >;
@@ -1578,6 +1591,28 @@ result management list interface */
     data?: Array<ProjectJobSummaryVO>;
   }
 
+  interface PageScheduledRequest {
+    /** page num default 1 */
+    page?: number;
+    /** page size default 10 */
+    size?: number;
+    /** sort，property,property(,ASC|DESC) "createdDate,desc" */
+    sort?: Record<string, any>;
+    /** scheduleId,status */
+    search?: string;
+    status?: string;
+    projectId?: string;
+  }
+
+  interface PageScheduledVO {
+    scheduleId?: string;
+    scheduleDesc?: string;
+    scheduleStats?: string;
+    creator?: string;
+    createTime?: string;
+    taskRunning?: boolean;
+  }
+
   interface Participant {
     /** this id means the node who initiate a vote */
     nodeID?: string;
@@ -1594,12 +1629,10 @@ result management list interface */
   interface ParticipantNodeInstVO {
     initiatorNodeId?: string;
     initiatorNodeName?: string;
-    invitees?: Array<ParticipantNodeInstVONodeInstVO>;
+    invitees?: Array<OrgSecretflowSecretpadPersistenceModelParticipantNodeInstVONodeInstVO>;
   }
 
   type ParticipantNodeInstVO$NodeInstVO = Record<string, any>;
-
-  type ParticipantNodeInstVONodeInstVO = Record<string, any>;
 
   type Parties = Record<string, any>;
 
@@ -1608,8 +1641,8 @@ result management list interface */
   type PartyConfig = Record<string, any>;
 
   interface PartyVoteInfoVO {
-    instId?: string;
-    instName?: string;
+    partyId?: string;
+    partyName?: string;
     action?: string;
     reason?: string;
   }
@@ -1933,6 +1966,77 @@ result management list interface */
     routerId?: string;
   }
 
+  interface ScheduleListProjectJobRequest {
+    /** What page is currently requested? Note that starting at 1 represents the first page */
+    pageNum?: number;
+    /** How many pieces of data are in each page */
+    pageSize?: number;
+    projectId?: string;
+    graphId?: string;
+  }
+
+  interface ScheduledDelRequest {
+    scheduleId?: string;
+  }
+
+  type ScheduledErrorCode =
+    | 202015001
+    | 'PROJECT_JOB_NEED_SUCCESS_ONCE'
+    | 202015002
+    | 'PROJECT_JOB_NOT_EXIST'
+    | 202015003
+    | 'SCHEDULE_NOT_EXIST'
+    | 202015004
+    | 'SCHEDULE_UP_NOT_DEL'
+    | 202015005
+    | 'SCHEDULE_RUNNING_NOT_OFFLINE'
+    | 202015006
+    | 'REQUEST_IS_NULL'
+    | 202015007
+    | 'SCHEDULE_TASK_NOT_EXIST'
+    | 202015008
+    | 'SCHEDULE_TASK_STATUS_NOT_RUNNING'
+    | 202015009
+    | 'PROJECT_JOB_RESTART_ERROR';
+
+  interface ScheduledGraphCreateRequest {
+    scheduleId?: string;
+    scheduleDesc?: string;
+    cron?: ScheduledGraphCreateRequestCron;
+    projectId?: string;
+    graphId?: string;
+    nodes?: Array<string>;
+  }
+
+  type ScheduledGraphCreateRequestCron = Record<string, any>;
+
+  interface ScheduledGraphOnceSuccessRequest {
+    projectId?: string;
+    graphId?: string;
+  }
+
+  interface ScheduledIdRequest {
+    projectId?: string;
+    graphId?: string;
+  }
+
+  interface ScheduledInfoRequest {
+    scheduleId?: string;
+  }
+
+  interface ScheduledOfflineRequest {
+    scheduleId?: string;
+  }
+
+  type ScheduledStatus =
+    | 'UP'
+    | 'DOWN'
+    | 'TO_BE_RUN'
+    | 'RUNNING'
+    | 'STOPPED'
+    | 'SUCCEED'
+    | 'FAILED';
+
   interface SecretPadPageRequest {
     /** page num default 1 */
     page?: number;
@@ -1959,6 +2063,20 @@ result management list interface */
   interface SecretPadPageResponse_NodeVO_ {
     /** page list */
     list?: Array<NodeVO>;
+    /** total */
+    total?: number;
+  }
+
+  interface SecretPadPageResponse_PageScheduledVO_ {
+    /** page list */
+    list?: Array<PageScheduledVO>;
+    /** total */
+    total?: number;
+  }
+
+  interface SecretPadPageResponse_TaskPageScheduledVO_ {
+    /** page list */
+    list?: Array<TaskPageScheduledVO>;
     /** total */
     total?: number;
   }
@@ -2202,6 +2320,16 @@ result management list interface */
     data?: SecretPadPageResponse_NodeVO_;
   }
 
+  interface SecretPadResponse_SecretPadPageResponse_PageScheduledVO__ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: SecretPadPageResponse_PageScheduledVO_;
+  }
+
+  interface SecretPadResponse_SecretPadPageResponse_TaskPageScheduledVO__ {
+    status?: SecretPadResponseSecretPadResponseStatus;
+    data?: SecretPadPageResponse_TaskPageScheduledVO_;
+  }
+
   interface SecretPadResponse_ServingDetailVO_ {
     status?: SecretPadResponseSecretPadResponseStatus;
     data?: ServingDetailVO;
@@ -2338,6 +2466,43 @@ result management list interface */
     colType?: string;
     /** Column comment */
     colComment?: string;
+  }
+
+  interface TaskInfoScheduledRequest {
+    scheduleId?: string;
+    scheduleTaskId?: string;
+  }
+
+  interface TaskPageScheduledRequest {
+    /** page num default 1 */
+    page?: number;
+    /** page size default 10 */
+    size?: number;
+    /** sort，property,property(,ASC|DESC) "createdDate,desc" */
+    sort?: Record<string, any>;
+    /** scheduleTaskId */
+    search?: string;
+    /** scheduleId */
+    scheduleId?: string;
+  }
+
+  interface TaskPageScheduledVO {
+    scheduleTaskId?: string;
+    scheduleTaskExpectStartTime?: string;
+    scheduleTaskStartTime?: string;
+    scheduleTaskEndTime?: string;
+    scheduleTaskStatus?: string;
+  }
+
+  interface TaskReRunScheduledRequest {
+    scheduleId?: string;
+    scheduleTaskId?: string;
+    type?: string;
+  }
+
+  interface TaskStopScheduledRequest {
+    scheduleId?: string;
+    scheduleTaskId?: string;
   }
 
   type TeeJobKind = 'PushAuth' | 'Push' | 'Auth' | 'CancelAuth' | 'Pull' | 'Delete';

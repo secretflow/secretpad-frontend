@@ -1,5 +1,6 @@
 import type { GraphManager } from '@secretflow/dag';
 import { splitPortId } from '@secretflow/dag';
+import { history } from 'umi';
 
 import { DefaultModalManager } from '@/modules/dag-modal-manager';
 import { GraphComponents, GraphView } from '@/modules/main-dag/graph';
@@ -24,6 +25,11 @@ export class RecordGraphView extends GraphView {
   graphService = getModel(RecordGraphService);
 
   onViewMount() {
+    // 如果 periodicType 有值，代表是周期任务那边打开的详情，则不需要自动打开 RecordListDrawerItem
+    const { periodicType } = (history.location.state || {}) as {
+      periodicType: string | undefined;
+    };
+    if (periodicType) return;
     setTimeout(() => {
       this.modelManager.openModal(RecordListDrawerItem.id);
     }, 100);
