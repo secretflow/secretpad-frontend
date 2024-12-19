@@ -13,23 +13,15 @@ import {
   getProjectDatatable,
 } from '@/services/secretpad/ProjectController';
 
-import styles from '../index.less';
+import styles from '../../index.less';
+import type { RenderProp } from '../config-render-protocol';
+import type { IDataTable, IOutputDataTable } from '../custom-render/types';
+import style from '../index.less';
 
-import type { RenderProp } from './config-render-protocol';
-import type { IDataTable, IOutputDataTable } from './custom-render/types';
-import style from './index.less';
+// 非平衡PSI 查询方端数据集
+export const UnbalancePsiColSelect: React.FC<RenderProp<string>> = (config) => {
+  const { node, upstreamTables = [], index, translation, disabled, form } = config;
 
-// Used for select join key for psi
-export const DefaultColSelection: React.FC<RenderProp<string>> = (config) => {
-  const {
-    node,
-    upstreamTables = [],
-    index,
-    translation,
-    disabled,
-    form,
-    nodeAllInfo,
-  } = config;
   const inputName = (node.prefixes || ['input', 'input_table'])[1];
   const formName =
     node.prefixes && node.prefixes.length > 0
@@ -39,18 +31,24 @@ export const DefaultColSelection: React.FC<RenderProp<string>> = (config) => {
   const { col_min_cnt_inclusive = 0, col_max_cnt_inclusive } = node;
   const [colsOptions, setCols] = useState<{ value: string; label: string }[]>([]);
   const [tableName, setTableName] = useState<string>();
-  const [errorMsg, setErrorMsg] = useState<string>();
   const [tables, setTables] = useState<IDataTable[]>([]);
   const [outputTables, setOutputTables] = useState<IOutputDataTable[]>([]);
 
-  const [columnInfo, setColumnInfo] = useState<{ colName: string; colType: string }[]>(
-    [],
-  );
   const { search } = useLocation();
   const { projectId, dagId } = parse(search) as {
     projectId: string;
     dagId: string;
   };
+
+  // 当值为[]的时候，为了展示出formList,则需要设置默认值为[undefined]
+  useEffect(() => {
+    const formNameValue = form?.getFieldValue(formName);
+    if (Array.isArray(formNameValue) && formNameValue.length === 0) {
+      form?.setFieldValue(formName, [undefined]);
+    } else {
+      form?.setFieldValue(formName, formNameValue);
+    }
+  }, [form?.getFieldValue(formName)]);
 
   useDeepCompareEffect(() => {
     const getTables = async () => {
@@ -97,7 +95,6 @@ export const DefaultColSelection: React.FC<RenderProp<string>> = (config) => {
         );
       });
 
-      // upsteam tables
       setTables(
         dataTableList.filter(
           ({ datatableId }) => (upstreamTables as string[]).indexOf(datatableId) > -1,
@@ -108,16 +105,16 @@ export const DefaultColSelection: React.FC<RenderProp<string>> = (config) => {
     getTables();
   }, [upstreamTables]);
 
+  /** 查询方端数据表 */
   const fromTable = useMemo(() => {
     if (index !== undefined && upstreamTables[index]) {
       const currentTableId = upstreamTables[index];
-
       return (
         tables.find(({ datatableId }) => datatableId === currentTableId) ||
         outputTables.find(({ datatableId }) => datatableId === currentTableId)
       );
     }
-  }, [index, upstreamTables, outputTables]);
+  }, [index, upstreamTables, outputTables, tables]);
 
   useEffect(() => {
     const getCols = async (table) => {
@@ -167,7 +164,6 @@ export const DefaultColSelection: React.FC<RenderProp<string>> = (config) => {
         });
       }
       setTableName(fromTable?.datatableName);
-      setColumnInfo(tableFields);
       setCols(
         tableFields.map((option: { colName: string; colType: string }) => ({
           value: option.colName,
@@ -176,19 +172,13 @@ export const DefaultColSelection: React.FC<RenderProp<string>> = (config) => {
       );
     };
 
-    if (fromTable) getCols(fromTable);
+    if (fromTable) {
+      getCols(fromTable);
+    } else {
+      setTableName('');
+      setCols([]);
+    }
   }, [fromTable]);
-
-  /** 找到这个组件中所有 AT_SF_TABLE_COL 渲染的节点 form名称 */
-  const getNamePathList = () => {
-    return config.componentConfig
-      .filter((item) => item.type === 'AT_SF_TABLE_COL')
-      .map((nodeItem) => {
-        return nodeItem.prefixes && nodeItem.prefixes.length > 0
-          ? nodeItem.prefixes.join('/') + '/' + nodeItem.name
-          : nodeItem.name;
-      });
-  };
 
   return (
     <>
@@ -196,17 +186,12 @@ export const DefaultColSelection: React.FC<RenderProp<string>> = (config) => {
         <span className={styles.label}>{translation[inputName] || inputName}：</span>
         <span>{tableName}</span>
       </div>
-      {errorMsg && <div className={style.errorMsg}>{errorMsg}</div>}
       <Form.List
         name={formName}
         initialValue={[undefined]}
         rules={[
           {
             validator: async (_, cols) => {
-              if (upstreamTables[0] === upstreamTables[1]) {
-                setErrorMsg('样本表不能选择同一份');
-                return Promise.reject(new Error(`样本表不能选择同一份`));
-              }
               if (!cols || cols.length < (col_min_cnt_inclusive || 1)) {
                 return Promise.reject(
                   new Error(`至少选择${col_min_cnt_inclusive || 1}列作为关联键`),
@@ -258,42 +243,13 @@ export const DefaultColSelection: React.FC<RenderProp<string>> = (config) => {
                     {i === 0 ? (
                       <PlusCircleFilled
                         onClick={() => {
-                          // 隐私求交和三方隐私求交，点击form.list的删除或者新增，算子的所有的这个类型都会删除或新增
-                          if (
-                            nodeAllInfo.name === 'data_prep/psi' ||
-                            nodeAllInfo.name === 'data_prep/psi_tp'
-                          ) {
-                            const valueAll = form?.getFieldsValue();
-                            const nameList = getNamePathList();
-                            nameList.map((item) => {
-                              const arr = valueAll[item];
-                              arr.push(undefined);
-                              form?.setFieldValue(item, arr);
-                            });
-                          } else {
-                            add();
-                          }
+                          add();
                         }}
                       />
                     ) : (
                       <DeleteOutlined
                         onClick={() => {
-                          if (
-                            nodeAllInfo.name === 'data_prep/psi' ||
-                            nodeAllInfo.name === 'data_prep/psi_tp'
-                          ) {
-                            const valueAll = form?.getFieldsValue();
-                            const nameList = getNamePathList();
-                            nameList.map((item: string) => {
-                              const currentValues = valueAll[item];
-                              const newValues = currentValues.filter(
-                                (_: string, index_num: number) => index_num !== i,
-                              );
-                              form?.setFieldValue(item, newValues);
-                            });
-                          } else {
-                            remove(i);
-                          }
+                          remove(i);
                         }}
                       />
                     )}

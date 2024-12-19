@@ -26,6 +26,7 @@ export const DefaultNodeSelect: React.FC<RenderProp<string>> = (config) => {
     componentConfig,
     attrConfig,
   } = config;
+
   const [nodes, setNodes] = useState<{ label: string; value: string }[]>([]);
   const nodeService = useModel(NodeService);
 
@@ -38,7 +39,6 @@ export const DefaultNodeSelect: React.FC<RenderProp<string>> = (config) => {
 
   let isMultiple = true;
   if (list_max_length_inclusive === 1) isMultiple = false;
-
   useEffect(() => {
     const getNodes = async () => {
       const nodeList = [] as { label: string; value: string }[];

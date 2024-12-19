@@ -67,8 +67,7 @@ export const OutputTable: React.FC<OutputTableProps> = (props) => {
   const [isFullscreen, { enterFullscreen, exitFullscreen }] =
     useFullscreen(fullScreenRef);
 
-  const tableInfo = modifyDataStructure(requestTableInfo);
-
+  const tableInfo = modifyDataStructure(requestTableInfo, componentName);
   // 去除导出数据时手动加入的key
   const convertDownDataSource = (dataList: { key?: number }[] = []) => {
     return dataList.map((item) => {
@@ -99,7 +98,7 @@ export const OutputTable: React.FC<OutputTableProps> = (props) => {
         render: (text) => {
           return (
             <div style={{ whiteSpace: 'nowrap' }} title={text}>
-              {text.length > 12 && isEllipsis
+              {text?.length > 12 && isEllipsis
                 ? `${text.slice(0, 6)}...${text.slice(text.length - 6, text.length)}`
                 : text}
             </div>
@@ -115,7 +114,7 @@ export const OutputTable: React.FC<OutputTableProps> = (props) => {
         render: (text) => {
           return (
             <div style={{ whiteSpace: 'nowrap' }} title={text}>
-              {text.length > 12 && isEllipsis
+              {text?.length > 12 && isEllipsis
                 ? `${text.slice(0, 6)}...${text.slice(text.length - 6, text.length)}`
                 : text}
             </div>

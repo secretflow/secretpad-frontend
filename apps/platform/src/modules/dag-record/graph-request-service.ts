@@ -12,6 +12,16 @@ import { getJob } from '@/services/secretpad/ProjectController';
 import { info, taskInfo } from '@/services/secretpad/ScheduledController';
 import { getModel } from '@/util/valtio-helper';
 
+/**
+ * 训练组件(SecureBoost训练 / SSGLM训练 / 逻辑回归训练 / SS-XGB训练)支持进度展示
+ */
+const showProgressCodeNames = [
+  'ml.train/sgb_train',
+  'ml.train/ss_glm_train',
+  'ml.train/ss_xgb_train',
+  'ml.train/ss_sgd_train',
+];
+
 export class GraphRecordRequestService extends GraphRequestService {
   filtered: any[] = [];
   originalNodes: any[] = [];
@@ -38,10 +48,12 @@ export class GraphRecordRequestService extends GraphRequestService {
 
     const { nodes } = graph;
     const convertedNodes = nodes?.map((n) => {
-      const { graphNodeId, status } = n;
+      const { graphNodeId, status, progress = 0, codeName } = n;
+      const showprogress = showProgressCodeNames.includes(codeName as string);
       return {
         nodeId: graphNodeId as string,
         status: nodeStatus[status || 'STAGING'] as unknown as NodeStatus,
+        statusProcess: showprogress ? Number((progress * 100).toFixed(2)) : 0,
       };
     });
     return { nodeStatus: convertedNodes || [], finished: finished as boolean };
@@ -54,8 +66,15 @@ export class GraphRecordRequestService extends GraphRequestService {
     const graphData: { nodes: any[]; edges: any[] } = {} as any;
     const { nodes, edges } = graph;
     const convertedNodes = nodes?.map((n) => {
-      const { graphNodeId, status, ...options } = n;
-      return { ...options, id: graphNodeId, status: nodeStatus[status || 'STAGING'] };
+      const { graphNodeId, status, codeName, progress = 0, ...options } = n;
+      const showprogress = showProgressCodeNames.includes(codeName as string);
+      return {
+        ...options,
+        codeName,
+        id: graphNodeId,
+        status: nodeStatus[status || 'STAGING'],
+        statusProcess: showprogress ? Number((progress * 100).toFixed(2)) : 0,
+      };
     });
 
     const convertedEdges = edges

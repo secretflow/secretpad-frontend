@@ -23,6 +23,7 @@ import { Model, useModel } from '@/util/valtio-helper';
 import { analysisCsv } from '../upload-table/util';
 
 import styles from './index.less';
+import { isScqlFeature } from './sql-keyword';
 
 const downloadData = [
   { 特征名称: 'id1', 特征类型: 'string', 特征描述: '' },
@@ -159,6 +160,13 @@ export const DataTableStructure = () => {
         </div>
       </div>
 
+      <Alert
+        message="只支持英文名、中划线、下划线；如使用 scql 分析组件，不可包含 sql 关键字和中划线"
+        type="warning"
+        showIcon
+        style={{ marginBottom: 8 }}
+      />
+
       {dataTableStructureService.featuresError.length > 0 && (
         <div style={{ padding: '5px 0' }}>
           <Alert
@@ -231,8 +239,9 @@ export const DataTableStructure = () => {
                           '特征名称长度限制64字符,请缩短特征名,需要同步修改本地数据文件schema',
                       },
                       {
-                        pattern: /^([a-zA-Z0-9-_]*)$/,
-                        message: '名称可由英文/数字/下划线/中划线组成',
+                        pattern: /^[a-zA-Z][a-zA-Z0-9-_]*$/,
+                        message:
+                          '名称可由英文/数字/下划线/中划线组成，且不能以数字开头',
                       },
                       {
                         validator: (rule, value) => {
@@ -250,7 +259,13 @@ export const DataTableStructure = () => {
                     <Input
                       placeholder="请输入"
                       size="middle"
-                      onChange={handelFeatureChange}
+                      status={
+                        isScqlFeature(
+                          form.getFieldValue(['features', field.name, 'featureName']),
+                        )
+                          ? 'warning'
+                          : undefined
+                      }
                     />
                   </Form.Item>
                   <Form.Item

@@ -150,20 +150,22 @@ export const DagLogDrawer = ({ children }: IDagLogDrawer) => {
       rootClassName={classNames(styles.logDrawerRoot, { [styles.logDrawer]: dragging })}
       height={service.logMainHeight}
       mask={false}
-      bodyStyle={{
-        padding: 0,
-        overflow: 'hidden',
-      }}
       getContainer={() => {
         return (
           document.querySelector(`.${dagLayoutStyle.center}`) ||
           (document.querySelector(`.${recordLayoutStyle.center}`) as Element)
         );
       }}
-      contentWrapperStyle={{
-        // marginLeft: 240,
-        boxShadow: 'none',
-        marginRight: service.logMarginLeft,
+      styles={{
+        wrapper: {
+          // marginLeft: 240,
+          boxShadow: 'none',
+          marginRight: service.logMarginLeft,
+        },
+        body: {
+          padding: 0,
+          overflow: 'hidden',
+        },
       }}
     >
       <div

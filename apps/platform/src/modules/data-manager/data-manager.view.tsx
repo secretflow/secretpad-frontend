@@ -195,7 +195,9 @@ export const DataManagerComponent: React.FC = () => {
       render: (status: string, record: API.DatatableVO) => {
         if (
           record.datasourceType === DataSourceType.HTTP ||
-          record.datasourceType === DataSourceType.OSS
+          record.datasourceType === DataSourceType.OSS ||
+          record.datasourceType === DataSourceType.MYSQL ||
+          record.datasourceType === DataSourceType.ODPS
         )
           return '-';
         if (!status || status === '') {

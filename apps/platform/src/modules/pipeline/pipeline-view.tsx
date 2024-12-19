@@ -96,10 +96,6 @@ export const PipelineViewComponent = () => {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    viewInstance.setCurrentPipeline(dagId as string);
-  }, [dagId]);
-
-  useEffect(() => {
     const update = async () => {
       await viewInstance.refresh();
       const currentPipeline = viewInstance.pipelineService.pipelines.find(
@@ -122,7 +118,7 @@ export const PipelineViewComponent = () => {
       }
     };
     update();
-  }, [projectId, dagId]);
+  }, [projectId]);
 
   /**
    * P2P模式下，判断当前训练流和项目能否编辑

@@ -387,7 +387,10 @@ export const CreateDataSourceModal: React.FC<{
                       { max: 64, message: '长度限制64' },
                     ]}
                   >
-                    <Input placeholder="请输入" />
+                    <Input
+                      addonBefore={'jdbc:mysql://'}
+                      placeholder="请输入endpoint 例如: [hostname | ip]:port "
+                    />
                   </Form.Item>
                   <Form.Item
                     label="user"
@@ -413,8 +416,8 @@ export const CreateDataSourceModal: React.FC<{
                       { required: true, message: '请输入database' },
                       { max: 63, min: 3, message: '长度限制3~63字节' },
                       {
-                        pattern: /^[a-z0-9]([a-z0-9-]*)$/,
-                        message: '小写字母或者数字开头，可由小写字母/数字/中划线组成',
+                        pattern: /^[a-zA-Z_]([A-Za-z0-9-_]*)$/,
+                        message: '字母或下划线开头，可由字母/数字/中划线/下划线组成',
                       },
                     ]}
                   >

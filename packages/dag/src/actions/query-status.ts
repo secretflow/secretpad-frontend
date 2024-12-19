@@ -69,16 +69,18 @@ export class QueryStatusAction extends DAGContext implements ActionProtocol {
   }
 
   changeNodesStatus(
-    nodeStatus: { nodeId: string; status: NodeStatus }[],
+    nodeStatus: { nodeId: string; status: NodeStatus; statusProcess: number }[],
     graph: Graph,
   ) {
-    nodeStatus.forEach(({ nodeId, status }) => {
+    nodeStatus.forEach(({ nodeId, status, statusProcess }) => {
       const node = graph.getCellById(nodeId);
       if (node) {
         node.setData({
           ...node.getData(),
           status,
+          statusProcess,
         });
+
         const edges = graph.getIncomingEdges(nodeId);
         edges?.forEach((edge) => {
           const sourceNodeId = edge.getSourceCellId();

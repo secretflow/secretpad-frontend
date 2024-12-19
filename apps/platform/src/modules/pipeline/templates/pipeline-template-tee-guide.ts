@@ -6,7 +6,7 @@ import { PipelineTemplateType } from '../pipeline-protocol';
 
 export class TemplateGuidTEE extends Model implements PipelineTemplateContribution {
   type: PipelineTemplateType = PipelineTemplateType.TEE_GUIDE;
-  name = `金融风控`;
+  name = `二分类建模`;
   argsFilled = true;
   computeMode = ['TEE'];
 

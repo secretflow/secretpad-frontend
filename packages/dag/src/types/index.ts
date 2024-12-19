@@ -24,6 +24,7 @@ export type GraphNode = {
   x: number;
   y: number;
   status: NodeStatus;
+  statusProcess: number;
   //node meta info and attrs
   nodeDef?: any;
   outputs?: GraphNodeOutput[];

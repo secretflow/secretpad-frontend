@@ -6,7 +6,7 @@ import { PipelineTemplateType } from '../pipeline-protocol';
 
 export class TemplateRisk extends Model implements PipelineTemplateContribution {
   type: PipelineTemplateType = PipelineTemplateType.RISK;
-  name = `金融风控`;
+  name = `二分类建模`;
   argsFilled = false;
   description = '二分类训练流模板';
 
@@ -309,19 +309,20 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
           status: `STAGING`,
         },
         {
-          outputs: [`${graphId}-node-3-output-0`],
+          outputs: [`${graphId}-node-3-output-0`, `${graphId}-node-3-output-1`],
           nodeDef: {
             ...(receiverKey && senderKey
               ? {
                   attrPaths: [
-                    'input/input_table_1/key',
-                    'input/input_table_2/key',
+                    'input/input_ds1/keys',
+                    'input/input_ds2/keys',
                     'protocol',
                     'sort_result',
-                    'allow_duplicate_keys',
-                    'allow_duplicate_keys/no/skip_duplicates_check',
-                    'ecdh_curve',
-                    'allow_duplicate_keys/no/receiver_parties',
+                    'receiver_parties',
+                    'allow_empty_result',
+                    'join_type',
+                    'input_ds1_keys_duplicated',
+                    'input_ds2_keys_duplicated',
                   ],
                   attrs: [
                     {
@@ -341,29 +342,33 @@ export class TemplateRisk extends Model implements PipelineTemplateContribution 
                       is_na: false,
                     },
                     {
-                      s: 'no',
+                      ...receiverPSI,
                       is_na: false,
                     },
                     {
                       is_na: true,
                     },
                     {
-                      s: 'CURVE_FOURQ',
+                      s: 'inner_join',
                       is_na: false,
                     },
                     {
-                      ...receiverPSI,
+                      b: true,
+                      is_na: false,
+                    },
+                    {
+                      b: true,
                       is_na: false,
                     },
                   ],
                   domain: 'data_prep',
                   name: 'psi',
-                  version: '0.0.8',
+                  version: '1.0.0',
                 }
               : {
                   domain: 'data_prep',
                   name: 'psi',
-                  version: '0.0.8',
+                  version: '1.0.0',
                 }),
           },
           inputs: [`${graphId}-node-1-output-0`, `${graphId}-node-2-output-0`],

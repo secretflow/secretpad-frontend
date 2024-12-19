@@ -78,7 +78,10 @@ export const lexicographicalOrder = (a: string, b: string) => {
     : comparison;
 };
 
-export const modifyDataStructure = (resultObj: ResultOriginData) => {
+export const modifyDataStructure = (
+  resultObj: ResultOriginData,
+  componentName?: string,
+) => {
   const result = resultObj.divs[0]?.children[0];
   if (result?.type === 'descriptions') {
     const records = resultObj.divs
@@ -156,7 +159,12 @@ export const modifyDataStructure = (resultObj: ResultOriginData) => {
       return [name, ...rowData];
     });
 
-    const schemaList = [{ name: 'name', type: 'str' }, ...arr.headers];
+    // 自定义scql分析算子(stats/scql_analysis)不需要自动加 name
+    const schemaList =
+      componentName && componentName === 'stats/scql_analysis'
+        ? [...arr.headers]
+        : [{ name: 'name', type: 'str' }, ...arr.headers];
+
     return { records: recordList, schema: schemaList, type: 'table' };
   }
   return {

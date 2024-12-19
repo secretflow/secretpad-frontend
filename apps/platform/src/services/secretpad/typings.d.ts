@@ -839,6 +839,8 @@ manipulate, derived from the value returned by the back end in the uplink mouth 
     jobId?: string;
     /** Graph node task status */
     status?: GraphNodeTaskStatus;
+    /** Graph node task status process */
+    statusProcess?: number;
     /** Graph node job parties */
     parties?: Array<NodeSimpleInfo>;
   }

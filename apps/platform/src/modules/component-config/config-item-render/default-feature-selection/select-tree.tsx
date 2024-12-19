@@ -22,6 +22,7 @@ const typeMap = {
   int: 'INTEGER',
   int32: 'INTEGER',
   int64: 'INTEGER',
+  bool: 'BOOL',
 };
 
 type TreeOptions = {
@@ -192,7 +193,7 @@ export const SelectTree = ({
 
   const onCheck = (checked: string[]) => {
     const filterCheckedKeysValue = checked.filter(
-      (item) => !['STRING', 'FLOAT', 'INTEGER'].includes(item),
+      (item) => !['STRING', 'FLOAT', 'INTEGER', 'BOOL'].includes(item),
     );
     setSelectedFields(filterCheckedKeysValue.map((item) => ({ colName: item })));
   };

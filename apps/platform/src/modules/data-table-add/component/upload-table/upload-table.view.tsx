@@ -13,6 +13,8 @@ import { NodeService } from '@/modules/node';
 import { createDataTable } from '@/services/secretpad/DatatableController';
 import { getModel, Model, useModel } from '@/util/valtio-helper';
 
+import { isScqlFeature } from '../dataTableStructure/sql-keyword';
+
 import styles from './index.less';
 import UploadTableFileList from './upload-list';
 import type { FileInfo } from './upload-list';
@@ -266,6 +268,12 @@ export const UploadTable: React.FC<IProps> = ({
                   <CSVLink filename="示例文件.csv" data={downloadData} ref={csvRef} />
                 </span>
               </div>
+              <Alert
+                message="只支持英文名、中划线、下划线；如使用 scql 分析组件，不可包含 sql 关键字和中划线"
+                type="warning"
+                showIcon
+                style={{ marginBottom: 8 }}
+              />
               {viewInstance.schemaErrors.length > 0 && (
                 <div style={{ padding: '5px 0' }}>
                   <Alert
@@ -345,8 +353,9 @@ export const UploadTable: React.FC<IProps> = ({
                                   '特征名称长度限制64字符,请缩短特征名,需要同步修改本地数据文件schema',
                               },
                               {
-                                pattern: /^([a-zA-Z0-9-_]*)$/,
-                                message: '名称可由英文/数字/下划线/中划线组成',
+                                pattern: /^[a-zA-Z][a-zA-Z0-9-_]*$/,
+                                message:
+                                  '名称可由英文/数字/下划线/中划线组成，且不能以数字开头',
                               },
                               {
                                 validator: (rule, value) => {
@@ -364,6 +373,13 @@ export const UploadTable: React.FC<IProps> = ({
                             <Input
                               placeholder="请输入"
                               style={{ fontSize: 12, height: 32 }}
+                              status={
+                                isScqlFeature(
+                                  form.getFieldValue(['schema', index, 'featureName']),
+                                )
+                                  ? 'warning'
+                                  : undefined
+                              }
                             />
                           </Form.Item>
                           <Form.Item

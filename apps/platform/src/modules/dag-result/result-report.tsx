@@ -1,5 +1,5 @@
-import { Tag, Tabs } from 'antd';
-
+import { Tag, Tabs, Collapse, List } from 'antd';
+import { CaretRightOutlined } from '@ant-design/icons';
 import styles from './index.less';
 import type { Tab } from './result-report-types';
 import type { ResultComponentProps } from './types';
@@ -29,7 +29,8 @@ export const ResultReportComponent = (
   props: ResultComponentProps<'report'> & { visible: boolean },
 ) => {
   const { data, id, codeName, visible } = props;
-  const { gmtCreate, tabs = [] } = data;
+  const { gmtCreate, tabs = [], warning = [] } = data;
+
   return (
     <>
       <div className={styles.report}>
@@ -43,6 +44,37 @@ export const ResultReportComponent = (
           <span>{formatTimestamp(gmtCreate || '')}</span>
         </div>
       </div>
+      {(warning || []).length !== 0 && (
+        <Collapse
+          items={[
+            {
+              key: '1',
+              label: 'Warning',
+              children: (
+                <List
+                  size="small"
+                  header={null}
+                  footer={null}
+                  dataSource={warning}
+                  renderItem={(item: string) => {
+                    return <List.Item>{item}</List.Item>;
+                  }}
+                />
+              ),
+              style: {
+                marginBottom: 24,
+                border: 'none',
+                borderRadius: 8,
+              },
+            },
+          ]}
+          expandIcon={({ isActive }) => (
+            <CaretRightOutlined rotate={isActive ? 90 : 0} />
+          )}
+          bordered={false}
+          rootClassName={styles.warningCollapse}
+        />
+      )}
       {visible && <>{getVisTabsContent(codeName, tabs, id)}</>}
     </>
   );
