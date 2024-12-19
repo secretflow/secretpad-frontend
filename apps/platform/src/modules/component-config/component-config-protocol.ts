@@ -67,7 +67,12 @@ export const codeNameRenderKey = {
   'preprocessing/psi': 'UNION_KEY_SELECT',
   'preprocessing/sqlite': 'SQL',
   'data_filter/sample': 'SAMPLE',
-  'ml.predict/read_model': 'MODEL_SELECT', // TODO:修改名称
+  'ml.predict/read_model': 'MODEL_SELECT',
+  'stats/scql_analysis': 'SQL_ANALYSIS',
+  'data_prep/unbalance_psi': 'UNBALANCE_PSI',
+  'data_prep/unbalance_psi_cache': 'UNBALANCE_PSI_CACHE',
+  'data_prep/psi_tp': 'UNION_KEY_SELECT',
+  'preprocessing/sql_processor': 'SQL_PROCESSOR',
 };
 
 export interface ComponentConfig {
@@ -141,7 +146,36 @@ export const getUpstreamKey = {
       return attrs[0]?.s;
     });
   },
-
+  'data_prep/psi_tp': (
+    upstreamNodes: GraphNodeDetail[],
+    graphNode?: GraphNodeDetail,
+  ) => {
+    const { inputs = [] } = graphNode || {};
+    return upstreamNodes.map((n, index) => {
+      const { codeName, nodeDef } = n || {};
+      if (!['read_data/datatable'].includes(codeName)) {
+        return inputs[index];
+      }
+      const { attrs } = nodeDef;
+      if (!attrs) return inputs[index];
+      return attrs[0]?.s;
+    });
+  },
+  'data_prep/unbalance_psi': (
+    upstreamNodes: GraphNodeDetail[],
+    graphNode?: GraphNodeDetail,
+  ) => {
+    const { inputs = [] } = graphNode || {};
+    return upstreamNodes.map((n, index) => {
+      const { codeName, nodeDef } = n || {};
+      if (!['read_data/datatable'].includes(codeName)) {
+        return inputs[index];
+      }
+      const { attrs } = nodeDef;
+      if (!attrs) return inputs[index];
+      return attrs[0]?.s;
+    });
+  },
   'preprocessing/psi': (
     upstreamNodes: GraphNodeDetail[],
     graphNode?: GraphNodeDetail,

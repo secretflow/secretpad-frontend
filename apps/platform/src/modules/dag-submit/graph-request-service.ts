@@ -6,6 +6,16 @@ import { GraphRequestService } from '@/modules/main-dag/graph-request-service';
 import { nodeStatus } from '@/modules/main-dag/util';
 import { getGraphDetail } from '@/services/secretpad/GraphController';
 
+/**
+ * 训练组件(SecureBoost训练 / SSGLM训练 / 逻辑回归训练 / SS-XGB训练)支持进度展示
+ */
+const showProgressCodeNames = [
+  'ml.train/sgb_train',
+  'ml.train/ss_glm_train',
+  'ml.train/ss_xgb_train',
+  'ml.train/ss_sgd_train',
+];
+
 export class GraphSubmitRequestService extends GraphRequestService {
   graphData = {};
 
@@ -44,6 +54,7 @@ export class GraphSubmitRequestService extends GraphRequestService {
       const {
         graphNodeId,
         status,
+        progress = 0,
         codeName,
         nodeDef = {},
         parties = [],
@@ -59,6 +70,9 @@ export class GraphSubmitRequestService extends GraphRequestService {
         codeName,
         id: graphNodeId,
         status: graphNodeStatus,
+        statusProcess: showProgressCodeNames.includes(codeName as string)
+          ? Number((progress * 100).toFixed(2))
+          : 0,
         /**
          * 初始化可以点击提交的算子
          *   1. 成功的模型训练并且有输入边

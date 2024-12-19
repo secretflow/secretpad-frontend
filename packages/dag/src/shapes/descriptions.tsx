@@ -20,11 +20,12 @@ enum statusColorEnum {
   success = 'success',
   error = 'error',
   default = 'default',
+  processing = 'processing',
 }
 
 export const Description = (props: IProps) => {
   const { dagContext } = props;
-  const { id, status, outputs, codeName, showContinueRun } = props.data;
+  const { id, status, outputs, codeName, showContinueRun, statusProcess } = props.data;
   const { nodeNum } = parseNodeId(id);
   let statusDes = '';
   let statusColor = '';
@@ -36,6 +37,7 @@ export const Description = (props: IProps) => {
     statusColor = statusColorEnum.error;
   } else if (status === NodeStatus.running) {
     statusDes = '执行中';
+    statusColor = statusColorEnum.processing;
   } else if (status === NodeStatus.pending) {
     statusDes = '已提交';
   } else if (status === NodeStatus.default) {
@@ -72,7 +74,15 @@ export const Description = (props: IProps) => {
                 status={statusColorEnum[statusColor as keyof typeof statusColorEnum]}
               />
             )}
-            <span style={{ marginLeft: '4px' }}>{statusDes}</span>
+            {(status === NodeStatus.running || status === NodeStatus.stopped) &&
+            statusProcess !== 0 ? (
+              <>
+                <span style={{ marginLeft: '4px' }}>{'已执行'}</span>
+                <span style={{ marginLeft: '4px' }}>{`${statusProcess}%`}</span>
+              </>
+            ) : (
+              <span style={{ marginLeft: '4px' }}>{statusDes}</span>
+            )}
           </span>
           {showContinueRun && (
             <span>

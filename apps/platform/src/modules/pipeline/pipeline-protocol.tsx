@@ -5,11 +5,11 @@ import { ReactComponent as Psi } from '@/assets/template_type_psi.svg';
 
 export enum PipelineTemplateType {
   BLANK = 'blank',
-  RISK = 'risk', // 金融风控
+  RISK = 'risk', // 二分类建模
   PSI = 'psi', // 联合圈人
   PSI_TEE = 'psi-tee', // 联合圈人
   PSI_TEE_GUIDE = 'psi-tee-guide',
-  RISK_GUIDE = 'risk-guide', // 金融风控
+  RISK_GUIDE = 'risk-guide', // 二分类建模
   PSI_GUIDE = 'psi-guide',
   TEE = 'TEE', // Tee
   TEE_GUIDE = 'tee-guide', // Tee guide

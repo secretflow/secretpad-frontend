@@ -509,6 +509,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
                 attrConfig={attrConfig}
                 translation={translation}
                 disabled={!isEditable}
+                onSaveConfig={onFormFinished}
               />
             );
           })}
@@ -553,6 +554,7 @@ export const ConfigFormComponent: React.FC<IConfigFormComponent> = (prop) => {
                   translation={translation}
                   disabled={!isEditable}
                   attrConfig={attrConfig}
+                  onSaveConfig={onFormFinished}
                 />
               );
             })}
@@ -585,6 +587,7 @@ export const ConfigurationNodeRender = ({
   disabled = false,
   componentConfig,
   attrConfig,
+  onSaveConfig,
 }: {
   form: FormInstance;
   config: ConfigItem;
@@ -596,6 +599,7 @@ export const ConfigurationNodeRender = ({
   style?: Record<any, any>;
   componentConfig: ConfigItem[];
   attrConfig?: AttrConfig;
+  onSaveConfig?: (val: Record<string, ValueOf<Attribute> | undefined>) => void;
 }) => {
   const configRenderRegistry = useModel(ConfigRenderRegistry);
   const Render = configRenderRegistry.getRender(config, exif);
@@ -623,6 +627,7 @@ export const ConfigurationNodeRender = ({
         translation={translation}
         disabled={disabled}
         attrConfig={attrConfig}
+        onSaveConfig={onSaveConfig}
       />
     </div>
   ) : (

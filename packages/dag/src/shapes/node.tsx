@@ -37,7 +37,7 @@ const DagNode = (props: { node: Node; graph: Graph }) => {
   const DAGContext = DAGGlobalContainer.get(graph) as DAGProtocol;
   const graphManager = DAGContext?.graphManager;
   const data = node.getData<GraphNode>();
-  const { id, status, label, codeName, styles } = data;
+  const { id, status, label, codeName, styles, statusProcess } = data;
   const statusName = NodeStatus[status];
   const [domain] = codeName.split('/');
   const {
@@ -163,7 +163,21 @@ const DagNode = (props: { node: Node; graph: Graph }) => {
         overlayStyle={{ width: 258 }}
         destroyTooltipOnHide
       >
-        <div className={classnames(['dag-node', statusName])}>
+        <div
+          className={classnames(['dag-node', statusName])}
+          style={{
+            background:
+              status === NodeStatus.running || status === NodeStatus.stopped
+                ? `linear-gradient(
+              to right,
+              #e5f0ff 0%,
+              #e5f0ff ${statusProcess}%,
+              transparent ${statusProcess}%,
+              transparent 100%
+            )`
+                : '#fff',
+          }}
+        >
           <span className="icon">
             {ComponentIcons[domain] || ComponentIcons['default']}
           </span>
@@ -190,6 +204,18 @@ const DagNode = (props: { node: Node; graph: Graph }) => {
           { opaque: isOpaque },
           { hightlight: isHighlighted },
         )}
+        style={{
+          background:
+            status === NodeStatus.running || status === NodeStatus.stopped
+              ? `linear-gradient(
+            to right,
+            #e5f0ff 0%,
+            #e5f0ff ${statusProcess}%,
+            transparent ${statusProcess}%,
+            transparent 100%
+          )`
+              : '#fff',
+        }}
       >
         <span className="icon">
           {ComponentIcons[domain] || ComponentIcons['default']}

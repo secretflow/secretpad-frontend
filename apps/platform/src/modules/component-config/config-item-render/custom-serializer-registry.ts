@@ -18,8 +18,16 @@ import {
   modelModificationsSerializer,
   modelModificationsUnSerializer,
 } from './custom-render/linear-model-parameters-modification';
+import {
+  upstreamOutputFeatureSerializer,
+  upstreamOutputFeatureUnserializer,
+} from './custom-render/upstream-feature-render';
 
 export const customSerializerRegistry = {
+  'feature_column_config_pb2.FeatureColumnConfig': {
+    serializer: upstreamOutputFeatureSerializer,
+    unserializer: upstreamOutputFeatureUnserializer,
+  },
   'case_when_rules_pb2.CaseWhenRule': {
     serializer: caseWhenSerializer,
     unserializer: caseWhenUnserializer,

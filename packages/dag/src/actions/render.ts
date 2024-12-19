@@ -37,6 +37,7 @@ export class RenderAction extends DAGContext implements ActionProtocol {
         codeName: node.codeName,
         label: node.label,
         status: node.status,
+        statusProcess: node.statusProcess || 0,
         outputs,
         styles: node.styles,
         nodeDef: node.nodeDef,

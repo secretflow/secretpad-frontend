@@ -34,7 +34,7 @@ export const QuickConfigEntry = (prop: { type: PipelineTemplateType }) => {
       >
         快速配置
       </Link>
-      ；如15s内未快速配置，后续可逐个配置
+      ；如当前15s内未快速配置，后续可逐个配置
     </>
   );
 };

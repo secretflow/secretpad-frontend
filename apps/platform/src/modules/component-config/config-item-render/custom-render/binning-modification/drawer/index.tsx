@@ -18,7 +18,11 @@ const BinningResultDrawer = () => {
       closable
       destroyOnClose
       open={isVisible}
-      bodyStyle={{ padding: '16px 16px 0 16px' }}
+      styles={{
+        body: {
+          padding: '16px 16px 0 16px',
+        },
+      }}
       onClose={() => {
         setCurrOperation(undefined);
         setVisible(false);

@@ -118,7 +118,17 @@ export const ResultDrawer = () => {
               visible={visible}
             />
           )}
-          {!resultData?.type && <span>非数据参与方，无计算结果</span>}
+          {!resultData?.type && (
+            <>
+              <div>非数据参与方，无计算结果</div>
+              {codeName === 'stats/scql_analysis' && (
+                <>
+                  <div>自定义scql分析组件请到接收方KUSCIA容器中查数据 </div>
+                  <span>{`地址：${resultData?.jobId}-${outputId}`}</span>
+                </>
+              )}
+            </>
+          )}
         </div>
       </div>
     </Drawer>

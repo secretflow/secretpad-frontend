@@ -39,6 +39,7 @@ export type RenderProp<T> = {
   index: number;
   upstreamTables?: [string, string];
   attrConfig?: AttrConfig;
+  onSaveConfig?: (val: Record<string, ValueOf<Attribute> | undefined>) => void;
 };
 
 export type ConfigRender<T = any> = {

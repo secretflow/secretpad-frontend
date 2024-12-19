@@ -24,6 +24,7 @@ import type {
 import { ComponentConfigRegistry } from '../component-config/component-config-registry';
 import { DefaultComponentConfigService } from '../component-config/component-config-service';
 import { componentConfigDrawer } from '../component-config/config-modal';
+import { quickConfigDrawer } from '../component-config/template-quick-config/quick-config-drawer';
 import { DefaultComponentInterpreterService } from '../component-interpreter/component-interpreter-service';
 import type { Component, ComputeMode } from '../component-tree/component-protocol';
 import { DefaultComponentTreeService } from '../component-tree/component-tree-service';
@@ -182,13 +183,16 @@ export class GraphService implements GraphEventHandlerProtocol {
     const arr: string[] = [];
     await mainDag.dataService.getUpstreamInputNodes(id, arr);
     const upstreamSampleNodes = await mainDag.dataService.getInputsSampleNodes(arr);
-
-    this.modalManager.openModal(componentConfigDrawer.id, {
-      ...data,
-      graphNode,
-      upstreamNodes,
-      inputNodes,
-      upstreamSampleNodes, // 上游样本表
+    // 右侧配置面板打开，切换算子的时候会渲染异常 ，暂先如此处理
+    this.modalManager.closeModal(componentConfigDrawer.id);
+    setTimeout(() => {
+      this.modalManager.openModal(componentConfigDrawer.id, {
+        ...data,
+        graphNode,
+        upstreamNodes,
+        inputNodes,
+        upstreamSampleNodes, // 上游样本表
+      });
     });
   };
 
@@ -219,7 +223,7 @@ export class GraphService implements GraphEventHandlerProtocol {
 
   onBlankClick() {
     this.logService.cancel();
-    this.modalManager.closeAllModals();
+    this.modalManager.closeAllModalsBut(quickConfigDrawer.id);
   }
 
   onEdgeRemoved() {

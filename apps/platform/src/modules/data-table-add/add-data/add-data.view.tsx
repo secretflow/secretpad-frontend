@@ -319,9 +319,9 @@ export const DataAddDrawer = ({
             <Form.Item
               name="address"
               label="数据表地址"
-              rules={[{ required: true, message: '数据表地址' }]}
+              rules={[{ required: true, message: '原始表地址' }]}
             >
-              <Input placeholder="请输入数据表地址" />
+              <Input placeholder="请输入原始表地址" />
             </Form.Item>
           )}
 

@@ -16,7 +16,7 @@ export class DragNodeAction extends DAGContext implements ActionProtocol {
   async handle(
     graph: Graph,
     dagId: string,
-    nodeData: Pick<GraphNode, 'codeName' | 'label' | 'status'>,
+    nodeData: Pick<GraphNode, 'codeName' | 'label' | 'status' | 'statusProcess'>,
     e: MouseEvent,
   ) {
     if (!this.dnd) {
@@ -28,7 +28,7 @@ export class DragNodeAction extends DAGContext implements ActionProtocol {
     }
     const maxNodeIndex = await this.context.requestService.getMaxNodeIndex(dagId);
     const nodeId = `${dagId}-node-${maxNodeIndex + 1}`;
-    const { label, codeName, status } = nodeData;
+    const { label, codeName, status, statusProcess } = nodeData;
     const outputs = await this.context.hookService.createResult(nodeId, codeName);
     const ports = await this.context.hookService.createPort(nodeId, codeName);
     const node = graph.createNode({
@@ -41,6 +41,7 @@ export class DragNodeAction extends DAGContext implements ActionProtocol {
         label,
         status: status || NodeStatus.default,
         outputs,
+        statusProcess: statusProcess || 0,
       },
     });
     this.dnd.start(node, e);

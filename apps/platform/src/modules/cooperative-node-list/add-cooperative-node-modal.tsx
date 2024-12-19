@@ -102,8 +102,8 @@ export const AddCooperativeNodeDrawer = ({
           certText: value.cooperativeNode.cert,
           srcNetAddress: `${serviceType}${value.selfNode.nodeAddress}`,
           dstNetAddress: `${cooperativeServiceType}${value.cooperativeNode.nodeAddress}`,
-          dstInstId: instInfo.instId,
-          dstInstName: instInfo.instName,
+          dstInstId: value.cooperativeNode.instId,
+          dstInstName: value.cooperativeNode.instName,
           srcNodeId: value.selfNode.nodeId,
         });
         if (status && status.code !== 0) {

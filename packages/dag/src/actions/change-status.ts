@@ -1,6 +1,6 @@
 import type { Graph } from '@antv/x6';
 
-import type { NodeStatus } from '../..';
+import type { NodeStatus } from '@/types';
 
 import type { ActionProtocol } from './protocol';
 import { ActionType } from './protocol';

@@ -9,6 +9,7 @@ import {
   message,
   Empty,
   Tag,
+  Alert,
 } from 'antd';
 import { parse } from 'query-string';
 import React, { useEffect, useState } from 'react';
@@ -225,6 +226,12 @@ export const ProjectAuthConfigDrawer = ({
               </Form.Item>
             </div>
           )}
+          <Alert
+            showIcon
+            type="warning"
+            message="数据按字段授权配置，当前仅针对SCQL联合分析组件生效"
+            style={{ marginBottom: 16 }}
+          />
           <Form.Item
             name="fields"
             className={styles.fields}

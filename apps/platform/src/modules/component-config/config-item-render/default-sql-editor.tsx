@@ -38,6 +38,8 @@ const SQLEditor: FC<SQLEditorProps> = (props) => {
         wordWrap: 'on',
         lineDecorationsWidth: 0,
         lineNumbersMinChars: 2,
+        contextmenu: false,
+        quickSuggestions: false,
       });
 
       editor.current = monacoEditor;

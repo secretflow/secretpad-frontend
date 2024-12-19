@@ -20,6 +20,7 @@ export class AddNodeAction extends DAGContext implements ActionProtocol {
       x: pos.x,
       y: pos.y,
       status: nodeData.status,
+      statusProcess: nodeData.statusProcess,
     };
     this.context.dataService.addNodes([meta]);
   }

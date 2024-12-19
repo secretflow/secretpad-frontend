@@ -72,6 +72,16 @@ const mlTrainCodeNames = [
   'ml.train/ss_xgb_train',
 ];
 
+/**
+ * 训练组件(SecureBoost训练 / SSGLM训练 / 逻辑回归训练 / SS-XGB训练)支持进度展示
+ */
+const showProgressCodeNames = [
+  'ml.train/sgb_train',
+  'ml.train/ss_glm_train',
+  'ml.train/ss_xgb_train',
+  'ml.train/ss_sgd_train',
+];
+
 export class GraphRequestService extends DefaultRequestService {
   // 只有画布更新了，queryDag才会去重新请求接口
   graphUpdated = true;
@@ -115,10 +125,17 @@ export class GraphRequestService extends DefaultRequestService {
 
     return {
       nodeStatus:
-        nodes?.map(({ graphNodeId, status }) => ({
-          nodeId: graphNodeId as string,
-          status: nodeStatus[status || 'STAGING'] as unknown as NodeStatus,
-        })) || [],
+        nodes?.map(({ graphNodeId, status, progress = 0 }) => {
+          const currentCodeName = (this.graphData?.nodes || []).find(
+            (itemNode: { id: string }) => itemNode.id === graphNodeId,
+          )?.codeName;
+          const showProcess = showProgressCodeNames.includes(currentCodeName);
+          return {
+            nodeId: graphNodeId as string,
+            status: nodeStatus[status || 'STAGING'] as unknown as NodeStatus,
+            statusProcess: showProcess ? Number((progress * 100).toFixed(2)) : 0,
+          };
+        }) || [],
       finished: finished as boolean,
     };
   }
@@ -171,7 +188,7 @@ export class GraphRequestService extends DefaultRequestService {
     const { nodes, edges } = data;
 
     const convertedNodes = nodes?.map((n) => {
-      const { graphNodeId, status, codeName, ...options } = n;
+      const { graphNodeId, status, codeName, progress = 0, ...options } = n;
       const configs =
         (this.componentConfigService.getComponentConfig(
           {
@@ -187,11 +204,15 @@ export class GraphRequestService extends DefaultRequestService {
       if (graphNodeStatus === NodeStatus.default && !isFinished) {
         graphNodeStatus = NodeStatus.unfinished;
       }
+
       return {
         ...options,
         codeName,
         id: graphNodeId,
         status: graphNodeStatus,
+        statusProcess: showProgressCodeNames.includes(codeName as string)
+          ? Number((progress * 100).toFixed(2))
+          : 0,
         styles: {
           // 目前只支持 (SecureBoost训练 SSGLM训练 SS-XGB训练) 算子才可 继续执行
           isContinueRun: mlTrainCodeNames.includes(codeName as string),
@@ -214,6 +235,7 @@ export class GraphRequestService extends DefaultRequestService {
     this.onNodeChangedEmitter.fire(convertedNodes as IGraphNodeType[]);
 
     this.graphData = convertedData;
+
     this.graphUpdated = false;
     return convertedData;
   }

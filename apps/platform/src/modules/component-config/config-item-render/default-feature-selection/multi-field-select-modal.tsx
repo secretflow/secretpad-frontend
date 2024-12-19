@@ -39,14 +39,16 @@ export const MultiFieldSelectModal = (props: IProps) => {
         setSelectedFields(fields);
       } else {
         if (selectedTable) {
-          const { data } = await getProjectDatatable({
-            nodeId: selectedTable.nodeId,
-            datatableId: selectedTable.datatableId,
-            projectId,
-            type: 'CSV',
-          });
-          if (!data) return;
-          setSelectedFields(data.configs);
+          /** 解决单选的时候，会默认将所有字段都选择上，所以注释调下面代码 setSelectedFields(data.configs)，直接设置为空数组 */
+          // const { data } = await getProjectDatatable({
+          //   nodeId: selectedTable.nodeId,
+          //   datatableId: selectedTable.datatableId,
+          //   projectId,
+          //   type: 'CSV',
+          // });
+          // if (!data) return;
+          // setSelectedFields(data.configs);
+          setSelectedFields([]);
         }
       }
     };

@@ -2,7 +2,7 @@ import type { NodeStatus, GraphModel } from '../types';
 
 export type RequestService = {
   queryStatus: (dagId: string) => Promise<{
-    nodeStatus: { nodeId: string; status: NodeStatus }[];
+    nodeStatus: { nodeId: string; status: NodeStatus; statusProcess: number }[];
     finished: boolean;
   }>;
   queryDag: (dagId: string) => Promise<GraphModel>;
