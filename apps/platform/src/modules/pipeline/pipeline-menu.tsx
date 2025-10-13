@@ -80,6 +80,9 @@ export const PipelineMenu = (prop: {
       if (msg) message.success(msg);
     } catch (e) {
       console.error(e);
+      // 显示错误消息给用户
+      const errorMessage = e instanceof Error ? e.message : '操作失败';
+      message.error(errorMessage);
     }
   };
   return (
