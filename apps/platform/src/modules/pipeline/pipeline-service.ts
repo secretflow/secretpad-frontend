@@ -290,10 +290,15 @@ export class DefaultPipelineService extends Model {
     const { search } = window.location;
     const { projectId } = parse(search);
 
-    await deleteGraph({
+    const response = await deleteGraph({
       projectId: projectId as string,
       graphId: pipelineId,
     });
+    // 检查API响应状态
+    if (response.status && response.status.code !== 0) {
+      throw new Error(response.status.msg || '删除失败');
+    }
+    return response;
   }
 
   async renamePipeline(pipelineId: string, name: string) {
